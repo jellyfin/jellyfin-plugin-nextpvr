@@ -19,6 +19,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Cryptography;
 
 namespace MediaBrowser.Plugins.NextPvr
 {
@@ -36,13 +37,15 @@ namespace MediaBrowser.Plugins.NextPvr
 
         private string Sid { get; set; }
         private DateTime LastUpdatedSidDateTime { get; set; }
+        private ICryptoProvider _cryptoProvider;
 
-        public LiveTvService(IHttpClient httpClient, IJsonSerializer jsonSerializer, ILogger logger)
+        public LiveTvService(IHttpClient httpClient, IJsonSerializer jsonSerializer, ILogger logger, ICryptoProvider cryptoProvider)
         {
             _httpClient = httpClient;
             _jsonSerializer = jsonSerializer;
             _logger = logger;
             LastUpdatedSidDateTime = DateTime.UtcNow;
+            _cryptoProvider = cryptoProvider;
         }
 
         /// <summary>
@@ -134,13 +137,13 @@ namespace MediaBrowser.Plugins.NextPvr
             }
         }
 
-        public static string GetMd5Hash(string value)
+        public string GetMd5Hash(string value)
         {
             HashAlgorithm hashAlgorithm = MD5.Create();
 
             if (hashAlgorithm != null)
             {
-                byte[] hashValue = hashAlgorithm.ComputeHash(new UTF8Encoding().GetBytes(value));
+                var hashValue = _cryptoProvider.ComputeMD5(new UTF8Encoding().GetBytes(value));
                 //Bit convertor return the byte to string as all caps hex values seperated by "-"
                 return BitConverter.ToString(hashValue).Replace("-", "").ToLowerInvariant();
             }
