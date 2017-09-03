@@ -15,7 +15,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -69,7 +68,7 @@ namespace MediaBrowser.Plugins.NextPvr
                 throw new InvalidOperationException("NextPvr pin must be configured.");
             }
 
-           if ((string.IsNullOrEmpty(Sid)) || ((!string.IsNullOrEmpty(Sid)) && (LastUpdatedSidDateTime.AddMinutes(5) < DateTime.UtcNow)))
+            if ((string.IsNullOrEmpty(Sid)) || ((!string.IsNullOrEmpty(Sid)) && (LastUpdatedSidDateTime.AddMinutes(5) < DateTime.UtcNow)))
             {
                 await InitiateSession(cancellationToken).ConfigureAwait(false);
             }
@@ -139,18 +138,10 @@ namespace MediaBrowser.Plugins.NextPvr
 
         public string GetMd5Hash(string value)
         {
-            HashAlgorithm hashAlgorithm = MD5.Create();
-
-            if (hashAlgorithm != null)
-            {
-                var hashValue = _cryptoProvider.ComputeMD5(new UTF8Encoding().GetBytes(value));
-                //Bit convertor return the byte to string as all caps hex values seperated by "-"
-                return BitConverter.ToString(hashValue).Replace("-", "").ToLowerInvariant();
-            }
-
-            return string.Empty;
+            var hashValue = _cryptoProvider.ComputeMD5(new UTF8Encoding().GetBytes(value));
+            //Bit convertor return the byte to string as all caps hex values seperated by "-"
+            return BitConverter.ToString(hashValue).Replace("-", "").ToLowerInvariant();
         }
-
 
         /// <summary>
         /// Gets the channels async.
