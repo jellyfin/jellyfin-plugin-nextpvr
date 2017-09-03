@@ -13,12 +13,12 @@ using MediaBrowser.Plugins.NextPvr.Responses;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Cryptography;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Plugins.NextPvr
 {
@@ -37,14 +37,16 @@ namespace MediaBrowser.Plugins.NextPvr
         private string Sid { get; set; }
         private DateTime LastUpdatedSidDateTime { get; set; }
         private ICryptoProvider _cryptoProvider;
+        private IFileSystem _fileSystem;
 
-        public LiveTvService(IHttpClient httpClient, IJsonSerializer jsonSerializer, ILogger logger, ICryptoProvider cryptoProvider)
+        public LiveTvService(IHttpClient httpClient, IJsonSerializer jsonSerializer, ILogger logger, ICryptoProvider cryptoProvider, IFileSystem fileSystem)
         {
             _httpClient = httpClient;
             _jsonSerializer = jsonSerializer;
             _logger = logger;
             LastUpdatedSidDateTime = DateTime.UtcNow;
             _cryptoProvider = cryptoProvider;
+            _fileSystem = fileSystem;
         }
 
         /// <summary>
@@ -697,7 +699,7 @@ namespace MediaBrowser.Plugins.NextPvr
                     var vlcObj = new VLCResponse().GetVLCResponse(stream, _jsonSerializer, _logger);
                     _logger.Debug(vlcObj.StreamLocation);
 
-                    while (!File.Exists(vlcObj.StreamLocation))
+                    while (!_fileSystem.FileExists(vlcObj.StreamLocation))
                     {
                         await Task.Delay(200).ConfigureAwait(false);
                     }
@@ -799,7 +801,7 @@ namespace MediaBrowser.Plugins.NextPvr
                 };
             }
 
-            if (!string.IsNullOrEmpty(recording.Path) && File.Exists(recording.Path))
+            if (!string.IsNullOrEmpty(recording.Path) && _fileSystem.FileExists(recording.Path))
             {
                 _logger.Info("[NextPvr] RecordingPath: {0}", recording.Path);
                 return new MediaSourceInfo
@@ -853,17 +855,6 @@ namespace MediaBrowser.Plugins.NextPvr
                     var ret = new VLCResponse().GetVLCReturn(stream, _jsonSerializer, _logger);
                     _heartBeat.Remove(int.Parse(id));
                 }
-            }
-        }
-
-        public async Task CopyFilesAsync(StreamReader source, StreamWriter destination)
-        {
-            _logger.Info("[NextPvr] Start CopyFiles Async");
-            char[] buffer = new char[0x1000];
-            int numRead;
-            while ((numRead = await source.ReadAsync(buffer, 0, buffer.Length)) != 0)
-            {
-                await destination.WriteAsync(buffer, 0, numRead);
             }
         }
 
