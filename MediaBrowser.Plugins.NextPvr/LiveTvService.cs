@@ -221,7 +221,7 @@ namespace MediaBrowser.Plugins.NextPvr
 
             using (var stream = response.Content)
             {
-                return new RecordingResponse(baseUrl).GetRecordings(stream, _jsonSerializer, _logger);
+                return new RecordingResponse(baseUrl, _fileSystem).GetRecordings(stream, _jsonSerializer, _logger);
             }
         }
 
@@ -398,7 +398,7 @@ namespace MediaBrowser.Plugins.NextPvr
 
             using (var stream = response.Content)
             {
-                return new RecordingResponse(baseUrl).GetTimers(stream, _jsonSerializer, _logger);
+                return new RecordingResponse(baseUrl, _fileSystem).GetTimers(stream, _jsonSerializer, _logger);
             }
         }
 
@@ -442,7 +442,7 @@ namespace MediaBrowser.Plugins.NextPvr
 
             using (var stream = response.Content)
             {
-                return new RecordingResponse(baseUrl).GetSeriesTimers(stream, _jsonSerializer, _logger);
+                return new RecordingResponse(baseUrl, _fileSystem).GetSeriesTimers(stream, _jsonSerializer, _logger);
             }
         }
 

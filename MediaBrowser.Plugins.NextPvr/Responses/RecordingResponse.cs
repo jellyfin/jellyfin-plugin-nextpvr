@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
@@ -15,10 +16,12 @@ namespace MediaBrowser.Plugins.NextPvr.Responses
     {
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly string _baseUrl;
+        private IFileSystem _fileSystem;
 
-        public RecordingResponse(string baseUrl)
+        public RecordingResponse(string baseUrl, IFileSystem fileSystem)
         {
             _baseUrl = baseUrl;
+            _fileSystem = fileSystem;
         }
 
         public IEnumerable<RecordingInfo> GetRecordings(Stream stream, IJsonSerializer json,ILogger logger)
@@ -109,7 +112,7 @@ namespace MediaBrowser.Plugins.NextPvr.Responses
             {
                 info.ChannelId = schd.ChannelOid.ToString(_usCulture);
                 info.Id = schd.OID.ToString(_usCulture);
-                if (File.Exists(schd.RecordingFileName))
+                if (_fileSystem.FileExists(schd.RecordingFileName))
                 {
                     info.Path = schd.RecordingFileName;
                 }
