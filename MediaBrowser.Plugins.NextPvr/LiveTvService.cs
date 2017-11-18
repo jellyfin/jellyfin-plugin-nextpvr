@@ -723,13 +723,14 @@ namespace MediaBrowser.Plugins.NextPvr
                             new MediaStream
                             {
                                 Type = MediaStreamType.Audio,
-                                IsInterlaced = true,
                                 // Set the index to -1 because we don't know the exact index of the audio stream within the container
                                 Index = -1
                             }
                         },
                         // This takes too long
-                        SupportsProbing = false
+                        SupportsProbing = false,
+
+                        Container = "mpegts"
                     };
                 }
             }
@@ -753,13 +754,14 @@ namespace MediaBrowser.Plugins.NextPvr
                             new MediaStream
                             {
                                 Type = MediaStreamType.Audio,
-                                IsInterlaced = true,
                                 // Set the index to -1 because we don't know the exact index of the audio stream within the container
                                 Index = -1
                             }
                         },
                 // This takes too long
-                SupportsProbing = false
+                SupportsProbing = false,
+
+                Container = "mpegts"
             };
         }
 
@@ -792,12 +794,11 @@ namespace MediaBrowser.Plugins.NextPvr
                             {
                                 Type = MediaStreamType.Audio,
                                 // Set the index to -1 because we don't know the exact index of the audio stream within the container
-                                Index = -1,
-
-                                // Set to true if unknown to enable deinterlacing
-                                IsInterlaced = true
+                                Index = -1
                             }
-                        }
+                        },
+
+                    Container = "mpegts"
                 };
             }
 
@@ -823,12 +824,11 @@ namespace MediaBrowser.Plugins.NextPvr
                             {
                                 Type = MediaStreamType.Audio,
                                 // Set the index to -1 because we don't know the exact index of the audio stream within the container
-                                Index = -1,
-
-                                // Set to true if unknown to enable deinterlacing
-                                IsInterlaced = true
+                                Index = -1
                             }
-                        }
+                        },
+
+                    Container = "mpegts"
                 };
             }
 
