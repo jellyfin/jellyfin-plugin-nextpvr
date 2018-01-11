@@ -727,8 +727,6 @@ namespace MediaBrowser.Plugins.NextPvr
                                 Index = -1
                             }
                         },
-                        // This takes too long
-                        SupportsProbing = false,
 
                         Container = "mpegts"
                     };
