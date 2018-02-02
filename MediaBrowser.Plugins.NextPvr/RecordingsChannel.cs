@@ -198,7 +198,7 @@ namespace MediaBrowser.Plugins.NextPvr
         public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, Func<RecordingInfo, bool> filter, CancellationToken cancellationToken)
         {
             var service = GetService();
-            var allRecordings = await service.GetRecordingsAsync(cancellationToken).ConfigureAwait(false);
+            var allRecordings = await service.GetAllRecordingsAsync(cancellationToken).ConfigureAwait(false);
 
             var result = new ChannelItemResult()
             {
@@ -242,6 +242,7 @@ namespace MediaBrowser.Plugins.NextPvr
                 DateModified = item.DateLastUpdated,
                 Overview = item.Overview,
                 //People = item.People
+                EnableMediaProbe = true
             };
 
             return channelItem;
@@ -251,7 +252,7 @@ namespace MediaBrowser.Plugins.NextPvr
         {
             var service = GetService();
 
-            var allRecordings = await service.GetRecordingsAsync(cancellationToken).ConfigureAwait(false);
+            var allRecordings = await service.GetAllRecordingsAsync(cancellationToken).ConfigureAwait(false);
             var result = new ChannelItemResult()
             {
                 Items = new List<ChannelItemInfo>()

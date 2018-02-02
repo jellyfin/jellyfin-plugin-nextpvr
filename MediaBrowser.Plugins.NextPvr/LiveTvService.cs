@@ -171,12 +171,17 @@ namespace MediaBrowser.Plugins.NextPvr
             }
         }
 
+        public async Task<IEnumerable<RecordingInfo>> GetRecordingsAsync(CancellationToken cancellationToken)
+        {
+            return new List<RecordingInfo>();
+        }
+
         /// <summary>
         /// Gets the Recordings async
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IEnumerable{RecordingInfo}}</returns>
-        public async Task<IEnumerable<RecordingInfo>> GetRecordingsAsync(CancellationToken cancellationToken)
+        public async Task<IEnumerable<RecordingInfo>> GetAllRecordingsAsync(CancellationToken cancellationToken)
         {
             _logger.Info("[NextPvr] Start GetRecordings Async, retrieve all 'Pending', 'Inprogress' and 'Completed' recordings ");
             await EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
