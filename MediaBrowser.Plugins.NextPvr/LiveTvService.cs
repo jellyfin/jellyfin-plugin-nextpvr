@@ -39,6 +39,8 @@ namespace MediaBrowser.Plugins.NextPvr
         private ICryptoProvider _cryptoProvider;
         private IFileSystem _fileSystem;
 
+        public DateTime LastRecordingChange = DateTime.MinValue;
+
         public LiveTvService(IHttpClient httpClient, IJsonSerializer jsonSerializer, ILogger logger, ICryptoProvider cryptoProvider, IFileSystem fileSystem)
         {
             _httpClient = httpClient;
@@ -246,6 +248,8 @@ namespace MediaBrowser.Plugins.NextPvr
 
             using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
             {
+                LastRecordingChange = DateTime.UtcNow;
+
                 bool? error = new CancelDeleteRecordingResponse().RecordingError(stream, _jsonSerializer, _logger);
 
                 if (error == null || error == true)
@@ -287,6 +291,7 @@ namespace MediaBrowser.Plugins.NextPvr
 
             using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
             {
+                LastRecordingChange = DateTime.UtcNow;
                 bool? error = new CancelDeleteRecordingResponse().RecordingError(stream, _jsonSerializer, _logger);
 
                 if (error == null || error == true)
@@ -606,9 +611,11 @@ namespace MediaBrowser.Plugins.NextPvr
             try
             {
                 await _httpClient.Post(options).ConfigureAwait((false));
+                LastRecordingChange = DateTime.UtcNow;
             }
             catch (HttpException ex)
             {
+                LastRecordingChange = DateTime.UtcNow;
                 _logger.Error(string.Format("[NextPvr] UpdateTimer Async with exception: {0}", ex.Message));
                 throw new LiveTvConflictException();
             }
@@ -728,7 +735,8 @@ namespace MediaBrowser.Plugins.NextPvr
                             }
                         },
 
-                        Container = "mpegts"
+                        Container = "mpegts",
+                        SupportsProbing = false
                     };
                 }
             }
@@ -757,7 +765,8 @@ namespace MediaBrowser.Plugins.NextPvr
                             }
                         },
 
-                Container = "mpegts"
+                Container = "mpegts",
+                SupportsProbing = false
             };
         }
 
