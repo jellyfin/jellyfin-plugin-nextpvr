@@ -17,7 +17,7 @@ using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Plugins.NextPvr
 {
-    public class RecordingsChannel : IChannel, IIndexableChannel, IHasCacheKey, ISupportsDelete
+    public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISupportsLatestMedia
     {
         public ILiveTvManager _liveTvManager;
 
@@ -144,9 +144,11 @@ namespace MediaBrowser.Plugins.NextPvr
             return GetService().DeleteRecordingAsync(id, cancellationToken);
         }
 
-        public Task<ChannelItemResult> GetAllMedia(InternalAllChannelMediaQuery query, CancellationToken cancellationToken)
+        public async Task<IEnumerable<ChannelItemInfo>> GetLatestMedia(ChannelLatestMediaSearch request, CancellationToken cancellationToken)
         {
-            return GetChannelItems(new InternalChannelItemQuery(), i => true, cancellationToken);
+            var result = await GetChannelItems(new InternalChannelItemQuery(), i => true, cancellationToken).ConfigureAwait(false);
+
+            return result.Items.OrderByDescending(i => i.DateCreated ?? DateTime.MinValue);
         }
 
         public Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)
@@ -195,7 +197,7 @@ namespace MediaBrowser.Plugins.NextPvr
             return Task.FromResult(result);
         }
 
-        public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, Func<RecordingInfo, bool> filter, CancellationToken cancellationToken)
+        public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, Func<MyRecordingInfo, bool> filter, CancellationToken cancellationToken)
         {
             var service = GetService();
             var allRecordings = await service.GetAllRecordingsAsync(cancellationToken).ConfigureAwait(false);
@@ -210,7 +212,7 @@ namespace MediaBrowser.Plugins.NextPvr
             return result;
         }
 
-        private ChannelItemInfo ConvertToChannelItem(RecordingInfo item)
+        private ChannelItemInfo ConvertToChannelItem(MyRecordingInfo item)
         {
             var channelItem = new ChannelItemInfo
             {
@@ -242,7 +244,9 @@ namespace MediaBrowser.Plugins.NextPvr
                 DateModified = item.DateLastUpdated,
                 Overview = item.Overview,
                 //People = item.People
-                EnableMediaProbe = true
+                EnableMediaProbe = true,
+                IsLiveStream = item.Status == Model.LiveTv.RecordingStatus.InProgress,
+                Etag = item.Status.ToString()
             };
 
             return channelItem;
@@ -340,4 +344,5 @@ namespace MediaBrowser.Plugins.NextPvr
             return result;
         }
     }
+
 }

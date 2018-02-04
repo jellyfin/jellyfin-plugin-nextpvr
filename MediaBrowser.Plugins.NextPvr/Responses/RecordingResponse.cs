@@ -24,7 +24,7 @@ namespace MediaBrowser.Plugins.NextPvr.Responses
             _fileSystem = fileSystem;
         }
 
-        public IEnumerable<RecordingInfo> GetRecordings(Stream stream, IJsonSerializer json,ILogger logger)
+        public IEnumerable<MyRecordingInfo> GetRecordings(Stream stream, IJsonSerializer json,ILogger logger)
         {
             if (stream == null)
             {
@@ -93,9 +93,9 @@ namespace MediaBrowser.Plugins.NextPvr.Responses
                 .Select(GetSeriesTimerInfo);
         }
 
-        private RecordingInfo GetRecordingInfo(EpgEventJSONObject i)
+        private MyRecordingInfo GetRecordingInfo(EpgEventJSONObject i)
         {
-            var info = new RecordingInfo();
+            var info = new MyRecordingInfo();
 
             var recurr = i.recurr;
             if (recurr != null)
