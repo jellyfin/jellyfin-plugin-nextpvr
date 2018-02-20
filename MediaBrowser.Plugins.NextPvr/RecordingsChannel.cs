@@ -18,7 +18,7 @@ using MediaBrowser.Model.LiveTv;
 
 namespace MediaBrowser.Plugins.NextPvr
 {
-    public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISupportsLatestMedia, ISupportsMediaProbe
+    public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISupportsLatestMedia, ISupportsMediaProbe, IHasFolderAttributes
     {
         public ILiveTvManager _liveTvManager;
 
@@ -40,6 +40,14 @@ namespace MediaBrowser.Plugins.NextPvr
             get
             {
                 return "Next Pvr Recordings";
+            }
+        }
+
+        public string[] Attributes
+        {
+            get
+            {
+                return new []{ "Recordings" };
             }
         }
 
