@@ -699,54 +699,6 @@ namespace MediaBrowser.Plugins.NextPvr
             var baseUrl = Plugin.Instance.Configuration.WebServiceUrl;
             _liveStreams++;
 
-            if (config.TimeShift)
-            {
-                var options = new HttpRequestOptions
-                {
-                    CancellationToken = cancellationToken,
-                    Url = string.Format("{0}/public/VLCService/Dump/StreamByChannel/OID/{1}", baseUrl, channelOid)
-                };
-
-                using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
-                {
-                    var vlcObj = new VLCResponse().GetVLCResponse(stream, _jsonSerializer, _logger);
-                    _logger.Debug(vlcObj.StreamLocation);
-
-                    while (!_fileSystem.FileExists(vlcObj.StreamLocation))
-                    {
-                        await Task.Delay(200).ConfigureAwait(false);
-                    }
-                    await Task.Delay(20000).ConfigureAwait(false);
-                    _logger.Info("[NextPvr] Finishing wait");
-                    _heartBeat.Add(_liveStreams, vlcObj.ProcessId);
-                    return new MediaSourceInfo
-                    {
-                        Id = _liveStreams.ToString(CultureInfo.InvariantCulture),
-                        Path = vlcObj.StreamLocation,
-                        Protocol = MediaProtocol.File,
-                        MediaStreams = new List<MediaStream>
-                        {
-                            new MediaStream
-                            {
-                                Type = MediaStreamType.Video,
-                                IsInterlaced = true,
-                                // Set the index to -1 because we don't know the exact index of the video stream within the container
-                                Index = -1
-                            },
-                            new MediaStream
-                            {
-                                Type = MediaStreamType.Audio,
-                                // Set the index to -1 because we don't know the exact index of the audio stream within the container
-                                Index = -1
-                            }
-                        },
-
-                        Container = "mpegts",
-                        SupportsProbing = false
-                    };
-                }
-            }
-
             string streamUrl = string.Format("{0}/live?channeloid={1}&client=MB3.{2}", baseUrl, channelOid, _liveStreams.ToString());
             _logger.Info("[NextPvr] Streaming " + streamUrl);
             return new MediaSourceInfo
@@ -772,7 +724,7 @@ namespace MediaBrowser.Plugins.NextPvr
                         },
 
                 Container = "mpegts",
-                SupportsProbing = false
+                SupportsProbing = true
             };
         }
 
@@ -850,23 +802,6 @@ namespace MediaBrowser.Plugins.NextPvr
         public async Task CloseLiveStream(string id, CancellationToken cancellationToken)
         {
             _logger.Info("[NextPvr] Closing " + id);
-            var config = Plugin.Instance.Configuration;
-            if (config.TimeShift)
-            {
-                var baseUrl = Plugin.Instance.Configuration.WebServiceUrl;
-
-                var options = new HttpRequestOptions()
-                {
-                    CancellationToken = cancellationToken,
-                    Url = string.Format("{0}/public/VLCService/KillVLC/{1}", baseUrl, _heartBeat[int.Parse(id)])
-                };
-
-                using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
-                {
-                    var ret = new VLCResponse().GetVLCReturn(stream, _jsonSerializer, _logger);
-                    _heartBeat.Remove(int.Parse(id));
-                }
-            }
         }
 
         public async Task<SeriesTimerInfo> GetNewTimerDefaultsAsync(CancellationToken cancellationToken, ProgramInfo program = null)
