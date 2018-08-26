@@ -220,9 +220,7 @@ namespace MediaBrowser.Plugins.NextPvr
                 NameFilterCaseSensative = false
             };
 
-            var postContent = _jsonSerializer.SerializeToString(filterOptions);
-
-            options.RequestContent = postContent;
+            options.RequestContent = _jsonSerializer.SerializeToString(filterOptions).AsMemory();
             options.RequestContentType = "application/json";
 
             var response = await _httpClient.Post(options).ConfigureAwait(false);
@@ -344,7 +342,7 @@ namespace MediaBrowser.Plugins.NextPvr
             var postContent = _jsonSerializer.SerializeToString(timerSettings);
             UtilsHelper.DebugInformation(_logger, string.Format("[NextPvr] TimerSettings CreateTimer: {0} for ChannelId: {1} & Name: {2}", postContent, info.ChannelId, info.Name));
 
-            options.RequestContent = postContent;
+            options.RequestContent = postContent.AsMemory();
             options.RequestContentType = "application/json";
 
             try
@@ -400,9 +398,7 @@ namespace MediaBrowser.Plugins.NextPvr
                 NameFilterCaseSensative = false
             };
 
-            var postContent = _jsonSerializer.SerializeToString(filterOptions);
-
-            options.RequestContent = postContent;
+            options.RequestContent = _jsonSerializer.SerializeToString(filterOptions).AsMemory();
             options.RequestContentType = "application/json";
 
             var response = await _httpClient.Post(options).ConfigureAwait(false);
@@ -444,9 +440,7 @@ namespace MediaBrowser.Plugins.NextPvr
                 Deleted = false
             };
 
-            var postContent = _jsonSerializer.SerializeToString(filterOptions);
-
-            options.RequestContent = postContent;
+            options.RequestContent = _jsonSerializer.SerializeToString(filterOptions).AsMemory();
             options.RequestContentType = "application/json";
 
             var response = await _httpClient.Post(options).ConfigureAwait(false);
@@ -524,7 +518,7 @@ namespace MediaBrowser.Plugins.NextPvr
             var postContent = _jsonSerializer.SerializeToString(timerSettings);
             UtilsHelper.DebugInformation(_logger, string.Format("[NextPvr] TimerSettings CreateSeriesTimer: {0} for ChannelId: {1} & Name: {2}", postContent, info.ChannelId, info.Name));
 
-            options.RequestContent = postContent;
+            options.RequestContent = postContent.AsMemory();
             options.RequestContentType = "application/json";
 
             try
@@ -569,7 +563,7 @@ namespace MediaBrowser.Plugins.NextPvr
             var postContent = _jsonSerializer.SerializeToString(timerSettings);
             UtilsHelper.DebugInformation(_logger, string.Format("[NextPvr] TimerSettings UpdateSeriesTimer: {0} for ChannelId: {1} & Name: {2}", postContent, info.ChannelId, info.Name));
 
-            options.RequestContent = postContent;
+            options.RequestContent = postContent.AsMemory();
             options.RequestContentType = "application/json";
 
             try
@@ -611,7 +605,7 @@ namespace MediaBrowser.Plugins.NextPvr
             var postContent = _jsonSerializer.SerializeToString(timerSettings);
             UtilsHelper.DebugInformation(_logger, string.Format("[NextPvr] TimerSettings UpdateTimer: {0} for ChannelId: {1} & Name: {2}", postContent, info.ChannelId, info.Name));
 
-            options.RequestContent = postContent;
+            options.RequestContent = postContent.AsMemory();
             options.RequestContentType = "application/json";
 
             try
