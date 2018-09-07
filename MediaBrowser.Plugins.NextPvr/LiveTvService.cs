@@ -36,11 +36,11 @@ namespace MediaBrowser.Plugins.NextPvr
         private readonly Dictionary<int, int> _heartBeat = new Dictionary<int, int>();
 
         private string Sid { get; set; }
-        private DateTime LastUpdatedSidDateTime { get; set; }
+        private DateTimeOffset LastUpdatedSidDateTime { get; set; }
         private ICryptoProvider _cryptoProvider;
         private IFileSystem _fileSystem;
 
-        public DateTime LastRecordingChange = DateTime.MinValue;
+        public DateTimeOffset LastRecordingChange = DateTimeOffset.MinValue;
 
         public LiveTvService(IHttpClient httpClient, IJsonSerializer jsonSerializer, ILogger logger, ICryptoProvider cryptoProvider, IFileSystem fileSystem)
         {
@@ -107,7 +107,7 @@ namespace MediaBrowser.Plugins.NextPvr
                 {
                     _logger.Info("[NextPvr] Session initiated.");
                     Sid = sid;
-                    LastUpdatedSidDateTime = DateTime.UtcNow;
+                    LastUpdatedSidDateTime = DateTimeOffset.UtcNow;
                 }
             }
         }
@@ -252,7 +252,7 @@ namespace MediaBrowser.Plugins.NextPvr
 
             using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
             {
-                LastRecordingChange = DateTime.UtcNow;
+                LastRecordingChange = DateTimeOffset.UtcNow;
 
                 bool? error = new CancelDeleteRecordingResponse().RecordingError(stream, _jsonSerializer, _logger);
 
@@ -295,7 +295,7 @@ namespace MediaBrowser.Plugins.NextPvr
 
             using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
             {
-                LastRecordingChange = DateTime.UtcNow;
+                LastRecordingChange = DateTimeOffset.UtcNow;
                 bool? error = new CancelDeleteRecordingResponse().RecordingError(stream, _jsonSerializer, _logger);
 
                 if (error == null || error == true)
@@ -611,11 +611,11 @@ namespace MediaBrowser.Plugins.NextPvr
             try
             {
                 await _httpClient.Post(options).ConfigureAwait((false));
-                LastRecordingChange = DateTime.UtcNow;
+                LastRecordingChange = DateTimeOffset.UtcNow;
             }
             catch (HttpException ex)
             {
-                LastRecordingChange = DateTime.UtcNow;
+                LastRecordingChange = DateTimeOffset.UtcNow;
                 _logger.Error(string.Format("[NextPvr] UpdateTimer Async with exception: {0}", ex.Message));
                 throw new LiveTvConflictException();
             }
@@ -816,7 +816,7 @@ namespace MediaBrowser.Plugins.NextPvr
             }
         }
 
-        public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
+        public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(string channelId, DateTimeOffset startDateUtc, DateTimeOffset endDateUtc, CancellationToken cancellationToken)
         {
             _logger.Info("[NextPvr] Start GetPrograms Async, retrieve all Programs");
             await EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
@@ -827,8 +827,8 @@ namespace MediaBrowser.Plugins.NextPvr
                 CancellationToken = cancellationToken,
                 Url = string.Format("{0}/public/GuideService/Listing?sid={1}&stime={2}&etime={3}&channelId={4}",
                 baseUrl, Sid,
-                ApiHelper.GetCurrentUnixTimestampSeconds(startDateUtc).ToString(_usCulture),
-                ApiHelper.GetCurrentUnixTimestampSeconds(endDateUtc).ToString(_usCulture),
+                startDateUtc.ToUnixTimeSeconds().ToString(_usCulture),
+                endDateUtc.ToUnixTimeSeconds().ToString(_usCulture),
                 channelId)
             };
 
