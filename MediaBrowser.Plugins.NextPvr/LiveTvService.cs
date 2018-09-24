@@ -555,7 +555,10 @@ namespace MediaBrowser.Plugins.NextPvr
             timerSettings.recurrOID = int.Parse(info.Id);
             timerSettings.post_padding_min = info.PostPaddingSeconds / 60;
             timerSettings.pre_padding_min = info.PrePaddingSeconds / 60;
+            timerSettings.allChannels = info.RecordAnyChannel;
+            timerSettings.onlyNew = info.RecordNewOnly;
             timerSettings.recurringName = info.Name;
+            timerSettings.recordAnyTimeslot = info.RecordAnyTime;
             timerSettings.keep_all_days = true;
             timerSettings.days_to_keep = 0;
             timerSettings.extend_end_time_min = 0;
