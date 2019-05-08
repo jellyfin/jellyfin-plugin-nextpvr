@@ -2,7 +2,7 @@
 using System;
 using MediaBrowser.Model.Logging;
 
-namespace MediaBrowser.Plugins.NextPvr.Helpers
+namespace NextPvr.Helpers
 {
     public static class ChannelHelper
     {
@@ -35,6 +35,6 @@ namespace MediaBrowser.Plugins.NextPvr.Helpers
                 logger.Debug(message);
             }
         }
-   
+
     }
 }

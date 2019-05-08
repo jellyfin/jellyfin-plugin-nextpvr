@@ -1,7 +1,7 @@
 ﻿using System;
 using MediaBrowser.Model.Plugins;
 
-namespace MediaBrowser.Plugins.NextPvr.Configuration
+namespace NextPvr.Configuration
 {
     /// <summary>
     /// Class PluginConfiguration

@@ -8,9 +8,9 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Plugins.NextPvr.Helpers;
+using NextPvr.Helpers;
 
-namespace MediaBrowser.Plugins.NextPvr.Responses
+namespace NextPvr.Responses
 {
     public class RecordingResponse
     {
@@ -120,7 +120,7 @@ namespace MediaBrowser.Plugins.NextPvr.Responses
                 {
                     info.Url = _baseUrl + "/live?recording=" + schd.OID;
                 }
-               
+
                 info.Status = ParseStatus(schd.Status);
                 info.StartDate = DateTime.Parse(schd.StartTime).ToUniversalTime();
                 info.EndDate = DateTime.Parse(schd.EndTime).ToUniversalTime();
@@ -294,7 +294,7 @@ namespace MediaBrowser.Plugins.NextPvr.Responses
             {
                 return RecordingStatus.Cancelled;
             }
-            
+
             return RecordingStatus.New;
         }
 

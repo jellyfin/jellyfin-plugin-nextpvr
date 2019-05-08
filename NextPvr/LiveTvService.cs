@@ -8,8 +8,8 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Plugins.NextPvr.Helpers;
-using MediaBrowser.Plugins.NextPvr.Responses;
+using NextPvr.Helpers;
+using NextPvr.Responses;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -21,7 +21,7 @@ using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 
-namespace MediaBrowser.Plugins.NextPvr
+namespace NextPvr
 {
     /// <summary>
     /// Class LiveTvService
@@ -275,7 +275,7 @@ namespace MediaBrowser.Plugins.NextPvr
         }
 
         /// <summary>
-        /// Cancel pending scheduled Recording 
+        /// Cancel pending scheduled Recording
         /// </summary>
         /// <param name="timerId">The timerId</param>
         /// <param name="cancellationToken">The cancellationToken</param>

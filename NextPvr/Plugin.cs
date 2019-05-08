@@ -4,11 +4,11 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Plugins.NextPvr.Configuration;
+using NextPvr.Configuration;
 using System.IO;
 using MediaBrowser.Model.Drawing;
 
-namespace MediaBrowser.Plugins.NextPvr
+namespace NextPvr
 {
     /// <summary>
     /// Class Plugin

@@ -2,12 +2,12 @@
 using System.IO;
 using MediaBrowser.Model.Serialization;
 
-namespace MediaBrowser.Plugins.NextPvr.Responses
+namespace NextPvr.Responses
 {
     public class VersionCheckResponse
     {
         private readonly RootObject _root;
-        
+
         public VersionCheckResponse(Stream stream, IJsonSerializer json)
         {
            _root = json.DeserializeFromStream<RootObject>(stream);
