@@ -16,7 +16,7 @@ using System.Globalization;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.LiveTv;
 
-namespace MediaBrowser.Plugins.NextPvr
+namespace NextPvr
 {
     public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISupportsLatestMedia, ISupportsMediaProbe, IHasFolderAttributes
     {
