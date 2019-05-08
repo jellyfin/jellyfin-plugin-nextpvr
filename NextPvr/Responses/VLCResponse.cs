@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using NextPvr.Helpers;
 

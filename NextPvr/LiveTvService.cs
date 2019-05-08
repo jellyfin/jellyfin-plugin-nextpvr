@@ -4,7 +4,7 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;

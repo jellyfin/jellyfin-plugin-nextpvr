@@ -6,7 +6,7 @@ using System.Linq;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using NextPvr.Helpers;
 

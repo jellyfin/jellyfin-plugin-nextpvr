@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using NextPvr.Helpers;
 

@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Model.LiveTv;
 using System;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace NextPvr.Helpers
 {
