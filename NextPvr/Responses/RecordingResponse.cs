@@ -28,7 +28,7 @@ namespace NextPvr.Responses
         {
             if (stream == null)
             {
-                logger.Error("[NextPvr] GetRecording stream == null");
+                logger.LogError("[NextPvr] GetRecording stream == null");
                 throw new ArgumentNullException("stream");
             }
 
@@ -51,7 +51,7 @@ namespace NextPvr.Responses
         {
             if (stream == null)
             {
-                logger.Error("[NextPvr] GetTimers stream == null");
+                logger.LogError("[NextPvr] GetTimers stream == null");
                 throw new ArgumentNullException("stream");
             }
 
@@ -74,7 +74,7 @@ namespace NextPvr.Responses
         {
             if (stream == null)
             {
-                logger.Error("[NextPvr] GetSeriesTimers stream == null");
+                logger.LogError("[NextPvr] GetSeriesTimers stream == null");
                 throw new ArgumentNullException("stream");
             }
 
@@ -112,7 +112,7 @@ namespace NextPvr.Responses
             {
                 info.ChannelId = schd.ChannelOid.ToString(_usCulture);
                 info.Id = schd.OID.ToString(_usCulture);
-                if (_fileSystem.FileExists(schd.RecordingFileName))
+                if (File.Exists(schd.RecordingFileName))
                 {
                     info.Path = schd.RecordingFileName;
                 }

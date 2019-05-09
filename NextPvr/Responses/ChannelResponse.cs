@@ -26,7 +26,7 @@ namespace NextPvr.Responses
 
             if (root.channelsJSONObject.rtn != null && root.channelsJSONObject.rtn.Error)
             {
-                logger.Error(root.channelsJSONObject.rtn.Message ?? "Failed to download channel information.");
+                logger.LogError(root.channelsJSONObject.rtn.Message ?? "Failed to download channel information.");
                 throw new Exception(root.channelsJSONObject.rtn.Message ?? "Failed to download channel information.");
             }
 

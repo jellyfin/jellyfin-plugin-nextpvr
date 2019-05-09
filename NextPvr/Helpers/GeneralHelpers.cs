@@ -32,7 +32,7 @@ namespace NextPvr.Helpers
 
             if (enableDebugLogging)
             {
-                logger.Debug(message);
+                logger.LogDebug(message);
             }
         }
 

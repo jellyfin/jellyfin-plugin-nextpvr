@@ -17,7 +17,7 @@ namespace NextPvr.Responses
                 UtilsHelper.DebugInformation(logger,string.Format("[NextPvr] Connection validation: {0}", json.SerializeToString(root)));
                 return root.SIDValidation.validated;
             }
-            logger.Error("[NextPvr] Failed to validate your connection with NextPvr.");
+            logger.LogError("[NextPvr] Failed to validate your connection with NextPvr.");
             throw new Exception("Failed to validate your connection with NextPvr.");
         }
 

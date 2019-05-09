@@ -17,7 +17,7 @@ namespace NextPvr.Responses
                 UtilsHelper.DebugInformation(logger,string.Format("[NextPvr] VLC Response: {0}", json.SerializeToString(root)));
                 return root.JSONVlcObject.VLC_Obj;
             }
-            logger.Error("[NextPvr] Failed to load the VLC from NEWA");
+            logger.LogError("[NextPvr] Failed to load the VLC from NEWA");
             throw new Exception("Failed to load the VLC from NEWA.");
         }
         public Rtn GetVLCReturn(Stream stream, IJsonSerializer json, ILogger logger)
