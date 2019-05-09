@@ -111,13 +111,11 @@ namespace NextPvr
         {
             if (type == ImageType.Primary)
             {
-                 var path = GetType().Namespace + ".thumb.png";
-
-                        return Task.FromResult(new DynamicImageResponse
-                        {
-                            Format = ImageFormat.Png,
-                            HasImage = true,
-                            Stream = GetType().Assembly.GetManifestResourceStream(path)
+                return Task.FromResult(new DynamicImageResponse
+                {
+                    Path = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Resources/master/images/catalog/nextpvr.png",
+                    Protocol = MediaProtocol.Http,
+                    HasImage = true
                 });
             }
 
