@@ -4,16 +4,16 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Plugins.NextPvr.Configuration;
+using NextPvr.Configuration;
 using System.IO;
 using MediaBrowser.Model.Drawing;
 
-namespace MediaBrowser.Plugins.NextPvr
+namespace NextPvr
 {
     /// <summary>
     /// Class Plugin
     /// </summary>
-    public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages, IHasThumbImage
+    public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     {
         public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
             : base(applicationPaths, xmlSerializer)
@@ -57,20 +57,6 @@ namespace MediaBrowser.Plugins.NextPvr
             get
             {
                 return "Provides live tv using next pvr as a back-end.";
-            }
-        }
-
-        public Stream GetThumbImage()
-        {
-            var type = GetType();
-            return type.Assembly.GetManifestResourceStream(type.Namespace + ".thumb.png");
-        }
-
-        public ImageFormat ThumbImageFormat
-        {
-            get
-            {
-                return ImageFormat.Png;
             }
         }
 

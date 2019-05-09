@@ -1,12 +1,12 @@
 ﻿using System;
 using System.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Plugins.NextPvr.Helpers;
+using NextPvr.Helpers;
 
-namespace MediaBrowser.Plugins.NextPvr.Responses
+namespace NextPvr.Responses
 {
-    public class VLCResponse    
+    public class VLCResponse
     {
         public VLCObj GetVLCResponse(Stream stream, IJsonSerializer json, ILogger logger)
         {
@@ -17,7 +17,7 @@ namespace MediaBrowser.Plugins.NextPvr.Responses
                 UtilsHelper.DebugInformation(logger,string.Format("[NextPvr] VLC Response: {0}", json.SerializeToString(root)));
                 return root.JSONVlcObject.VLC_Obj;
             }
-            logger.Error("[NextPvr] Failed to load the VLC from NEWA");
+            logger.LogError("[NextPvr] Failed to load the VLC from NEWA");
             throw new Exception("Failed to load the VLC from NEWA.");
         }
         public Rtn GetVLCReturn(Stream stream, IJsonSerializer json, ILogger logger)

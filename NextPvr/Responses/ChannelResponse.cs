@@ -4,11 +4,11 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Plugins.NextPvr.Helpers;
+using NextPvr.Helpers;
 
-namespace MediaBrowser.Plugins.NextPvr.Responses
+namespace NextPvr.Responses
 {
     public class ChannelResponse
     {
@@ -26,7 +26,7 @@ namespace MediaBrowser.Plugins.NextPvr.Responses
 
             if (root.channelsJSONObject.rtn != null && root.channelsJSONObject.rtn.Error)
             {
-                logger.Error(root.channelsJSONObject.rtn.Message ?? "Failed to download channel information.");
+                logger.LogError(root.channelsJSONObject.rtn.Message ?? "Failed to download channel information.");
                 throw new Exception(root.channelsJSONObject.rtn.Message ?? "Failed to download channel information.");
             }
 

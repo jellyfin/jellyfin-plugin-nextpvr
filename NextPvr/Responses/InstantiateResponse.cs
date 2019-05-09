@@ -1,10 +1,10 @@
 ﻿using System;
 using System.IO;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Plugins.NextPvr.Helpers;
+using NextPvr.Helpers;
 
-namespace MediaBrowser.Plugins.NextPvr.Responses
+namespace NextPvr.Responses
 {
     public class InstantiateResponse
     {
@@ -17,7 +17,7 @@ namespace MediaBrowser.Plugins.NextPvr.Responses
                 UtilsHelper.DebugInformation(logger,string.Format("[NextPvr] ClientKeys: {0}", json.SerializeToString(root)));
                 return root.clientKeys;
             }
-            logger.Error("[NextPvr] Failed to load the ClientKeys from NextPvr.");
+            logger.LogError("[NextPvr] Failed to load the ClientKeys from NextPvr.");
             throw new Exception("Failed to load the ClientKeys from NextPvr.");
         }
 

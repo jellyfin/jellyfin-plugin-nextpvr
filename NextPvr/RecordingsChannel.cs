@@ -16,7 +16,7 @@ using System.Globalization;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.LiveTv;
 
-namespace MediaBrowser.Plugins.NextPvr
+namespace NextPvr
 {
     public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISupportsLatestMedia, ISupportsMediaProbe, IHasFolderAttributes
     {
@@ -71,7 +71,7 @@ namespace MediaBrowser.Plugins.NextPvr
 
         public string GetCacheKey(string userId)
         {
-            var now = DateTimeOffset.UtcNow;
+            var now = DateTime.UtcNow;
 
             var values = new List<string>();
 
@@ -157,7 +157,7 @@ namespace MediaBrowser.Plugins.NextPvr
         {
             var result = await GetChannelItems(new InternalChannelItemQuery(), i => true, cancellationToken).ConfigureAwait(false);
 
-            return result.Items.OrderByDescending(i => i.DateCreated ?? DateTimeOffset.MinValue);
+            return result.Items.OrderByDescending(i => i.DateCreated ?? DateTime.MinValue);
         }
 
         public Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)
@@ -237,7 +237,7 @@ namespace MediaBrowser.Plugins.NextPvr
                 //HomePageUrl = item.HomePageUrl
                 Id = item.Id,
                 //IndexNumber = item.IndexNumber,
-                MediaType = item.ChannelType == Model.LiveTv.ChannelType.TV ? ChannelMediaType.Video : ChannelMediaType.Audio,
+                MediaType = item.ChannelType == MediaBrowser.Model.LiveTv.ChannelType.TV ? ChannelMediaType.Video : ChannelMediaType.Audio,
                 MediaSources = new List<MediaSourceInfo>
                 {
                     new MediaSourceInfo
@@ -255,7 +255,7 @@ namespace MediaBrowser.Plugins.NextPvr
                 DateModified = item.DateLastUpdated,
                 Overview = item.Overview,
                 //People = item.People
-                IsLiveStream = item.Status == Model.LiveTv.RecordingStatus.InProgress,
+                IsLiveStream = item.Status == MediaBrowser.Model.LiveTv.RecordingStatus.InProgress,
                 Etag = item.Status.ToString()
             };
 
@@ -410,12 +410,12 @@ namespace MediaBrowser.Plugins.NextPvr
         /// <summary>
         /// The start date of the recording, in UTC.
         /// </summary>
-        public DateTimeOffset StartDate { get; set; }
+        public DateTime StartDate { get; set; }
 
         /// <summary>
         /// The end date of the recording, in UTC.
         /// </summary>
-        public DateTimeOffset EndDate { get; set; }
+        public DateTime EndDate { get; set; }
 
         /// <summary>
         /// Gets or sets the program identifier.
@@ -462,7 +462,7 @@ namespace MediaBrowser.Plugins.NextPvr
         /// Gets or sets the original air date.
         /// </summary>
         /// <value>The original air date.</value>
-        public DateTimeOffset? OriginalAirDate { get; set; }
+        public DateTime? OriginalAirDate { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is movie.
@@ -545,7 +545,7 @@ namespace MediaBrowser.Plugins.NextPvr
         /// Gets or sets the date last updated.
         /// </summary>
         /// <value>The date last updated.</value>
-        public DateTimeOffset DateLastUpdated { get; set; }
+        public DateTime DateLastUpdated { get; set; }
 
         public MyRecordingInfo()
         {

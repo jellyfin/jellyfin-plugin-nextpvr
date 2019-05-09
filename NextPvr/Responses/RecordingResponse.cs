@@ -6,11 +6,11 @@ using System.Linq;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Plugins.NextPvr.Helpers;
+using NextPvr.Helpers;
 
-namespace MediaBrowser.Plugins.NextPvr.Responses
+namespace NextPvr.Responses
 {
     public class RecordingResponse
     {
@@ -28,7 +28,7 @@ namespace MediaBrowser.Plugins.NextPvr.Responses
         {
             if (stream == null)
             {
-                logger.Error("[NextPvr] GetRecording stream == null");
+                logger.LogError("[NextPvr] GetRecording stream == null");
                 throw new ArgumentNullException("stream");
             }
 
@@ -51,7 +51,7 @@ namespace MediaBrowser.Plugins.NextPvr.Responses
         {
             if (stream == null)
             {
-                logger.Error("[NextPvr] GetTimers stream == null");
+                logger.LogError("[NextPvr] GetTimers stream == null");
                 throw new ArgumentNullException("stream");
             }
 
@@ -74,7 +74,7 @@ namespace MediaBrowser.Plugins.NextPvr.Responses
         {
             if (stream == null)
             {
-                logger.Error("[NextPvr] GetSeriesTimers stream == null");
+                logger.LogError("[NextPvr] GetSeriesTimers stream == null");
                 throw new ArgumentNullException("stream");
             }
 
@@ -112,7 +112,7 @@ namespace MediaBrowser.Plugins.NextPvr.Responses
             {
                 info.ChannelId = schd.ChannelOid.ToString(_usCulture);
                 info.Id = schd.OID.ToString(_usCulture);
-                if (_fileSystem.FileExists(schd.RecordingFileName))
+                if (File.Exists(schd.RecordingFileName))
                 {
                     info.Path = schd.RecordingFileName;
                 }
@@ -120,7 +120,7 @@ namespace MediaBrowser.Plugins.NextPvr.Responses
                 {
                     info.Url = _baseUrl + "/live?recording=" + schd.OID;
                 }
-               
+
                 info.Status = ParseStatus(schd.Status);
                 info.StartDate = DateTime.Parse(schd.StartTime).ToUniversalTime();
                 info.EndDate = DateTime.Parse(schd.EndTime).ToUniversalTime();
@@ -294,7 +294,7 @@ namespace MediaBrowser.Plugins.NextPvr.Responses
             {
                 return RecordingStatus.Cancelled;
             }
-            
+
             return RecordingStatus.New;
         }
 

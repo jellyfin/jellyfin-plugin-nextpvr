@@ -1,8 +1,8 @@
 ﻿using MediaBrowser.Model.LiveTv;
 using System;
-using MediaBrowser.Model.Logging;
+using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.Plugins.NextPvr.Helpers
+namespace NextPvr.Helpers
 {
     public static class ChannelHelper
     {
@@ -32,9 +32,9 @@ namespace MediaBrowser.Plugins.NextPvr.Helpers
 
             if (enableDebugLogging)
             {
-                logger.Debug(message);
+                logger.LogDebug(message);
             }
         }
-   
+
     }
 }

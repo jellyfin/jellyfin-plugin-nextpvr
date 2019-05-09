@@ -6,7 +6,7 @@ using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Serialization;
 
-namespace MediaBrowser.Plugins.NextPvr.Responses
+namespace NextPvr.Responses
 {
     public class TunerResponse
     {
