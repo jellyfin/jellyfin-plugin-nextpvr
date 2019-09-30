@@ -193,7 +193,8 @@ namespace NextPvr
             var options = new HttpRequestOptions
             {
                 CancellationToken = cancellationToken,
-                Url = string.Format("{0}/public/ManageService/Get/SortedFilteredList?sid={1}", baseUrl, Sid)
+                Url = string.Format("{0}/public/ManageService/Get/SortedFilteredList?sid={1}", baseUrl, Sid),
+                DecompressionMethod = CompressionMethod.None
             };
 
             var filterOptions = new
@@ -371,7 +372,8 @@ namespace NextPvr
             var options = new HttpRequestOptions
             {
                 CancellationToken = cancellationToken,
-                Url = string.Format("{0}/public/ManageService/Get/SortedFilteredList?sid={1}", baseUrl, Sid)
+                Url = string.Format("{0}/public/ManageService/Get/SortedFilteredList?sid={1}", baseUrl, Sid),
+                DecompressionMethod = CompressionMethod.None
             };
 
             var filterOptions = new
@@ -424,7 +426,8 @@ namespace NextPvr
             var options = new HttpRequestOptions
             {
                 CancellationToken = cancellationToken,
-                Url = string.Format("{0}/public/ManageService/Get/SortedFilteredList?sid={1}", baseUrl, Sid)
+                Url = string.Format("{0}/public/ManageService/Get/SortedFilteredList?sid={1}", baseUrl, Sid),
+                DecompressionMethod = CompressionMethod.None
             };
 
             var filterOptions = new
