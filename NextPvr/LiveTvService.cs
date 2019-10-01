@@ -325,7 +325,8 @@ namespace NextPvr
             var options = new HttpRequestOptions
             {
                 CancellationToken = cancellationToken,
-                Url = string.Format("{0}/public/ScheduleService/Record?sid={1}", baseUrl, Sid)
+                Url = string.Format("{0}/public/ScheduleService/Record?sid={1}", baseUrl, Sid),
+                DecompressionMethod = CompressionMethod.None
             };
 
             var timerSettings = await GetDefaultScheduleSettings(cancellationToken).ConfigureAwait(false);
@@ -470,7 +471,8 @@ namespace NextPvr
             var options = new HttpRequestOptions
             {
                 CancellationToken = cancellationToken,
-                Url = string.Format("{0}/public/ScheduleService/Record?sid={1}", baseUrl, Sid)
+                Url = string.Format("{0}/public/ScheduleService/Record?sid={1}", baseUrl, Sid),
+                DecompressionMethod = CompressionMethod.None
             };
 
             var timerSettings = await GetDefaultScheduleSettings(cancellationToken).ConfigureAwait(false);
@@ -551,7 +553,8 @@ namespace NextPvr
             var options = new HttpRequestOptions
             {
                 CancellationToken = cancellationToken,
-                Url = string.Format("{0}/public/ScheduleService/UpdateRecurr?sid={1}", baseUrl, Sid)
+                Url = string.Format("{0}/public/ScheduleService/UpdateRecurr?sid={1}", baseUrl, Sid),
+                DecompressionMethod = CompressionMethod.None
             };
 
             var timerSettings = await GetDefaultScheduleSettings(cancellationToken).ConfigureAwait(false);
@@ -600,7 +603,8 @@ namespace NextPvr
             var options = new HttpRequestOptions
             {
                 CancellationToken = cancellationToken,
-                Url = string.Format("{0}/public/ScheduleService/UpdateRec?sid={1}", baseUrl, Sid)
+                Url = string.Format("{0}/public/ScheduleService/UpdateRec?sid={1}", baseUrl, Sid),
+                DecompressionMethod = CompressionMethod.None
             };
 
             var timerSettings = await GetDefaultScheduleSettings(cancellationToken).ConfigureAwait(false);
