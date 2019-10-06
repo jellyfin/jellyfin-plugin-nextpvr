@@ -1,8 +1,8 @@
 ---
 name: "jellyfin-plugin-nextpvr"
 guid: "9574ac10-bf23-49bc-949f-924f23cfa48f"
-version: "1" # Please increment with each pull request
-jellyfin_version: "10.3.0" # The earliest binary-compatible version
+version: "1.1.0" # Please increment with each pull request
+jellyfin_version: "10.3.7" # The earliest binary-compatible version
 nicename: "NextPVR"
 description: "Jellyfin LiveTV plugin for NextPVR"
 overview: >
