@@ -38,7 +38,6 @@ namespace NextPvr
 
         private string Sid { get; set; }
         private DateTimeOffset LastUpdatedSidDateTime { get; set; }
-        private ICryptoProvider _cryptoProvider;
         private IFileSystem _fileSystem;
 
         public DateTimeOffset LastRecordingChange = DateTimeOffset.MinValue;
@@ -49,7 +48,6 @@ namespace NextPvr
             _jsonSerializer = jsonSerializer;
             _logger = logger;
             LastUpdatedSidDateTime = DateTime.UtcNow;
-            _cryptoProvider = cryptoProvider;
             _fileSystem = fileSystem;
         }
 
@@ -144,9 +142,7 @@ namespace NextPvr
 
         public string GetMd5Hash(string value)
         {
-            var hashValue = _cryptoProvider.ComputeMD5(new UTF8Encoding().GetBytes(value));
-            //Bit convertor return the byte to string as all caps hex values seperated by "-"
-            return BitConverter.ToString(hashValue).Replace("-", "").ToLowerInvariant();
+            return value.GetMD5().ToString();
         }
 
         /// <summary>
