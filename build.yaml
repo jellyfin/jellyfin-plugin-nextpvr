@@ -1,12 +1,12 @@
 ---
 name: "jellyfin-plugin-nextpvr"
 guid: "9574ac10-bf23-49bc-949f-924f23cfa48f"
-version: "3" # Please increment with each pull request
-jellyfin_version: "10.5.0" # The earliest binary-compatible version
+version: "3"
+jellyfin_version: "10.5.0"
 nicename: "NextPVR"
-description: "Jellyfin LiveTV plugin for NextPVR"
+description: "Live TV plugin for NextPVR"
 overview: >
-  Provides access to LiveTV, Program Guide and Recordings from NextPVR.
+  Provides access to live TV, program guide, and recordings from NextPVR.
 category: "LiveTV"
 owner: "jellyfin"
 artifacts:

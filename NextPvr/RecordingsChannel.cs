@@ -31,7 +31,7 @@ namespace NextPvr
         {
             get
             {
-                return "Next Pvr Recordings";
+                return "NextPVR Recordings";
             }
         }
 
@@ -39,7 +39,7 @@ namespace NextPvr
         {
             get
             {
-                return "Next Pvr Recordings";
+                return "NextPVR Recordings";
             }
         }
 
@@ -61,7 +61,7 @@ namespace NextPvr
 
         public string HomePageUrl
         {
-            get { return "http://www.nextpvr.com/"; }
+            get { return "http://www.nextpvr.com"; }
         }
 
         public ChannelParentalRating ParentalRating
@@ -93,16 +93,16 @@ namespace NextPvr
             return new InternalChannelFeatures
             {
                 ContentTypes = new List<ChannelMediaContentType>
-                 {
-                      ChannelMediaContentType.Movie,
-                      ChannelMediaContentType.Episode,
+                {
+                    ChannelMediaContentType.Movie,
+                    ChannelMediaContentType.Episode,
                     ChannelMediaContentType.Clip
-                 },
+                },
                 MediaTypes = new List<ChannelMediaType>
-                  {
-                       ChannelMediaType.Audio,
-                       ChannelMediaType.Video
-                  },
+                {
+                    ChannelMediaType.Audio,
+                    ChannelMediaType.Video
+                },
                 SupportsContentDownloading = true
             };
         }
@@ -354,6 +354,7 @@ namespace NextPvr
             return result;
         }
     }
+
     public class MyRecordingInfo
     {
         /// <summary>
@@ -535,6 +536,7 @@ namespace NextPvr
         /// </summary>
         /// <value><c>null</c> if [has image] contains no value, <c>true</c> if [has image]; otherwise, <c>false</c>.</value>
         public bool? HasImage { get; set; }
+
         /// <summary>
         /// Gets or sets the show identifier.
         /// </summary>
@@ -552,5 +554,4 @@ namespace NextPvr
             Genres = new List<string>();
         }
     }
-
 }

@@ -259,6 +259,7 @@ namespace NextPvr
                     _logger.LogError(string.Format("[NextPvr] Failed to delete the recording for recordingId: {0}", recordingId));
                     throw new Exception(string.Format("Failed to delete the recording for recordingId: {0}", recordingId));
                 }
+
                 _logger.LogInformation("[NextPvr] Deleted Recording with recordingId: {0}", recordingId);
             }
         }
@@ -301,6 +302,7 @@ namespace NextPvr
                     _logger.LogError(string.Format("[NextPvr] Failed to cancel the recording for recordingId: {0}", timerId));
                     throw new Exception(string.Format("Failed to cancel the recording for recordingId: {0}", timerId));
                 }
+
                 _logger.LogInformation(string.Format("[NextPvr] Cancelled Recording for recordingId: {0}", timerId));
             }
         }
@@ -656,6 +658,7 @@ namespace NextPvr
                     _logger.LogError(string.Format("[NextPvr] Failed to cancel the recording with recordingId: {0}", timerId));
                     throw new Exception(string.Format("Failed to cancel the recording with recordingId: {0}", timerId));
                 }
+
                 _logger.LogInformation("[NextPvr] Cancelled Recording for recordingId: {0}", timerId);
             }
         }
@@ -928,5 +931,4 @@ namespace NextPvr
             throw new NotImplementedException();
         }
     }
-
 }

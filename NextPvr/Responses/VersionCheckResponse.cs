@@ -11,15 +11,15 @@ namespace NextPvr.Responses
         public VersionCheckResponse(Stream stream, IJsonSerializer json)
         {
            _root = json.DeserializeFromStream<RootObject>(stream);
-
         }
+
         public Boolean UpdateAvailable()
         {
-
             if (_root.versionCheck != null)
             {
                 return _root.versionCheck.upgradeAvailable;
             }
+
             throw new Exception("Failed to get the Update Status from NextPvr.");
         }
 
@@ -29,9 +29,9 @@ namespace NextPvr.Responses
             {
                 return _root.versionCheck.serverVer;
             }
+
             throw new Exception("Failed to get the Server Version from NextPvr.");
         }
-
 
         public class VersionCheck
         {

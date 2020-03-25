@@ -310,7 +310,6 @@ namespace NextPvr.Responses
             public string Keep { get; set; }
             public string Days { get; set; }
             public string EPGTitle { get; set; }
-
         }
 
         private class RulesXmlDoc
@@ -339,7 +338,6 @@ namespace NextPvr.Responses
             public string Day { get; set; }
             public object AdvancedRules { get; set; }
             public RulesXmlDoc RulesXmlDoc { get; set; }
-
         }
 
         private class Rtn
@@ -369,7 +367,6 @@ namespace NextPvr.Responses
             public bool FirstRun { get; set; }
             public bool HasSchedule { get; set; }
             public bool ScheduleIsRecurring { get; set; }
-
         }
 
         private class Schd

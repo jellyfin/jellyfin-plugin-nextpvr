@@ -8,16 +8,14 @@
 
   <ItemGroup>
     <None Remove="Configuration\configPage.html" />
-    <None Remove="thumb.png" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Configuration\configPage.html" />
-    <EmbeddedResource Include="thumb.png" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jellyfin.Controller" Version="10.4-*" />
+    <PackageReference Include="Jellyfin.Controller" Version="10.5.*" />
     <PackageReference Include="System.Memory" Version="4.5.1" />
   </ItemGroup>
 
