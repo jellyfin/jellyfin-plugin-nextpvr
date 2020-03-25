@@ -56,7 +56,7 @@ namespace NextPvr
         {
             get
             {
-                return "Provides live tv using next pvr as a back-end.";
+                return "Provides live TV using NextPVR as the backend.";
             }
         }
 

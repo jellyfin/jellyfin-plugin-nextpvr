@@ -9,7 +9,9 @@ namespace NextPvr.Configuration
     public class PluginConfiguration : BasePluginConfiguration
     {
         public string WebServiceUrl { get; set; }
+
         public string Pin { get; set; }
+
         public Boolean EnableDebugLogging { get; set; }
 
         public PluginConfiguration()

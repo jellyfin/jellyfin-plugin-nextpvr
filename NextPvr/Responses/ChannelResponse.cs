@@ -79,8 +79,5 @@ namespace NextPvr.Responses
         {
             public ChannelsJSONObject channelsJSONObject { get; set; }
         }
-
-
-
     }
 }

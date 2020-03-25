@@ -17,6 +17,7 @@ namespace NextPvr.Responses
                 UtilsHelper.DebugInformation(logger,string.Format("[NextPvr] ClientKeys: {0}", json.SerializeToString(root)));
                 return root.clientKeys;
             }
+
             logger.LogError("[NextPvr] Failed to load the ClientKeys from NextPvr.");
             throw new Exception("Failed to load the ClientKeys from NextPvr.");
         }

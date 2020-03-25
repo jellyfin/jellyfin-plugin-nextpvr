@@ -15,8 +15,8 @@ namespace NextPvr.Responses
         public TunerResponse(Stream stream, IJsonSerializer json)
         {
             _root = json.DeserializeFromStream<RootObject>(stream);
-
         }
+
         public List<LiveTvTunerInfo> LiveTvTunerInfos()
         {
             return _root.Tuners.Select(GetTunerInformation).ToList();
