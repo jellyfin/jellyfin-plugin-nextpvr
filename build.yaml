@@ -1,8 +1,8 @@
 ---
 name: "jellyfin-plugin-nextpvr"
 guid: "9574ac10-bf23-49bc-949f-924f23cfa48f"
-version: "2" # Please increment with each pull request
-jellyfin_version: "10.4.0" # The earliest binary-compatible version
+version: "3" # Please increment with each pull request
+jellyfin_version: "10.5.0" # The earliest binary-compatible version
 nicename: "NextPVR"
 description: "Jellyfin LiveTV plugin for NextPVR"
 overview: >
@@ -13,4 +13,4 @@ artifacts:
   - "NextPvr.dll"
 build_type: "dotnet"
 dotnet_configuration: "Release"
-dotnet_framework: "netstandard2.0"
+dotnet_framework: "netstandard2.1"
