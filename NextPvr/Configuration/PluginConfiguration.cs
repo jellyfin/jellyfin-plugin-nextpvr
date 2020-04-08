@@ -13,6 +13,12 @@ namespace NextPvr.Configuration
         public string Pin { get; set; }
 
         public Boolean EnableDebugLogging { get; set; }
+        public Boolean NewEpisodes { get; set; }
+        public bool? ShowRepeat { get; set; }
+        public bool GetEpisodeImage { get; set; }
+        public string RecordingDefault { get; set; }
+        public int PrePaddingSeconds { get; set; }
+        public int PostPaddingSeconds { get; set; }
 
         public PluginConfiguration()
         {
