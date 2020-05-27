@@ -1,16 +1,14 @@
 ---
-name: "jellyfin-plugin-nextpvr"
+name: "NextPVR"
 guid: "9574ac10-bf23-49bc-949f-924f23cfa48f"
-version: "3"
-jellyfin_version: "10.5.0"
-nicename: "NextPVR"
-description: "Live TV plugin for NextPVR"
-overview: >
+version: "3.0.0.0"
+targetAbi: "10.5.0.0"
+overview: "Live TV plugin for NextPVR"
+description: >
   Provides access to live TV, program guide, and recordings from NextPVR.
 category: "LiveTV"
 owner: "jellyfin"
 artifacts:
-  - "NextPvr.dll"
-build_type: "dotnet"
-dotnet_configuration: "Release"
-dotnet_framework: "netstandard2.1"
+- "NextPvr.dll"
+changelog: >
+  changelog
