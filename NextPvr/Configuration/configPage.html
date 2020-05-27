@@ -8,15 +8,14 @@
         <div data-role="content">
             <div class="content-primary">
                 <form class="nextpvrConfigurationForm">
-
                     <div class="inputContainer">
-                        <input is="emby-input" type="text" id="txtWebServiceUrl" label="NextPVR base url:" />
+                        <input is="emby-input" type="text" id="txtWebServiceUrl" label="NextPVR Base URL" />
                         <div class="fieldDescription">
                             NextPVR URL
                         </div>
                     </div>
                     <div class="inputContainer">
-                        <input is="emby-input" type="text" id="txtPin" label="NextPVR pin:" />
+                        <input is="emby-input" type="text" id="txtPin" label="NextPVR PIN" />
                         <div class="fieldDescription">
                             NextPVR PIN
                         </div>
@@ -25,7 +24,6 @@
                         <input is="emby-checkbox" type="checkbox" id="chkDebugLogging" />
                         <span>NextPVR Debug Logging</span>
                     </label>
-
                     <button is="emby-button" type="submit" class="raised button-submit block"><span>Save</span></button>
                 </form>
             </div>
@@ -42,7 +40,7 @@
                 ApiClient.getPluginConfiguration(NextPvrConfigurationPage.pluginUniqueId).then(function (config) {
                     $('#txtWebServiceUrl', page).val(config.WebServiceUrl || "");
                     $('#txtPin', page).val(config.Pin || "");
-                    $('#chkDebugLogging', page).checked(config.EnableDebugLogging || false).checkboxradio("refresh");
+                    $('#chkDebugLogging', page).checked = config.EnableDebugLogging || false;
 
                     Dashboard.hideLoadingMsg();
                 });
@@ -55,7 +53,7 @@
                 ApiClient.getPluginConfiguration(NextPvrConfigurationPage.pluginUniqueId).then(function (config) {
                     config.WebServiceUrl = $('#txtWebServiceUrl', form).val();
                     config.Pin = $('#txtPin', form).val();
-                    config.EnableDebugLogging = $('#chkDebugLogging', form).checked();
+                    config.EnableDebugLogging = $('#chkDebugLogging', form).checked;
 
                     ApiClient.updatePluginConfiguration(NextPvrConfigurationPage.pluginUniqueId, config).then(Dashboard.processPluginConfigurationUpdateResult);
                 });
