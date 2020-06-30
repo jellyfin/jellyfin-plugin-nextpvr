@@ -190,7 +190,7 @@ namespace NextPvr
             {
                 CancellationToken = cancellationToken,
                 Url = string.Format("{0}/public/ManageService/Get/SortedFilteredList?sid={1}", baseUrl, Sid),
-                DecompressionMethod = CompressionMethod.None
+                DecompressionMethod = CompressionMethods.None
             };
 
             var filterOptions = new
@@ -324,7 +324,7 @@ namespace NextPvr
             {
                 CancellationToken = cancellationToken,
                 Url = string.Format("{0}/public/ScheduleService/Record?sid={1}", baseUrl, Sid),
-                DecompressionMethod = CompressionMethod.None
+                DecompressionMethod = CompressionMethods.None
             };
 
             var timerSettings = await GetDefaultScheduleSettings(cancellationToken).ConfigureAwait(false);
@@ -372,7 +372,7 @@ namespace NextPvr
             {
                 CancellationToken = cancellationToken,
                 Url = string.Format("{0}/public/ManageService/Get/SortedFilteredList?sid={1}", baseUrl, Sid),
-                DecompressionMethod = CompressionMethod.None
+                DecompressionMethod = CompressionMethods.None
             };
 
             var filterOptions = new
@@ -426,7 +426,7 @@ namespace NextPvr
             {
                 CancellationToken = cancellationToken,
                 Url = string.Format("{0}/public/ManageService/Get/SortedFilteredList?sid={1}", baseUrl, Sid),
-                DecompressionMethod = CompressionMethod.None
+                DecompressionMethod = CompressionMethods.None
             };
 
             var filterOptions = new
@@ -470,7 +470,7 @@ namespace NextPvr
             {
                 CancellationToken = cancellationToken,
                 Url = string.Format("{0}/public/ScheduleService/Record?sid={1}", baseUrl, Sid),
-                DecompressionMethod = CompressionMethod.None
+                DecompressionMethod = CompressionMethods.None
             };
 
             var timerSettings = await GetDefaultScheduleSettings(cancellationToken).ConfigureAwait(false);
@@ -552,7 +552,7 @@ namespace NextPvr
             {
                 CancellationToken = cancellationToken,
                 Url = string.Format("{0}/public/ScheduleService/UpdateRecurr?sid={1}", baseUrl, Sid),
-                DecompressionMethod = CompressionMethod.None
+                DecompressionMethod = CompressionMethods.None
             };
 
             var timerSettings = await GetDefaultScheduleSettings(cancellationToken).ConfigureAwait(false);
@@ -602,7 +602,7 @@ namespace NextPvr
             {
                 CancellationToken = cancellationToken,
                 Url = string.Format("{0}/public/ScheduleService/UpdateRec?sid={1}", baseUrl, Sid),
-                DecompressionMethod = CompressionMethod.None
+                DecompressionMethod = CompressionMethods.None
             };
 
             var timerSettings = await GetDefaultScheduleSettings(cancellationToken).ConfigureAwait(false);
