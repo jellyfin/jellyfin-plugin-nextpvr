@@ -40,7 +40,7 @@
                 ApiClient.getPluginConfiguration(NextPvrConfigurationPage.pluginUniqueId).then(function (config) {
                     $('#txtWebServiceUrl', page).val(config.WebServiceUrl || "");
                     $('#txtPin', page).val(config.Pin || "");
-                    $('#chkDebugLogging', page).checked = config.EnableDebugLogging || false;
+                    document.getElementById('chkDebugLogging').checked = config.EnableDebugLogging || false;
 
                     Dashboard.hideLoadingMsg();
                 });
@@ -53,7 +53,7 @@
                 ApiClient.getPluginConfiguration(NextPvrConfigurationPage.pluginUniqueId).then(function (config) {
                     config.WebServiceUrl = $('#txtWebServiceUrl', form).val();
                     config.Pin = $('#txtPin', form).val();
-                    config.EnableDebugLogging = $('#chkDebugLogging', form).checked;
+                    config.EnableDebugLogging = document.getElementById('chkDebugLogging').checked;
 
                     ApiClient.updatePluginConfiguration(NextPvrConfigurationPage.pluginUniqueId, config).then(Dashboard.processPluginConfigurationUpdateResult);
                 });
