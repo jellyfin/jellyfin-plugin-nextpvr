@@ -24,7 +24,7 @@ namespace NextPvr.Responses
             _fileSystem = fileSystem;
         }
 
-        public IEnumerable<MyRecordingInfo> GetRecordings(Stream stream, IJsonSerializer json,ILogger logger)
+        public IEnumerable<MyRecordingInfo> GetRecordings(Stream stream, IJsonSerializer json,ILogger<LiveTvService> logger)
         {
             if (stream == null)
             {
@@ -47,7 +47,7 @@ namespace NextPvr.Responses
                 .Select(GetRecordingInfo);
         }
 
-        public IEnumerable<TimerInfo> GetTimers(Stream stream, IJsonSerializer json,ILogger logger)
+        public IEnumerable<TimerInfo> GetTimers(Stream stream, IJsonSerializer json, ILogger<LiveTvService> logger)
         {
             if (stream == null)
             {
@@ -70,7 +70,7 @@ namespace NextPvr.Responses
                 .Select(GetTimerInfo);
         }
 
-        public IEnumerable<SeriesTimerInfo> GetSeriesTimers(Stream stream, IJsonSerializer json,ILogger logger)
+        public IEnumerable<SeriesTimerInfo> GetSeriesTimers(Stream stream, IJsonSerializer json, ILogger<LiveTvService> logger)
         {
             if (stream == null)
             {

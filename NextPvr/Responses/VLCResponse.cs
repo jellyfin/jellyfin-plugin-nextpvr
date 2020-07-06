@@ -8,7 +8,7 @@ namespace NextPvr.Responses
 {
     public class VLCResponse
     {
-        public VLCObj GetVLCResponse(Stream stream, IJsonSerializer json, ILogger logger)
+        public VLCObj GetVLCResponse(Stream stream, IJsonSerializer json, ILogger<LiveTvService> logger)
         {
             var root = json.DeserializeFromStream<RootObject>(stream);
 
@@ -21,7 +21,7 @@ namespace NextPvr.Responses
             throw new Exception("Failed to load the VLC from NEWA.");
         }
 
-        public Rtn GetVLCReturn(Stream stream, IJsonSerializer json, ILogger logger)
+        public Rtn GetVLCReturn(Stream stream, IJsonSerializer json, ILogger<LiveTvService> logger)
         {
             var root = json.DeserializeFromStream<RootObject>(stream);
             UtilsHelper.DebugInformation(logger,string.Format("[NextPvr] VLC Return: {0}", json.SerializeToString(root)));

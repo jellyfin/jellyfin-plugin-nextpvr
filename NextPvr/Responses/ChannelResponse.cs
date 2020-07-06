@@ -20,7 +20,7 @@ namespace NextPvr.Responses
             _baseUrl = baseUrl;
         }
 
-        public IEnumerable<ChannelInfo> GetChannels(Stream stream, IJsonSerializer json,ILogger logger)
+        public IEnumerable<ChannelInfo> GetChannels(Stream stream, IJsonSerializer json,ILogger<LiveTvService> logger)
         {
             var root = json.DeserializeFromStream<RootObject>(stream);
 

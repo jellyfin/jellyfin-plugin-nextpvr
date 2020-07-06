@@ -11,7 +11,7 @@ namespace NextPvr.Responses
     {
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public SeriesTimerInfo GetDefaultTimerInfo(Stream stream, IJsonSerializer json, ILogger logger)
+        public SeriesTimerInfo GetDefaultTimerInfo(Stream stream, IJsonSerializer json, ILogger<LiveTvService> logger)
         {
             var root = GetScheduleSettings(stream, json);
             UtilsHelper.DebugInformation(logger,string.Format("[NextPvr] GetDefaultTimerInfo Response: {0}", json.SerializeToString(root)));
