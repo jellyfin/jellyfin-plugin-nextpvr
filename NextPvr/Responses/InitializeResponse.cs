@@ -8,7 +8,7 @@ namespace NextPvr.Responses
 {
     public class InitializeResponse
     {
-        public bool LoggedIn(Stream stream, IJsonSerializer json, ILogger logger)
+        public bool LoggedIn(Stream stream, IJsonSerializer json, ILogger<LiveTvService> logger)
         {
             var root = json.DeserializeFromStream<RootObject>(stream);
 

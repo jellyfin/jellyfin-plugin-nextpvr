@@ -8,7 +8,7 @@ namespace NextPvr.Responses
 {
     public class InstantiateResponse
     {
-        public ClientKeys GetClientKeys(Stream stream, IJsonSerializer json,ILogger logger)
+        public ClientKeys GetClientKeys(Stream stream, IJsonSerializer json,ILogger<LiveTvService> logger)
         {
             var root = json.DeserializeFromStream<RootObject>(stream);
 

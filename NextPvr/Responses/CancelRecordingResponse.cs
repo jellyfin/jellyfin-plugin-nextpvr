@@ -12,7 +12,7 @@ namespace NextPvr.Responses
 {
     public class CancelDeleteRecordingResponse
     {
-        public bool? RecordingError(Stream stream, IJsonSerializer json,ILogger logger)
+        public bool? RecordingError(Stream stream, IJsonSerializer json,ILogger<LiveTvService> logger)
         {
             var root = json.DeserializeFromStream<RootObject>(stream);
 
