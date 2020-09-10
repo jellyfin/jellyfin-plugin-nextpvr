@@ -48,7 +48,6 @@ namespace NextPvr
 
         public LiveTvService(IHttpClient httpClient, IJsonSerializer jsonSerializer, ILoggerFactory loggerFactory, ICryptoProvider cryptoProvider, IFileSystem fileSystem)
         {
-//            Instance = this;
             _httpClient = httpClient;
             _jsonSerializer = jsonSerializer;
             _logger = loggerFactory.CreateLogger<LiveTvService>();
@@ -160,7 +159,7 @@ namespace NextPvr
             byte[] hashValue;
             hashValue = System.Security.Cryptography.MD5.Create().ComputeHash(new UTF8Encoding().GetBytes(value));
             //Bit convertor return the byte to string as all caps hex values seperated by "-"
-            return BitConverter.ToString(hashValue).Replace("-", "").ToLowerInvariant();            
+            return BitConverter.ToString(hashValue).Replace("-", "").ToLowerInvariant();
         }
 
         /// <summary>
@@ -322,7 +321,7 @@ namespace NextPvr
                 )
             };
             UtilsHelper.DebugInformation(_logger, string.Format("[NextPVR] TimerSettings CreateTimer: {0} for ChannelId: {1} & Name: {2}", info.ProgramId, info.ChannelId, info.Name));
-            
+
             options.AcceptHeader = "application/json";
 
             using (var stream = await _httpClient.Get(options).ConfigureAwait(false))

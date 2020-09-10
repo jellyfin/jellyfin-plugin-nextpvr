@@ -33,7 +33,7 @@ namespace NextPvr
             };
         }
 
-        private Guid _id = new Guid("9574ac10-bf23-49bc-949f-924f23cfa48f");
+        private Guid _id = new Guid("62c5a9c3-a283-4379-8756-7ea6ed3e7085");
         public override Guid Id
         {
             get { return _id; }
