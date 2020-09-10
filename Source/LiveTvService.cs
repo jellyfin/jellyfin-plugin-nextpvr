@@ -32,21 +32,26 @@ namespace NextPvr
         private readonly IHttpClient _httpClient;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-        private readonly ILogger _logger;
+        private readonly ILogger<LiveTvService> _logger;
         private int _liveStreams;
         private readonly Dictionary<int, int> _heartBeat = new Dictionary<int, int>();
 
         private string Sid { get; set; }
+        public bool isActive { get { return Sid != null; } }
         private DateTimeOffset LastUpdatedSidDateTime { get; set; }
         private IFileSystem _fileSystem;
 
         public DateTimeOffset LastRecordingChange = DateTimeOffset.MinValue;
 
-        public LiveTvService(IHttpClient httpClient, IJsonSerializer jsonSerializer, ILogger logger, ICryptoProvider cryptoProvider, IFileSystem fileSystem)
+        //public static LiveTvService Instance { get; private set; }
+
+
+        public LiveTvService(IHttpClient httpClient, IJsonSerializer jsonSerializer, ILoggerFactory loggerFactory, ICryptoProvider cryptoProvider, IFileSystem fileSystem)
         {
+//            Instance = this;
             _httpClient = httpClient;
             _jsonSerializer = jsonSerializer;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger<LiveTvService>();
             Sid = null;
             LastUpdatedSidDateTime = DateTime.UtcNow;
             _fileSystem = fileSystem;
@@ -110,12 +115,14 @@ namespace NextPvr
                     Sid = sid;
                     LastUpdatedSidDateTime = DateTimeOffset.UtcNow;
                     bool flag = await GetDefaultSettingsAsync(cancellationToken);
-                    if (Plugin.Instance.Configuration.ShowRepeat == null)
-                    {
-                        Plugin.Instance.Configuration.ShowRepeat = "true" == await GetBackendSettingAsync(cancellationToken, "/Settings/General/ShowNewInGuide");
-                    }
                     Plugin.Instance.Configuration.GetEpisodeImage = "true" == await GetBackendSettingAsync(cancellationToken, "/Settings/General/ArtworkFromSchedulesDirect");
                 }
+                else
+                {
+                    _logger.LogError("[NextPVR] PIN not accepted.");
+                    throw new UnauthorizedAccessException("NextPVR PIN not accepted");
+                }
+
             }
         }
 
@@ -138,10 +145,10 @@ namespace NextPvr
 
             var options = new HttpRequestOptions
             {
-                Url = string.Format("{0}/service?method=session.login&md5={1}&sid={2}&u={3}", baseUrl, md5Result, sid),
+                Url = string.Format("{0}/service?method=session.login&md5={1}&sid={2}", baseUrl, md5Result, sid),
                 CancellationToken = cancellationToken
             };
-
+            options.AcceptHeader = "application/json";
             using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
             {
                 return new InitializeResponse().LoggedIn(stream, _jsonSerializer, _logger);
@@ -150,7 +157,10 @@ namespace NextPvr
 
         public string GetMd5Hash(string value)
         {
-            return value.GetMD5().ToString();
+            byte[] hashValue;
+            hashValue = System.Security.Cryptography.MD5.Create().ComputeHash(new UTF8Encoding().GetBytes(value));
+            //Bit convertor return the byte to string as all caps hex values seperated by "-"
+            return BitConverter.ToString(hashValue).Replace("-", "").ToLowerInvariant();            
         }
 
         /// <summary>
@@ -198,15 +208,12 @@ namespace NextPvr
             var options = new HttpRequestOptions
             {
                 CancellationToken = cancellationToken,
-                Url = string.Format("{0}/public/ManageService/Get/SortedFilteredList?sid={1}", baseUrl, Sid),
-                DecompressionMethod = CompressionMethod.None
+                Url = string.Format("{0}/service?method=recording.list&filter=ready&sid={1}", baseUrl, Sid)
             };
 
-            options.RequestContentType = "application/json";
+            options.AcceptHeader = "application/json";
 
-            var response = await _httpClient.Post(options).ConfigureAwait(false);
-
-            using (var stream = response.Content)
+            using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
             {
                 return new RecordingResponse(baseUrl, _fileSystem).GetRecordings(stream, _jsonSerializer, _logger);
             }
@@ -307,16 +314,16 @@ namespace NextPvr
             var options = new HttpRequestOptions
             {
                 CancellationToken = cancellationToken,
-                Url = string.Format("{0}/service?method=recording.save&sid={1}&event_id={2}&prepadding={3}&postpadding={4}", baseUrl, Sid,
+                Url = string.Format("{0}/service?method=recording.save&sid={1}&event_id={2}&pre_padding={3}&post_padding={4}", baseUrl, Sid,
                  int.Parse(info.ProgramId, _usCulture),
+                 info.PrePaddingSeconds / 60,
                  info.PostPaddingSeconds / 60,
-                 info.PrePaddingSeconds / 60),
-                DecompressionMethod = CompressionMethod.None
+                 info.Id
+                )
             };
-
             UtilsHelper.DebugInformation(_logger, string.Format("[NextPVR] TimerSettings CreateTimer: {0} for ChannelId: {1} & Name: {2}", info.ProgramId, info.ChannelId, info.Name));
             
-            options.RequestContentType = "application/json";
+            options.AcceptHeader = "application/json";
 
             using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
             {
@@ -347,11 +354,8 @@ namespace NextPvr
                 Url = string.Format("{0}/service?method=recording.list&filter=pending&sid={1}", baseUrl, Sid)
             };
 
-            options.RequestContentType = "application/json";
-
-            var response = await _httpClient.Post(options).ConfigureAwait(false);
-
-            using (var stream = response.Content)
+            options.AcceptHeader = "application/json";
+            using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
             {
                 return new RecordingResponse(baseUrl, _fileSystem).GetTimers(stream, _jsonSerializer, _logger);
             }
@@ -374,13 +378,10 @@ namespace NextPvr
                 Url = string.Format("{0}/service?method=recording.recurring.list&sid={1}", baseUrl, Sid)
             };
 
-            options.RequestContentType = "application/json";
-
-            var response = await _httpClient.Post(options).ConfigureAwait(false);
-
-            using (var stream = response.Content)
+            options.AcceptHeader = "application/json";
+            using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
             {
-                return new RecordingResponse(baseUrl, _fileSystem).GetSeriesTimers(stream, _jsonSerializer, _logger);
+                return new RecurringResponse(baseUrl, _fileSystem).GetSeriesTimers(stream, _jsonSerializer, _logger);
             }
         }
 
@@ -399,13 +400,14 @@ namespace NextPvr
 
             var options = new HttpRequestOptions
             {
-                Url = string.Format("{0}/service?method=recording.recurring.save&sid={1}&prepadding={2}&postpadding={3}&keep={4}", baseUrl, Sid,
-                    info.PostPaddingSeconds / 60,
+                CancellationToken = cancellationToken,
+                Url = string.Format("{0}/service?method=recording.recurring.save&sid={1}&pre_padding={2}&post_padding={3}&keep={4}", baseUrl, Sid,
                     info.PrePaddingSeconds / 60,
+                    info.PostPaddingSeconds / 60,
                 info.KeepUpTo)
             };
 
-            options.RequestContentType = "application/json";
+            options.AcceptHeader = "application/json";
 
             int recurringType = int.Parse(Plugin.Instance.Configuration.RecordingDefault);
 
@@ -432,7 +434,7 @@ namespace NextPvr
         /// <param name="info">The series program info</param>
         /// <param name="cancellationToken">The CancellationToken</param>
         /// <returns></returns>
-        public async Task CreateUpdateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken, HttpRequestOptions options)
+        public async Task CreateUpdateSeriesTimerAsync(SeriesTimerInfo info, HttpRequestOptions options)
         {
             UtilsHelper.DebugInformation(_logger, string.Format("[NextPVR] TimerSettings CreateSeriesTimerAsync: {0} for ChannelId: {1} & Name: {2}", info.ProgramId, info.ChannelId, info.Name));
             options.AcceptHeader = "application/json";
@@ -451,6 +453,64 @@ namespace NextPvr
         }
 
         /// <summary>
+        /// Update the series Timer
+        /// </summary>
+        /// <param name="info">The series program info</param>
+        /// <param name="cancellationToken">The CancellationToken</param>
+        /// <returns></returns>
+        public async Task UpdateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken)
+        {
+            _logger.LogInformation(string.Format("[NextPVR] Start UpdateSeriesTimer Async for ChannelId: {0} & Name: {1}", info.ChannelId, info.Name));
+            await EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
+            var baseUrl = Plugin.Instance.Configuration.WebServiceUrl;
+
+            var options = new HttpRequestOptions
+            {
+                CancellationToken = cancellationToken,
+                Url = string.Format("{0}/service?method=recording.recurring.save&sid={1}&pre_padding={2}&post_padding={3}&keep={4}&recurring_id={5}", baseUrl, Sid,
+                 info.PrePaddingSeconds / 60,
+                 info.PostPaddingSeconds / 60,
+                info.KeepUpTo,
+                info.Id)
+            };
+
+            int recurringType = 2;
+
+            if (info.RecordAnyChannel)
+            {
+                options.Url += string.Format("&name={0}&keyword=title+like+'{0}'", Uri.EscapeUriString(info.Name.Replace("'", "''")));
+            }
+            else
+            {
+                if (info.RecordAnyTime)
+                {
+                    if (info.RecordNewOnly)
+                    {
+                        recurringType = 1;
+                    }
+                }
+                else
+                {
+                    if (info.Days.Count == 7)
+                    {
+                        recurringType = 4;
+                    }
+                    else
+                    {
+                        recurringType = 3;
+                    }
+                }
+                options.Url += string.Format("&recurring_type={0}", recurringType);
+            }
+            if (info.RecordNewOnly)
+                options.Url += "&only_new=true";
+
+            await CreateUpdateSeriesTimerAsync(info, options);
+
+        }
+
+
+        /// <summary>
         /// Update a single Timer
         /// </summary>
         /// <param name="info">The program info</param>
@@ -466,21 +526,22 @@ namespace NextPvr
             var options = new HttpRequestOptions
             {
                 CancellationToken = cancellationToken,
-                Url = string.Format("{0}/service?method=recording.update&sid={1}&prepadding={2}&postpadding={3}&recording_id={4}", baseUrl, Sid,
-                 info.PostPaddingSeconds / 60,
+                Url = string.Format("{0}/service?method=recording.save&sid={1}&pre_padding={2}&post_padding={3}&recording_id={4}&event_id={5}", baseUrl, Sid,
                  info.PrePaddingSeconds / 60,
-                 info.Id)
+                 info.PostPaddingSeconds / 60,
+                 info.Id,
+                info.ProgramId)
             };
-            options.RequestContentType = "application/json";
+            options.AcceptHeader = "application/json";
             using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
             {
                 bool? error = new CancelDeleteRecordingResponse().RecordingError(stream, _jsonSerializer, _logger);
                 if (error == null || error == true)
                 {
-                    _logger.Error(string.Format("[NextPVR] Failed to update the timer with ID: {0}", info.Id));
+                    _logger.LogError(string.Format("[NextPVR] Failed to update the timer with ID: {0}", info.Id));
                     throw new Exception(string.Format("Failed to update the timer with ID: {0}", info.Id));
                 }
-                _logger.Info("[NextPVR] UpdateTimer async for Program ID: {0} ID {1}", info.ProgramId, info.Id);
+                _logger.LogInformation("[NextPVR] UpdateTimer async for Program ID: {0} ID {1}", info.ProgramId, info.Id);
             }
         }
 
@@ -502,7 +563,7 @@ namespace NextPvr
                 CancellationToken = cancellationToken,
                 Url = string.Format("{0}/service?method=recording.recurring.delete&recurring_id={1}&sid={2}", baseUrl, timerId, Sid)
             };
-
+            options.AcceptHeader = "application/json";
             using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
             {
                 bool? error = new CancelDeleteRecordingResponse().RecordingError(stream, _jsonSerializer, _logger);
@@ -516,6 +577,7 @@ namespace NextPvr
                 _logger.LogInformation("[NextPvr] Cancelled Recording for recordingId: {0}", timerId);
             }
         }
+
 
 
         public Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(string channelId, CancellationToken cancellationToken)
@@ -650,7 +712,7 @@ namespace NextPvr
 
         private async Task<bool> GetDefaultSettingsAsync(CancellationToken cancellationToken)
         {
-            _logger.Info("[NextPVR] Start GetDefaultSettings Async");
+            _logger.LogInformation("[NextPVR] Start GetDefaultSettings Async");
             await EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             var baseUrl = Plugin.Instance.Configuration.WebServiceUrl;
 
@@ -665,7 +727,6 @@ namespace NextPvr
                 return new SettingResponse().GetDefaultSettings(stream, _jsonSerializer, _logger);
             }
         }
-
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
             _logger.LogInformation("[NextPvr] Start GetPrograms Async, retrieve all Programs");
@@ -677,11 +738,11 @@ namespace NextPvr
                 CancellationToken = cancellationToken,
                 Url = string.Format("{0}/service?method=channel.listings&sid={1}&start={2}&end={3}&channel_id={4}",
                 baseUrl, Sid,
-                startDateUtc.ToUnixTimeSeconds().ToString(_usCulture),
-                endDateUtc.ToUnixTimeSeconds().ToString(_usCulture),
+                (int)(startDateUtc - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds,
+                (int)(endDateUtc - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds,
                 channelId)
             };
-
+            options.AcceptHeader = "application/json";
             using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
             {
                 return new ListingsResponse(baseUrl).GetPrograms(stream, _jsonSerializer, channelId, _logger).ToList();
@@ -728,6 +789,7 @@ namespace NextPvr
                 CancellationToken = cancellationToken,
                 Url = string.Format("{0}/service/method=system.status?sid={1}", baseUrl, Sid)
             };
+            options.AcceptHeader = "application/json";
 
             List<LiveTvTunerInfo> tvTunerInfos;
             using (var stream = await _httpClient.Get(optionsTuner).ConfigureAwait(false))
@@ -746,18 +808,17 @@ namespace NextPvr
 
         public async Task<DateTimeOffset> GetLastUpdate(CancellationToken cancellationToken)
         {
-            _logger.Debug("[NextPVR] GetLastUpdateTime");
+            _logger.LogDebug("[NextPVR] GetLastUpdateTime");
             DateTimeOffset retTime = DateTimeOffset.FromUnixTimeSeconds(0);
             var baseUrl = Plugin.Instance.Configuration.WebServiceUrl;
 
             var options = new HttpRequestOptions
             {
                 // don't use sid to avoid fake login
-                Url = string.Format("{0}/service?method=recording.lastupdated&sid={1}", baseUrl, Sid)
+                Url = string.Format("{0}/service?method=recording.lastupdated&ignore_resume=true&sid={1}", baseUrl, Sid)
             };
             options.AcceptHeader = "application/json";
-            options.LogErrors = false;
-            options.TimeoutMs = 10000;
+            options.LogErrorResponseBody = false;
             try
             {
                 using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
@@ -794,13 +855,13 @@ namespace NextPvr
                 System.Diagnostics.Debug.WriteLine(err.Message);
                 throw;
             }
-            _logger.Info("[NextPVR] GetLastUpdateTime " + retTime.ToUnixTimeSeconds());
+            _logger.LogInformation("[NextPVR] GetLastUpdateTime " + retTime.ToUnixTimeSeconds());
             return retTime;
         }
 
         public async Task<string> GetBackendSettingAsync(CancellationToken cancellationToken, string key)
         {
-            _logger.Info("[NextPVR] GetBackendSetting");
+            _logger.LogInformation("[NextPVR] GetBackendSetting");
             await EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             var baseUrl = Plugin.Instance.Configuration.WebServiceUrl;
 

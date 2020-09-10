@@ -1,0 +1,177 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>NextPVR</title>
+</head>
+<body>
+    <div data-role="page" class="page type-interior pluginConfigurationPage nextpvrConfigurationPage" data-require="emby-button,emby-input,emby-checkbox,emby-select,emby-collapse">
+
+        <div data-role="content">
+            <div class="content-primary">
+                <form class="nextpvrConfigurationForm">
+                    <div class="inputContainer">
+                        <input is="emby-input" type="text" id="txtWebServiceUrl" label="NextPVR Base URL" />
+                        <div class="fieldDescription">
+                            NextPVR backend URL (format --> http://{hostname}:{port}).
+                        </div>
+                    </div>
+                    <div class="inputContainer">
+                        <input is="emby-input" type="text" id="txtPin" label="NextPVR PIN" />
+                        <div class="fieldDescription">
+                            NextPVR PIN to access the backend.
+                        </div>
+                    </div>
+                    <div class="checkboxContainer">
+                        <label>
+                            <input is="emby-checkbox" type="checkbox" id="chkDebugLogging" />
+                            <span>Enable NextPVR debug logging</span>
+                        </label>
+                    </div>
+
+                    <div class="selectContainer">
+                        <select is="emby-select" id="selRecDefault" label="Series Recording Default">
+                            <option value="1">New episodes on this channel</option>
+                            <option value="2">All episodes on this channel</option>
+                            <option value="3">Daily, this timeslot</option>
+                            <option value="4">Weekly, this timeslot</option>
+                            <option value="99">All Episodes, All Channels</option>
+                        </select>
+                    </div>
+
+                    <div class="checkboxContainer">
+                        <label>
+                            <input is="emby-checkbox" type="checkbox" id="chkNewEpisodes" />
+                            <span>Default to new episodes only</span>
+                        </label>
+                    </div>
+
+                    <div is="emby-collapse" title="Program and Recording Category Options">
+                        <div class="collapseContent">
+                            <p>Against each jellyfin category match the NextPVR genres that belong to it</p>
+                            <div class="inputContainer">
+                                <input is="emby-input" id="txtMovieGenre" name="txtMovieGenre" label="Movie genres:" />
+                                <div class="fieldDescription">
+                                    Example: Movie,Film,TV Movie
+                                </div>
+                            </div>
+                            <div class="inputContainer">
+                                <input is="emby-input" id="txtSportsGenre" name="txtSportsGenre" label="Sports genres:" />
+                                <div class="fieldDescription">
+                                    Example: Sport,Football
+                                </div>
+                            </div>
+                            <div class="inputContainer">
+                                <input is="emby-input" id="txtNewsGenre" name="txtNewsGenre" label="News or documentary genres:" />
+                                <div class="fieldDescription">
+                                    Example: News Report,Daily News
+                                </div>
+                            </div>
+                            <div class="inputContainer">
+                                <input is="emby-input" id="txtKidsGenre" name="txtKidsGenre" label="Kids genres:" />
+                                <div class="fieldDescription">
+                                    Example: Cartoon,Animation
+                                </div>
+                            </div>
+                            <div class="inputContainer">
+                                <input is="emby-input" id="txtLiveGenre" name="txtLiveGenre" label="Live genres:" />
+                                <div class="fieldDescription">
+                                    Example: Live Gameshow,Live Sports
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+<<<<<<< Updated upstream:NextPvr/Configuration/configPage.html
+                    <label class="checkboxContainer">
+                        <input is="emby-checkbox" type="checkbox" id="chkDebugLogging" />
+                        <span>NextPVR Debug Logging</span>
+                    </label>
+=======
+
+>>>>>>> Stashed changes:Source/Configuration/configPage.html
+                    <button is="emby-button" type="submit" class="raised button-submit block"><span>Save</span></button>
+                </form>
+            </div>
+        </div>
+
+
+        <script type="text/javascript">
+
+            var NextPvrConfigurationPage = {
+                pluginUniqueId: "9574ac10-bf23-49bc-949f-924f23cfa48f"
+            };
+
+            $('.nextpvrConfigurationPage').on('pageshow', function (event) {
+                Dashboard.showLoadingMsg();
+                var page = this;
+
+                ApiClient.getPluginConfiguration(NextPvrConfigurationPage.pluginUniqueId).then(function (config) {
+                    $('#txtWebServiceUrl', page).val(config.WebServiceUrl || "");
+                    $('#txtPin', page).val(config.Pin || "");
+<<<<<<< Updated upstream:NextPvr/Configuration/configPage.html
+                    document.getElementById('chkDebugLogging').checked = config.EnableDebugLogging || false;
+
+=======
+                    //$('#chkDebugLogging', page).checked(config.EnableDebugLogging || false).checkboxradio("refresh");
+                    page.querySelector('#chkDebugLogging').checked = config.EnableDebugLogging;
+                    page.querySelector('#chkNewEpisodes').checked = config.NewEpisodes;
+                    $('#selRecDefault', page).val(config.RecordingDefault);
+                    loadGenres(config, page);
+>>>>>>> Stashed changes:Source/Configuration/configPage.html
+                    Dashboard.hideLoadingMsg();
+                });
+            });
+
+            $('.nextpvrConfigurationForm').on('submit', function (e) {
+                Dashboard.showLoadingMsg();
+                var form = this;
+
+                ApiClient.getPluginConfiguration(NextPvrConfigurationPage.pluginUniqueId).then(function (config) {
+                    config.WebServiceUrl = $('#txtWebServiceUrl', form).val();
+                    config.Pin = $('#txtPin', form).val();
+<<<<<<< Updated upstream:NextPvr/Configuration/configPage.html
+                    config.EnableDebugLogging = document.getElementById('chkDebugLogging').checked;
+=======
+                    //config.EnableDebugLogging = $('#chkDebugLogging', form).checked();
+                    config.EnableDebugLogging = form.querySelector('#chkDebugLogging').checked;
+                    config.NewEpisodes = form.querySelector('#chkNewEpisodes').checked;
+                    config.RecordingDefault = $('#selRecDefault', form).val();
+                    // Copy over the genre mapping fields
+                    config.GenreMappings = {
+                        "GENREMOVIE": $('#txtMovieGenre', form).val().split(","),
+                        "GENRESPORT": $('#txtSportsGenre', form).val().split(","),
+                        "GENRENEWS": $('#txtNewsGenre', form).val().split(","),
+                        "GENREKIDS": $('#txtKidsGenre', form).val().split(","),
+                        "GENRELIVE": $('#txtLiveGenre', form).val().split(","),
+                    };
+>>>>>>> Stashed changes:Source/Configuration/configPage.html
+
+                    ApiClient.updatePluginConfiguration(NextPvrConfigurationPage.pluginUniqueId, config).then(Dashboard.processPluginConfigurationUpdateResult);
+                });
+
+                // Disable default form submission
+                return false;
+            });
+            function loadGenres(config, page) {
+                if (config != null && config.GenreMappings) {
+                    if (config.GenreMappings["GENREMOVIE"] != null) {
+                        $('#txtMovieGenre', page).val(config.GenreMappings["GENREMOVIE"].join(','));
+                    }
+                    if (config.GenreMappings["GENRESPORT"] != null) {
+                        $('#txtSportsGenre', page).val(config.GenreMappings["GENRESPORT"].join(','));
+                    }
+                    if (config.GenreMappings["GENRENEWS"] != null) {
+                        $('#txtNewsGenre', page).val(config.GenreMappings["GENRENEWS"].join(','));
+                    }
+                    if (config.GenreMappings["GENREKIDS"] != null) {
+                        $('#txtKidsGenre', page).val(config.GenreMappings["GENREKIDS"].join(','));
+                    }
+                    if (config.GenreMappings["GENRELIVE"] != null) {
+                        $('#txtLiveGenre', page).val(config.GenreMappings["GENRELIVE"].join(','));
+                    }
+                }
+            }
+
+        </script>
+    </div>
+</body>
+</html>

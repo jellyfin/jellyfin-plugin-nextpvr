@@ -19,20 +19,14 @@ namespace NextPvr.Responses
                     UtilsHelper.DebugInformation(logger, string.Format("[NextPVR] ClientKeys: {0}", json.SerializeToString(root)));
                     return root;
                 }
-                logger.Error("[NextPVR] Failed to validate the ClientKeys from NextPvr.");
+                logger.LogError("[NextPVR] Failed to validate the ClientKeys from NextPvr.");
                 throw new Exception("Failed to load the ClientKeys from NextPvr.");
             }
             catch
             {
-                logger.Error("Check NextPVR Version 5");
+                logger.LogError("Check NextPVR Version 5");
                 throw new UnauthorizedAccessException("Check NextPVR Version");
             }
-<<<<<<< Updated upstream
-
-            logger.LogError("[NextPvr] Failed to load the ClientKeys from NextPvr.");
-            throw new Exception("Failed to load the ClientKeys from NextPvr.");
-=======
->>>>>>> Stashed changes
         }
 
         public class ClientKeys

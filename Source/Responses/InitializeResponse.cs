@@ -12,24 +12,19 @@ namespace NextPvr.Responses
         {
             var root = json.DeserializeFromStream<RootObject>(stream);
 
-            if (root.SIDValidation != null)
+            if (root.stat != "")
             {
-                UtilsHelper.DebugInformation(logger,string.Format("[NextPvr] Connection validation: {0}", json.SerializeToString(root)));
-                return root.SIDValidation.validated;
+                UtilsHelper.DebugInformation(logger, string.Format("[NextPVR] Connection validation: {0}", json.SerializeToString(root)));
+                return root.stat == "ok";
             }
-
-            logger.LogError("[NextPvr] Failed to validate your connection with NextPvr.");
+            logger.LogError("[NextPVR] Failed to validate your connection with NextPvr.");
             throw new Exception("Failed to validate your connection with NextPvr.");
-        }
-
-        public class SIDValidation
-        {
-            public bool validated { get; set; }
         }
 
         public class RootObject
         {
-            public SIDValidation SIDValidation { get; set; }
+            public string stat { get; set; }
+            public string sid { get; set; }
         }
     }
 }
