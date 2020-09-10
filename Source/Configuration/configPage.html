@@ -1,8 +1,10 @@
 ﻿<!DOCTYPE html>
 <html>
+
 <head>
     <title>NextPVR</title>
 </head>
+
 <body>
     <div data-role="page" class="page type-interior pluginConfigurationPage nextpvrConfigurationPage" data-require="emby-button,emby-input,emby-checkbox,emby-select,emby-collapse">
 
@@ -80,14 +82,11 @@
                             </div>
                         </div>
                     </div>
-<<<<<<< Updated upstream:NextPvr/Configuration/configPage.html
                     <label class="checkboxContainer">
                         <input is="emby-checkbox" type="checkbox" id="chkDebugLogging" />
                         <span>NextPVR Debug Logging</span>
                     </label>
-=======
 
->>>>>>> Stashed changes:Source/Configuration/configPage.html
                     <button is="emby-button" type="submit" class="raised button-submit block"><span>Save</span></button>
                 </form>
             </div>
@@ -95,42 +94,36 @@
 
 
         <script type="text/javascript">
-
             var NextPvrConfigurationPage = {
                 pluginUniqueId: "9574ac10-bf23-49bc-949f-924f23cfa48f"
             };
 
-            $('.nextpvrConfigurationPage').on('pageshow', function (event) {
+            $('.nextpvrConfigurationPage').on('pageshow', function(event) {
                 Dashboard.showLoadingMsg();
                 var page = this;
 
-                ApiClient.getPluginConfiguration(NextPvrConfigurationPage.pluginUniqueId).then(function (config) {
+                ApiClient.getPluginConfiguration(NextPvrConfigurationPage.pluginUniqueId).then(function(config) {
                     $('#txtWebServiceUrl', page).val(config.WebServiceUrl || "");
                     $('#txtPin', page).val(config.Pin || "");
-<<<<<<< Updated upstream:NextPvr/Configuration/configPage.html
                     document.getElementById('chkDebugLogging').checked = config.EnableDebugLogging || false;
 
-=======
                     //$('#chkDebugLogging', page).checked(config.EnableDebugLogging || false).checkboxradio("refresh");
                     page.querySelector('#chkDebugLogging').checked = config.EnableDebugLogging;
                     page.querySelector('#chkNewEpisodes').checked = config.NewEpisodes;
                     $('#selRecDefault', page).val(config.RecordingDefault);
                     loadGenres(config, page);
->>>>>>> Stashed changes:Source/Configuration/configPage.html
                     Dashboard.hideLoadingMsg();
                 });
             });
 
-            $('.nextpvrConfigurationForm').on('submit', function (e) {
+            $('.nextpvrConfigurationForm').on('submit', function(e) {
                 Dashboard.showLoadingMsg();
                 var form = this;
 
-                ApiClient.getPluginConfiguration(NextPvrConfigurationPage.pluginUniqueId).then(function (config) {
+                ApiClient.getPluginConfiguration(NextPvrConfigurationPage.pluginUniqueId).then(function(config) {
                     config.WebServiceUrl = $('#txtWebServiceUrl', form).val();
                     config.Pin = $('#txtPin', form).val();
-<<<<<<< Updated upstream:NextPvr/Configuration/configPage.html
                     config.EnableDebugLogging = document.getElementById('chkDebugLogging').checked;
-=======
                     //config.EnableDebugLogging = $('#chkDebugLogging', form).checked();
                     config.EnableDebugLogging = form.querySelector('#chkDebugLogging').checked;
                     config.NewEpisodes = form.querySelector('#chkNewEpisodes').checked;
@@ -143,7 +136,6 @@
                         "GENREKIDS": $('#txtKidsGenre', form).val().split(","),
                         "GENRELIVE": $('#txtLiveGenre', form).val().split(","),
                     };
->>>>>>> Stashed changes:Source/Configuration/configPage.html
 
                     ApiClient.updatePluginConfiguration(NextPvrConfigurationPage.pluginUniqueId, config).then(Dashboard.processPluginConfigurationUpdateResult);
                 });
@@ -151,6 +143,7 @@
                 // Disable default form submission
                 return false;
             });
+
             function loadGenres(config, page) {
                 if (config != null && config.GenreMappings) {
                     if (config.GenreMappings["GENREMOVIE"] != null) {
@@ -170,8 +163,8 @@
                     }
                 }
             }
-
         </script>
     </div>
 </body>
+
 </html>
