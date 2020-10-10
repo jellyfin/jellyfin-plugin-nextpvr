@@ -1,6 +1,6 @@
 ---
 name: "NextPVR"
-guid: "9574ac10-bf23-49bc-949f-924f23cfa48f"
+guid: "62c5a9c3-a283-4379-8756-7ea6ed3e7085"
 version: "4.0.0.0"
 targetAbi: "10.6.0.0"
 overview: "Live TV plugin for NextPVR"
@@ -9,6 +9,6 @@ description: >
 category: "LiveTV"
 owner: "jellyfin"
 artifacts:
-- "NextPvr.dll"
+- "Jellfin.Plugin.NextPVR.dll"
 changelog: >
   changelog
