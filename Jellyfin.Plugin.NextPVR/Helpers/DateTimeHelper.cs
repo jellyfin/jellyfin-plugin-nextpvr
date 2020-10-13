@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NextPvr.Helpers
+namespace Jellyfin.Plugin.NextPVR.Helpers
 {
     public class DateTimeHelper
     {

@@ -7,9 +7,9 @@ using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.LiveTv;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
-using NextPvr.Helpers;
+using Jellyfin.Plugin.NextPVR.Helpers;
 
-namespace NextPvr.Responses
+namespace Jellyfin.Plugin.NextPVR.Responses
 {
     class ListingsResponse
     {

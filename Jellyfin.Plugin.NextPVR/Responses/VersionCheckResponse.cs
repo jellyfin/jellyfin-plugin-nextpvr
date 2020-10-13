@@ -2,7 +2,7 @@
 using System.IO;
 using MediaBrowser.Model.Serialization;
 
-namespace NextPvr.Responses
+namespace Jellyfin.Plugin.NextPVR.Responses
 {
     public class VersionCheckResponse
     {

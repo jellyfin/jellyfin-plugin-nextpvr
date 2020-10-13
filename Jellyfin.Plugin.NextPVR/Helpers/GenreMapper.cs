@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 
 using MediaBrowser.Controller.LiveTv;
-using NextPvr.Configuration;
+using Jellyfin.Plugin.NextPVR.Configuration;
 
 
-namespace NextPvr.Helpers
+namespace Jellyfin.Plugin.NextPVR.Helpers
 {
     /// <summary>
     /// Provides methods to map MediaPortal genres to Emby categories

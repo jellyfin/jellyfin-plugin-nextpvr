@@ -4,11 +4,11 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
-using NextPvr.Configuration;
+using Jellyfin.Plugin.NextPVR.Configuration;
 using System.IO;
 using MediaBrowser.Model.Drawing;
 
-namespace NextPvr
+namespace Jellyfin.Plugin.NextPVR
 {
     /// <summary>
     /// Class Plugin
@@ -45,7 +45,7 @@ namespace NextPvr
         /// <value>The name.</value>
         public override string Name
         {
-            get { return "Next Pvr"; }
+            get { return "NextPVR Addon"; }
         }
 
         /// <summary>

@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using NextPvr.Entities;
+using Jellyfin.Plugin.NextPVR.Entities;
 
 
 using MediaBrowser.Model.Plugins;
 
-namespace NextPvr.Configuration
+namespace Jellyfin.Plugin.NextPVR.Configuration
 {
     /// <summary>
     /// Class PluginConfiguration

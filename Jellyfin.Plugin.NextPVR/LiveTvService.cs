@@ -8,8 +8,8 @@ using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
-using NextPvr.Helpers;
-using NextPvr.Responses;
+using Jellyfin.Plugin.NextPVR.Helpers;
+using Jellyfin.Plugin.NextPVR.Responses;
 using System;
 using System.IO;
 using System.Collections.Generic;
@@ -22,7 +22,7 @@ using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 
-namespace NextPvr
+namespace Jellyfin.Plugin.NextPVR
 {
     /// <summary>
     /// Class LiveTvService

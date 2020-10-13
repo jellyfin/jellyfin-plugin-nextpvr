@@ -2,9 +2,9 @@
 using System.IO;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
-using NextPvr.Helpers;
+using Jellyfin.Plugin.NextPVR.Helpers;
 
-namespace NextPvr.Responses
+namespace Jellyfin.Plugin.NextPVR.Responses
 {
     public class InitializeResponse
     {

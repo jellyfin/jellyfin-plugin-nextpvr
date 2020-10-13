@@ -2,7 +2,7 @@
 using System;
 using Microsoft.Extensions.Logging;
 
-namespace NextPvr.Helpers
+namespace Jellyfin.Plugin.NextPVR.Helpers
 {
     public static class ChannelHelper
     {
