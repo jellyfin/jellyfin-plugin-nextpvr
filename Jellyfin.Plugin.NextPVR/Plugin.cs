@@ -45,7 +45,7 @@ namespace Jellyfin.Plugin.NextPVR
         /// <value>The name.</value>
         public override string Name
         {
-            get { return "NextPVR Addon"; }
+            get { return "NextPVR"; }
         }
 
         /// <summary>
