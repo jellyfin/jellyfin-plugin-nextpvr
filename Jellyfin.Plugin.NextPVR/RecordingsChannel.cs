@@ -18,13 +18,70 @@ using MediaBrowser.Model.LiveTv;
 
 namespace NextPvr
 {
-    public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISupportsLatestMedia, ISupportsMediaProbe, IHasFolderAttributes
+    public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISupportsLatestMedia, ISupportsMediaProbe, IHasFolderAttributes, IDisposable
     {
         public ILiveTvManager _liveTvManager;
+        public event EventHandler ContentChanged;
+        private Timer _updateTimer;
+        private DateTimeOffset _lastUpdate = DateTimeOffset.FromUnixTimeSeconds(0);
+        private CancellationTokenSource _cancellationToken;
+
+        IEnumerable<MyRecordingInfo> allRecordings = null;
+        bool useCachedRecordings = false;
+        public virtual void OnContentChanged()
+        {
+            if (ContentChanged != null)
+            {
+                ContentChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        private async void OnUpdateTimerCallbackAsync(object state)
+        {
+            if (GetService().isActive)
+            {
+                DateTimeOffset backendUpate;
+                backendUpate = await GetService().GetLastUpdate(_cancellationToken.Token);
+                if (backendUpate > _lastUpdate)
+                {
+                    useCachedRecordings = false;
+                    OnContentChanged();
+                    _lastUpdate = backendUpate;
+                }
+                else if (backendUpate == DateTimeOffset.FromUnixTimeSeconds(0))
+                {
+                    System.Diagnostics.Debug.WriteLine("Server offline");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("No change");
+                }
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("Not active");
+            }
+        }
 
         public RecordingsChannel(ILiveTvManager liveTvManager)
         {
             _liveTvManager = liveTvManager;
+            var interval = TimeSpan.FromSeconds(20);
+            _updateTimer = new Timer(OnUpdateTimerCallbackAsync, null, interval, interval);
+            if (_updateTimer != null)
+            {
+                _cancellationToken = new CancellationTokenSource();
+            }
+        }
+
+        public void Dispose()
+        {
+            if (_updateTimer != null)
+            {
+                _updateTimer.Dispose();
+                System.Diagnostics.Debug.WriteLine(_cancellationToken.IsCancellationRequested);
+                _cancellationToken.Cancel();
+                _updateTimer = null;
+            }
         }
 
         public string Name
@@ -209,7 +266,18 @@ namespace NextPvr
         public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, Func<MyRecordingInfo, bool> filter, CancellationToken cancellationToken)
         {
             var service = GetService();
-            var allRecordings = await service.GetAllRecordingsAsync(cancellationToken).ConfigureAwait(false);
+            if (useCachedRecordings == false)
+            {
+                allRecordings = await service.GetAllRecordingsAsync(cancellationToken).ConfigureAwait(false);
+
+                var channels = await service.GetChannelsAsync(cancellationToken).ConfigureAwait(false);
+
+                useCachedRecordings = true;
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("using cached recordings");
+            }
 
             var result = new ChannelItemResult()
             {
@@ -265,8 +333,17 @@ namespace NextPvr
         private async Task<ChannelItemResult> GetRecordingGroups(InternalChannelItemQuery query, CancellationToken cancellationToken)
         {
             var service = GetService();
+            if (useCachedRecordings == false)
+            {
+                allRecordings = await service.GetAllRecordingsAsync(cancellationToken).ConfigureAwait(false);
+                var channels = await service.GetChannelsAsync(cancellationToken).ConfigureAwait(false);
+                useCachedRecordings = true;
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("using cached recordings@2");
+            }
 
-            var allRecordings = await service.GetAllRecordingsAsync(cancellationToken).ConfigureAwait(false);
             var result = new ChannelItemResult()
             {
                 Items = new List<ChannelItemInfo>()
