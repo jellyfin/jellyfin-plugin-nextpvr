@@ -12,34 +12,21 @@ namespace NextPvr.Responses
 {
     public class CancelDeleteRecordingResponse
     {
-        public bool? RecordingError(Stream stream, IJsonSerializer json,ILogger<LiveTvService> logger)
+        public bool? RecordingError(Stream stream, IJsonSerializer json, ILogger<LiveTvService> logger)
         {
             var root = json.DeserializeFromStream<RootObject>(stream);
 
-            if (root.epgEventJSONObject != null && root.epgEventJSONObject.rtn != null)
+            if (root.stat != "ok")
             {
-                UtilsHelper.DebugInformation(logger,string.Format("[NextPVR] RecordingError Response: {0}", json.SerializeToString(root)));
-                return root.epgEventJSONObject.rtn.Error;
+                UtilsHelper.DebugInformation(logger, string.Format("[NextPVR] RecordingError Response: {0}", json.SerializeToString(root)));
+                return true;
             }
-
-            return null;
-        }
-
-        public class Rtn
-        {
-            public bool Error { get; set; }
-            public int HTTPStatus { get; set; }
-            public string Message { get; set; }
-        }
-
-        public class EpgEventJSONObject
-        {
-            public Rtn rtn { get; set; }
+            return false;
         }
 
         public class RootObject
         {
-            public EpgEventJSONObject epgEventJSONObject { get; set; }
+            public string stat { get; set; }
         }
     }
 }

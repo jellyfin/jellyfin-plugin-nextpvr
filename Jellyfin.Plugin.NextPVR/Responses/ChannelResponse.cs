@@ -24,60 +24,44 @@ namespace NextPvr.Responses
         {
             var root = json.DeserializeFromStream<RootObject>(stream);
 
-            if (root.channelsJSONObject.rtn != null && root.channelsJSONObject.rtn.Error)
+            if (root == null)
             {
-                logger.LogError(root.channelsJSONObject.rtn.Message ?? "Failed to download channel information.");
-                throw new Exception(root.channelsJSONObject.rtn.Message ?? "Failed to download channel information.");
+                logger.LogError("Failed to download channel information.");
+                throw new Exception("Failed to download channel information.");
             }
 
-            if (root.channelsJSONObject != null && root.channelsJSONObject.Channels != null)
+            if (root.channels != null)
             {
-                UtilsHelper.DebugInformation(logger,string.Format("[NextPVR] ChannelResponse: {0}", json.SerializeToString(root)));
-                return root.channelsJSONObject.Channels.Select(i => new ChannelInfo
+                UtilsHelper.DebugInformation(logger, string.Format("[NextPVR] ChannelResponse: {0}", json.SerializeToString(root)));
+                return root.channels.Select(i => new ChannelInfo
                 {
-                    Name = i.channel.channelName,
-                    Number = i.channel.channelFormattedNumber,
-                    Id = i.channel.channelOID.ToString(_usCulture),
-                    ImageUrl = string.IsNullOrEmpty(i.channel.channelIcon) ? null : (_baseUrl + "/" + i.channel.channelIcon),
-                    HasImage = !string.IsNullOrEmpty(i.channel.channelIcon)
+                    Name = i.channelName,
+                    Number = i.channelNumberFormated,
+                    Id = i.channelId.ToString(_usCulture),
+                    ImageUrl = string.Format("{0}/service?method=channel.icon&channel_id={1}", _baseUrl, i.channelId),
+                    ChannelType = ChannelHelper.GetChannelType(i.channelType),
+                    HasImage = i.channelIcon
                 });
             }
 
             return new List<ChannelInfo>();
         }
-
         // Classes created with http://json2csharp.com/
-        public class Channel2
-        {
-            public int channelNum { get; set; }
-            public int channelMinor { get; set; }
-            public string channelFormattedNumber { get; set; }
-            public string channelName { get; set; }
-            public int channelOID { get; set; }
-            public string channelIcon { get; set; }
-        }
-
         public class Channel
         {
-            public Channel2 channel { get; set; }
-        }
-
-        public class Rtn
-        {
-            public bool Error { get; set; }
-            public int HTTPStatus { get; set; }
-            public string Message { get; set; }
-        }
-
-        public class ChannelsJSONObject
-        {
-            public List<Channel> Channels { get; set; }
-            public Rtn rtn { get; set; }
+            public int channelId { get; set; }
+            public int channelNumber { get; set; }
+            public int channelMinor { get; set; }
+            public string channelNumberFormated { get; set; }
+            public int channelType { get; set; }
+            public string channelName { get; set; }
+            public string channelDetails { get; set; }
+            public bool channelIcon { get; set; }
         }
 
         public class RootObject
         {
-            public ChannelsJSONObject channelsJSONObject { get; set; }
+            public List<Channel> channels { get; set; }
         }
     }
-}
+    }

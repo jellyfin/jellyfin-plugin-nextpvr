@@ -15,6 +15,7 @@ namespace NextPvr.Responses
     {
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly string _baseUrl;
+        private string _channelId;
 
         public ListingsResponse(string baseUrl)
         {
@@ -24,136 +25,89 @@ namespace NextPvr.Responses
         public IEnumerable<ProgramInfo> GetPrograms(Stream stream, IJsonSerializer json, string channelId, ILogger<LiveTvService> logger)
         {
             var root = json.DeserializeFromStream<RootObject>(stream);
-            UtilsHelper.DebugInformation(logger,string.Format("[NextPVR] GetPrograms Response: {0}",json.SerializeToString(root)));
+            UtilsHelper.DebugInformation(logger, string.Format("[NextPVR] GetPrograms Response: {0}", json.SerializeToString(root)));
 
-            var listings = root.Guide.Listings;
+            /*
 
             return listings.Where(i => string.Equals(i.Channel.channelOID.ToString(_usCulture), channelId, StringComparison.OrdinalIgnoreCase))
-                .SelectMany(i => i.EPGEvents.Select(e => GetProgram(i.Channel, e.epgEventJSONObject.epgEvent)));
+            .SelectMany(i => i.EPGEvents.Select(e => GetProgram(i.Channel, e.epgEventJSONObject.epgEvent)));
+            */
+            _channelId = channelId;
+            return root.listings
+               .Select(i => i)
+               .Select(GetProgram);
         }
 
-        private ProgramInfo GetProgram(Channel channel, EpgEvent2 epg)
+        private ProgramInfo GetProgram(Listing epg)
         {
+            var genreMapper = new GenreMapper(Plugin.Instance.Configuration);
             var info = new ProgramInfo
             {
-                ChannelId = channel.channelOID.ToString(_usCulture),
-                Id = epg.OID.ToString(_usCulture),
-                Overview = epg.Desc,
-                StartDate = DateTime.Parse(epg.StartTime).ToUniversalTime(),
-                EndDate = DateTime.Parse(epg.EndTime).ToUniversalTime(),
-                Genres = epg.Genres.Where(g => !string.IsNullOrWhiteSpace(g)).ToList(),
-                OriginalAirDate = DateTime.Parse(epg.OriginalAirdate).ToUniversalTime(),
-                Name = epg.Title,
-                OfficialRating = epg.Rating,
-                CommunityRating = ParseCommunityRating(epg.StarRating),
-                EpisodeTitle = epg.Subtitle,
-                Audio = ParseAudio(epg.Audio),
-                IsHD = string.Equals(epg.Quality, "hdtv", StringComparison.OrdinalIgnoreCase),
-                IsRepeat = !epg.FirstRun,
+                ChannelId = _channelId,
+                Id = epg.id.ToString(),
+                Overview = epg.description,
+                EpisodeTitle = epg.subtitle,
+                SeasonNumber = epg.season,
+                EpisodeNumber = epg.episode,
+                StartDate = DateTimeOffset.FromUnixTimeSeconds(epg.start).DateTime,
+                EndDate = DateTimeOffset.FromUnixTimeSeconds(epg.end).DateTime,
+                Genres = new List<string>(), // epg.genres.Where(g => !string.IsNullOrWhiteSpace(g)).ToList(),
+                OriginalAirDate = epg.original == null ? epg.original : DateTime.SpecifyKind((System.DateTime)epg.original, DateTimeKind.Local),
+                ProductionYear = epg.year,
+                Name = epg.name,
+                OfficialRating = epg.rating,
+                IsPremiere = epg.significance != null ? epg.significance.Contains("Premiere") : false,
+                //CommunityRating = ParseCommunityRating(epg.StarRating),
+                //Audio = ParseAudio(epg.Audio),
+                //IsHD = string.Equals(epg.Quality, "hdtv", StringComparison.OrdinalIgnoreCase),
+                IsLive = epg.significance != null ? epg.significance.Contains("Live") : false,
+                IsRepeat = Plugin.Instance.Configuration.ShowRepeat ? !epg.firstrun : true,
                 IsSeries = true, //!string.IsNullOrEmpty(epg.Subtitle),  http://emby.media/community/index.php?/topic/21264-series-record-ability-missing-in-emby-epg/#entry239633
-                ImageUrl = string.IsNullOrEmpty(epg.FanArt) ? null : (_baseUrl + "/" + epg.FanArt),
-                HasImage = !string.IsNullOrEmpty(epg.FanArt),
-                IsNews = epg.Genres.Contains("news", StringComparer.OrdinalIgnoreCase),
-                IsMovie = epg.Genres.Contains("movie", StringComparer.OrdinalIgnoreCase),
-                IsKids = epg.Genres.Contains("kids", StringComparer.OrdinalIgnoreCase),
-
-                IsSports = epg.Genres.Contains("sports", StringComparer.OrdinalIgnoreCase) ||
-                    epg.Genres.Contains("Sports non-event", StringComparer.OrdinalIgnoreCase) ||
-                    epg.Genres.Contains("Sports event", StringComparer.OrdinalIgnoreCase) ||
-                    epg.Genres.Contains("Sports talk", StringComparer.OrdinalIgnoreCase) ||
-                    epg.Genres.Contains("Sports news", StringComparer.OrdinalIgnoreCase)
+                HasImage = Plugin.Instance.Configuration.GetEpisodeImage,
+                ImageUrl = Plugin.Instance.Configuration.GetEpisodeImage ? string.Format("{0}/service?method=channel.show.artwork&name={1}", _baseUrl, Uri.EscapeDataString(epg.name)) : null,
+                BackdropImageUrl = Plugin.Instance.Configuration.GetEpisodeImage ? string.Format("{0}/service?method=channel.show.artwork&prefer=landscape&name={1}", _baseUrl, Uri.EscapeDataString(epg.name)) : null,
             };
 
+            if (epg.genres != null)
+            {
+                info.Genres = epg.genres;
+                info.Genres[0] += " Movie";
+                genreMapper.PopulateProgramGenres(info);
+                if (info.IsMovie)
+                {
+                    info.IsRepeat = false;
+                    info.IsSeries = false;
+                }
+            }
             return info;
-        }
-
-        public static float? ParseCommunityRating(string value)
-        {
-            if (!string.IsNullOrEmpty(value))
-            {
-                var hasPlus = value.IndexOf('+') != -1;
-
-                var rating = value.Replace("+", string.Empty).Length + (hasPlus ? .5 : 0);
-
-                return (float)rating;
-            }
-
-            return null;
-        }
-
-        public static ProgramAudio? ParseAudio(string value)
-        {
-            if (string.Equals(value, "stereo", StringComparison.OrdinalIgnoreCase))
-            {
-                return ProgramAudio.Stereo;
-            }
-
-            return null;
         }
 
         // Classes created with http://json2csharp.com/
 
-        private class Channel
+        public class Listing
         {
-            public int channelOID { get; set; }
-            public int channelNumber { get; set; }
-            public string channelName { get; set; }
+            public int id { get; set; }
+            public string name { get; set; }
+            public string description { get; set; }
+            public string subtitle { get; set; }
+            public List<string> genres { get; set; }
+            public bool firstrun { get; set; }
+            public int start { get; set; }
+            public int end { get; set; }
+            public string rating { get; set; }
+            public DateTime? original { get; set; }
+            public int? season { get; set; }
+            public int? episode { get; set; }
+            public int? year { get; set; }
+            public string significance { get; set; }
+            public string recording_status { get; set; }
+            public int recording_id { get; set; }
         }
 
-        private class EpgEvent2
+        public class RootObject
         {
-            public int OID { get; set; }
-            public string UniqueId { get; set; }
-            public int ChannelOid { get; set; }
-            public string StartTime { get; set; }
-            public string EndTime { get; set; }
-            public string Title { get; set; }
-            public string Subtitle { get; set; }
-            public string Desc { get; set; }
-            public string Rating { get; set; }
-            public string Quality { get; set; }
-            public string StarRating { get; set; }
-            public string Aspect { get; set; }
-            public string Audio { get; set; }
-            public string OriginalAirdate { get; set; }
-            public string FanArt { get; set; }
-            public List<string> Genres { get; set; }
-            public bool FirstRun { get; set; }
-            public bool HasSchedule { get; set; }
-            public bool ScheduleIsRecurring { get; set; }
+            public List<Listing> listings { get; set; }
         }
 
-        private class Rtn
-        {
-            public bool Error { get; set; }
-            public string Message { get; set; }
-        }
-
-        private class EpgEventJSONObject
-        {
-            public EpgEvent2 epgEvent { get; set; }
-            public Rtn rtn { get; set; }
-        }
-
-        private class EPGEvent
-        {
-            public EpgEventJSONObject epgEventJSONObject { get; set; }
-        }
-
-        private class Listing
-        {
-            public Channel Channel { get; set; }
-            public List<EPGEvent> EPGEvents { get; set; }
-        }
-
-        private class Guide
-        {
-            public List<Listing> Listings { get; set; }
-        }
-
-        private class RootObject
-        {
-            public Guide Guide { get; set; }
-        }
     }
 }
