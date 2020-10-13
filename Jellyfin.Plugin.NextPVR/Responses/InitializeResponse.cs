@@ -14,12 +14,12 @@ namespace NextPvr.Responses
 
             if (root.SIDValidation != null)
             {
-                UtilsHelper.DebugInformation(logger,string.Format("[NextPvr] Connection validation: {0}", json.SerializeToString(root)));
+                UtilsHelper.DebugInformation(logger,string.Format("[NextPVR] Connection validation: {0}", json.SerializeToString(root)));
                 return root.SIDValidation.validated;
             }
 
-            logger.LogError("[NextPvr] Failed to validate your connection with NextPvr.");
-            throw new Exception("Failed to validate your connection with NextPvr.");
+            logger.LogError("[NextPVR] Failed to validate your connection with NextPVR.");
+            throw new Exception("Failed to validate your connection with NextPVR.");
         }
 
         public class SIDValidation

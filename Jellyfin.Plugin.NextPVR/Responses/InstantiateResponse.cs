@@ -14,12 +14,12 @@ namespace NextPvr.Responses
 
             if (root.clientKeys != null && root.clientKeys.sid != null && root.clientKeys.salt != null)
             {
-                UtilsHelper.DebugInformation(logger,string.Format("[NextPvr] ClientKeys: {0}", json.SerializeToString(root)));
+                UtilsHelper.DebugInformation(logger,string.Format("[NextPVR] ClientKeys: {0}", json.SerializeToString(root)));
                 return root.clientKeys;
             }
 
-            logger.LogError("[NextPvr] Failed to load the ClientKeys from NextPvr.");
-            throw new Exception("Failed to load the ClientKeys from NextPvr.");
+            logger.LogError("[NextPVR] Failed to load the ClientKeys from NextPVR.");
+            throw new Exception("Failed to load the ClientKeys from NextPVR.");
         }
 
         public class ClientKeys

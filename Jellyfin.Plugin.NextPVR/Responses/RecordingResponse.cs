@@ -28,12 +28,12 @@ namespace NextPvr.Responses
         {
             if (stream == null)
             {
-                logger.LogError("[NextPvr] GetRecording stream == null");
+                logger.LogError("[NextPVR] GetRecording stream == null");
                 throw new ArgumentNullException("stream");
             }
 
             var root = json.DeserializeFromStream<RootObject>(stream);
-            UtilsHelper.DebugInformation(logger,string.Format("[NextPvr] GetRecordings Response: {0}", json.SerializeToString(root)));
+            UtilsHelper.DebugInformation(logger,string.Format("[NextPVR] GetRecordings Response: {0}", json.SerializeToString(root)));
 
             return root.ManageResults
                 .EPGEvents
@@ -51,12 +51,12 @@ namespace NextPvr.Responses
         {
             if (stream == null)
             {
-                logger.LogError("[NextPvr] GetTimers stream == null");
+                logger.LogError("[NextPVR] GetTimers stream == null");
                 throw new ArgumentNullException("stream");
             }
 
             var root = json.DeserializeFromStream<RootObject>(stream);
-            UtilsHelper.DebugInformation(logger,string.Format("[NextPvr] GetTimers Response: {0}", json.SerializeToString(root)));
+            UtilsHelper.DebugInformation(logger,string.Format("[NextPVR] GetTimers Response: {0}", json.SerializeToString(root)));
 
             return root.ManageResults
                 .EPGEvents
@@ -74,12 +74,12 @@ namespace NextPvr.Responses
         {
             if (stream == null)
             {
-                logger.LogError("[NextPvr] GetSeriesTimers stream == null");
+                logger.LogError("[NextPVR] GetSeriesTimers stream == null");
                 throw new ArgumentNullException("stream");
             }
 
             var root = json.DeserializeFromStream<RootObject>(stream);
-            UtilsHelper.DebugInformation(logger,string.Format("[NextPvr] GetSeriesTimers Response: {0}", json.SerializeToString(root)));
+            UtilsHelper.DebugInformation(logger,string.Format("[NextPVR] GetSeriesTimers Response: {0}", json.SerializeToString(root)));
 
             return root.ManageResults
                 .EPGEvents

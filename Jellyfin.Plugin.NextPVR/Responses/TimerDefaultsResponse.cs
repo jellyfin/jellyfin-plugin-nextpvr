@@ -14,7 +14,7 @@ namespace NextPvr.Responses
         public SeriesTimerInfo GetDefaultTimerInfo(Stream stream, IJsonSerializer json, ILogger<LiveTvService> logger)
         {
             var root = GetScheduleSettings(stream, json);
-            UtilsHelper.DebugInformation(logger,string.Format("[NextPvr] GetDefaultTimerInfo Response: {0}", json.SerializeToString(root)));
+            UtilsHelper.DebugInformation(logger,string.Format("[NextPVR] GetDefaultTimerInfo Response: {0}", json.SerializeToString(root)));
 
             return new SeriesTimerInfo
             {

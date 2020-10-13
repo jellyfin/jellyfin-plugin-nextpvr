@@ -18,7 +18,7 @@ namespace NextPvr.Responses
 
             if (root.epgEventJSONObject != null && root.epgEventJSONObject.rtn != null)
             {
-                UtilsHelper.DebugInformation(logger,string.Format("[NextPvr] RecordingError Response: {0}", json.SerializeToString(root)));
+                UtilsHelper.DebugInformation(logger,string.Format("[NextPVR] RecordingError Response: {0}", json.SerializeToString(root)));
                 return root.epgEventJSONObject.rtn.Error;
             }
 

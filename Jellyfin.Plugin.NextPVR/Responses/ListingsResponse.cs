@@ -24,7 +24,7 @@ namespace NextPvr.Responses
         public IEnumerable<ProgramInfo> GetPrograms(Stream stream, IJsonSerializer json, string channelId, ILogger<LiveTvService> logger)
         {
             var root = json.DeserializeFromStream<RootObject>(stream);
-            UtilsHelper.DebugInformation(logger,string.Format("[NextPvr] GetPrograms Response: {0}",json.SerializeToString(root)));
+            UtilsHelper.DebugInformation(logger,string.Format("[NextPVR] GetPrograms Response: {0}",json.SerializeToString(root)));
 
             var listings = root.Guide.Listings;
 
