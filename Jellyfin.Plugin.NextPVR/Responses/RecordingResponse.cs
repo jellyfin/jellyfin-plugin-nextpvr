@@ -17,23 +17,25 @@ namespace Jellyfin.Plugin.NextPVR.Responses
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly string _baseUrl;
         private IFileSystem _fileSystem;
+        private readonly ILogger<LiveTvService> _logger;
 
-        public RecordingResponse(string baseUrl, IFileSystem fileSystem)
+        public RecordingResponse(string baseUrl, IFileSystem fileSystem, ILogger<LiveTvService> logger)
         {
             _baseUrl = baseUrl;
             _fileSystem = fileSystem;
+            _logger = logger;
         }
 
-        public IEnumerable<MyRecordingInfo> GetRecordings(Stream stream, IJsonSerializer json, ILogger<LiveTvService> logger)
+        public IEnumerable<MyRecordingInfo> GetRecordings(Stream stream, IJsonSerializer json)
         {
             if (stream == null)
             {
-                logger.LogError("[NextPVR] GetRecording stream == null");
+                _logger.LogError("[NextPVR] GetRecording stream == null");
                 throw new ArgumentNullException("stream");
             }
 
             var root = json.DeserializeFromStream<RootObject>(stream);
-            UtilsHelper.DebugInformation(logger, string.Format("[NextPVR] GetRecordings Response: {0}", json.SerializeToString(root)));
+            UtilsHelper.DebugInformation(_logger, string.Format("[NextPVR] GetRecordings Response: {0}", json.SerializeToString(root)));
 
             IEnumerable<MyRecordingInfo> Recordings;
             try
@@ -45,22 +47,22 @@ namespace Jellyfin.Plugin.NextPVR.Responses
             }
             catch (Exception err)
             {
-                logger.LogDebug(err.Message);
+                _logger.LogDebug(err.Message);
                 throw err;
             }
             return Recordings;
         }
 
-        public IEnumerable<TimerInfo> GetTimers(Stream stream, IJsonSerializer json, ILogger<LiveTvService> logger)
+        public IEnumerable<TimerInfo> GetTimers(Stream stream, IJsonSerializer json)
         {
             if (stream == null)
             {
-                logger.LogError("[NextPVR] GetTimers stream == null");
+                _logger.LogError("[NextPVR] GetTimers stream == null");
                 throw new ArgumentNullException("stream");
             }
 
             var root = json.DeserializeFromStream<RootObject>(stream);
-            UtilsHelper.DebugInformation(logger, string.Format("[NextPVR] GetTimers Response: {0}", json.SerializeToString(root)));
+            UtilsHelper.DebugInformation(_logger, string.Format("[NextPVR] GetTimers Response: {0}", json.SerializeToString(root)));
             IEnumerable<TimerInfo> Timers;
             try
             {
@@ -71,7 +73,7 @@ namespace Jellyfin.Plugin.NextPVR.Responses
             }
             catch (Exception err)
             {
-                logger.LogDebug(err.Message);
+                _logger.LogDebug(err.Message);
                 throw err;
             }
             return Timers;
@@ -83,7 +85,7 @@ namespace Jellyfin.Plugin.NextPVR.Responses
             try
             {
                 info.Id = i.id.ToString(_usCulture);
-                System.Diagnostics.Debug.WriteLine(i.id);
+                _logger.LogDebug("{0}", i.id);
                 if (i.recurring)
                 {
                     info.SeriesTimerId = i.recurringParent.ToString(_usCulture);
@@ -116,7 +118,7 @@ namespace Jellyfin.Plugin.NextPVR.Responses
                 }
                 else
                 {
-                    System.Diagnostics.Debug.Write(i.name);
+                    _logger.LogDebug(i.name);
                 }
                 if (i.original != null)
                 {
@@ -142,7 +144,7 @@ namespace Jellyfin.Plugin.NextPVR.Responses
             }
             catch (Exception err)
             {
-                System.Diagnostics.Debug.WriteLine(err.Message);
+                _logger.LogDebug(err.Message);
                 throw (err);
             }
         }
@@ -191,7 +193,7 @@ namespace Jellyfin.Plugin.NextPVR.Responses
             }
             catch (Exception err)
             {
-                System.Diagnostics.Debug.WriteLine(err.Message);
+                _logger.LogDebug(err.Message);
                 throw (err);
             }
         }

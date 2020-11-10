@@ -18,22 +18,24 @@ namespace Jellyfin.Plugin.NextPVR.Responses
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly string _baseUrl;
         private IFileSystem _fileSystem;
+        private readonly ILogger<LiveTvService> _logger;
 
-        public RecurringResponse(string baseUrl, IFileSystem fileSystem)
+        public RecurringResponse(string baseUrl, IFileSystem fileSystem, ILogger<LiveTvService> logger)
         {
             _baseUrl = baseUrl;
             _fileSystem = fileSystem;
+            _logger = logger;
         }
-        public IEnumerable<SeriesTimerInfo> GetSeriesTimers(Stream stream, IJsonSerializer json, ILogger<LiveTvService> logger)
+        public IEnumerable<SeriesTimerInfo> GetSeriesTimers(Stream stream, IJsonSerializer json)
         {
             if (stream == null)
             {
-                logger.LogError("[NextPVR] GetSeriesTimers stream == null");
+                _logger.LogError("[NextPVR] GetSeriesTimers stream == null");
                 throw new ArgumentNullException("stream");
             }
 
             var root = json.DeserializeFromStream<RootObject>(stream);
-            UtilsHelper.DebugInformation(logger, string.Format("[NextPVR] GetSeriesTimers Response: {0}", json.SerializeToString(root)));
+            UtilsHelper.DebugInformation(_logger, string.Format("[NextPVR] GetSeriesTimers Response: {0}", json.SerializeToString(root)));
             return root.recurrings
                 .Select(i => i)
                 .Select(GetSeriesTimerInfo);
@@ -73,7 +75,7 @@ namespace Jellyfin.Plugin.NextPVR.Responses
             }
             catch (Exception err)
             {
-                System.Diagnostics.Debug.WriteLine(err.Message);
+                _logger.LogDebug(err.Message);
                 throw (err);
             }
         }

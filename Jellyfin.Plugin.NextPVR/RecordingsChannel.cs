@@ -15,6 +15,7 @@ using MediaBrowser.Model.Dto;
 using System.Globalization;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.LiveTv;
+using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Plugin.NextPVR
 {
@@ -25,6 +26,7 @@ namespace Jellyfin.Plugin.NextPVR
         private Timer _updateTimer;
         private DateTimeOffset _lastUpdate = DateTimeOffset.FromUnixTimeSeconds(0);
         private CancellationTokenSource _cancellationToken;
+        private readonly ILogger<LiveTvService> _logger;
 
         IEnumerable<MyRecordingInfo> allRecordings = null;
         bool useCachedRecordings = false;
@@ -49,21 +51,22 @@ namespace Jellyfin.Plugin.NextPVR
                 }
                 else if (backendUpate == DateTimeOffset.FromUnixTimeSeconds(0))
                 {
-                    System.Diagnostics.Debug.WriteLine("Server offline");
+                    _logger.LogDebug("Server offline");
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("No change");
+                    _logger.LogDebug("No change");
                 }
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine("Not active");
+                _logger.LogDebug("Not active");
             }
         }
 
-        public RecordingsChannel(ILiveTvManager liveTvManager)
+        public RecordingsChannel(ILiveTvManager liveTvManager, ILogger<LiveTvService> logger)
         {
+            _logger = logger;
             _liveTvManager = liveTvManager;
             var interval = TimeSpan.FromSeconds(20);
             _updateTimer = new Timer(OnUpdateTimerCallbackAsync, null, interval, interval);
@@ -78,7 +81,7 @@ namespace Jellyfin.Plugin.NextPVR
             if (_updateTimer != null)
             {
                 _updateTimer.Dispose();
-                System.Diagnostics.Debug.WriteLine(_cancellationToken.IsCancellationRequested);
+                _logger.LogDebug("{0}", _cancellationToken.IsCancellationRequested);
                 _cancellationToken.Cancel();
                 _updateTimer = null;
             }
@@ -276,7 +279,7 @@ namespace Jellyfin.Plugin.NextPVR
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine("using cached recordings");
+                _logger.LogDebug("using cached recordings");
             }
 
             var result = new ChannelItemResult()
@@ -345,7 +348,7 @@ namespace Jellyfin.Plugin.NextPVR
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine("using cached recordings@2");
+                _logger.LogDebug("using cached recordings@2");
             }
 
             var result = new ChannelItemResult()

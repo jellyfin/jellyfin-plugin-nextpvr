@@ -210,7 +210,7 @@ namespace Jellyfin.Plugin.NextPVR
 
             using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
             {
-                return new RecordingResponse(baseUrl, _fileSystem).GetRecordings(stream, _jsonSerializer, _logger);
+                return new RecordingResponse(baseUrl, _fileSystem, _logger).GetRecordings(stream, _jsonSerializer);
             }
         }
 
@@ -352,7 +352,7 @@ namespace Jellyfin.Plugin.NextPVR
             options.AcceptHeader = "application/json";
             using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
             {
-                return new RecordingResponse(baseUrl, _fileSystem).GetTimers(stream, _jsonSerializer, _logger);
+                return new RecordingResponse(baseUrl, _fileSystem, _logger).GetTimers(stream, _jsonSerializer);
             }
         }
 
@@ -376,7 +376,7 @@ namespace Jellyfin.Plugin.NextPVR
             options.AcceptHeader = "application/json";
             using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
             {
-                return new RecurringResponse(baseUrl, _fileSystem).GetSeriesTimers(stream, _jsonSerializer, _logger);
+                return new RecurringResponse(baseUrl, _fileSystem, _logger).GetSeriesTimers(stream, _jsonSerializer);
             }
         }
 
@@ -694,7 +694,7 @@ namespace Jellyfin.Plugin.NextPVR
 
         public async Task CloseLiveStream(string id, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("[NextPVR] Closing " + id);
+            _logger.LogInformation("[NextPVR] Closing {0}", id);
         }
 
         public async Task<SeriesTimerInfo> GetNewTimerDefaultsAsync(CancellationToken cancellationToken, ProgramInfo program = null)
@@ -835,19 +835,19 @@ namespace Jellyfin.Plugin.NextPVR
             {
                 if (httpError.IsTimedOut)
                 {
-                    System.Diagnostics.Debug.WriteLine("timed out");
+                    _logger.LogDebug("timed out");
                     LastUpdatedSidDateTime = DateTimeOffset.MinValue;
                 }
             }
             catch (System.Net.Http.HttpRequestException)
             {
-                System.Diagnostics.Debug.WriteLine("server not running");
+                _logger.LogDebug("server not running");
                 LastUpdatedSidDateTime = DateTimeOffset.MinValue;
             }
             catch (Exception err)
             {
-                System.Diagnostics.Debug.WriteLine(err.StackTrace);
-                System.Diagnostics.Debug.WriteLine(err.Message);
+                _logger.LogDebug(err.StackTrace);
+                _logger.LogDebug(err.Message);
                 throw;
             }
             _logger.LogInformation("[NextPVR] GetLastUpdateTime " + retTime.ToUnixTimeSeconds());
