@@ -733,8 +733,8 @@ namespace Jellyfin.Plugin.NextPVR
                 CancellationToken = cancellationToken,
                 Url = string.Format("{0}/service?method=channel.listings&sid={1}&start={2}&end={3}&channel_id={4}",
                 baseUrl, Sid,
-                (int)(startDateUtc - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds,
-                (int)(endDateUtc - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds,
+                ((DateTimeOffset)startDateUtc).ToUnixTimeSeconds(),
+                ((DateTimeOffset)endDateUtc).ToUnixTimeSeconds(),
                 channelId)
             };
             options.AcceptHeader = "application/json";
