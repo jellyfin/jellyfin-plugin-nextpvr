@@ -11,4 +11,4 @@ owner: "jellyfin"
 artifacts:
 - "Jellyfin.Plugin.NextPVR.dll"
 changelog: >
-  changelog
+  Updated to use NextPVR API v5, no longer compatable with API v4.
