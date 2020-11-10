@@ -2,7 +2,7 @@
 using System.IO;
 using MediaBrowser.Model.Serialization;
 
-namespace NextPvr.Responses
+namespace Jellyfin.Plugin.NextPVR.Responses
 {
     public class VersionCheckResponse
     {
@@ -20,7 +20,7 @@ namespace NextPvr.Responses
                 return _root.versionCheck.upgradeAvailable;
             }
 
-            throw new Exception("Failed to get the Update Status from NextPvr.");
+            throw new Exception("Failed to get the Update Status from NextPVR.");
         }
 
         public string ServerVersion()
@@ -30,7 +30,7 @@ namespace NextPvr.Responses
                 return _root.versionCheck.serverVer;
             }
 
-            throw new Exception("Failed to get the Server Version from NextPvr.");
+            throw new Exception("Failed to get the Server Version from NextPVR.");
         }
 
         public class VersionCheck

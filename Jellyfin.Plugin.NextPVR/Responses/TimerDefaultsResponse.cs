@@ -3,9 +3,9 @@ using System.IO;
 using MediaBrowser.Controller.LiveTv;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
-using NextPvr.Helpers;
+using Jellyfin.Plugin.NextPVR.Helpers;
 
-namespace NextPvr.Responses
+namespace Jellyfin.Plugin.NextPVR.Responses
 {
     public class TimerDefaultsResponse
     {
@@ -14,7 +14,7 @@ namespace NextPvr.Responses
         public SeriesTimerInfo GetDefaultTimerInfo(Stream stream, IJsonSerializer json, ILogger<LiveTvService> logger)
         {
             var root = GetScheduleSettings(stream, json);
-            UtilsHelper.DebugInformation(logger,string.Format("[NextPvr] GetDefaultTimerInfo Response: {0}", json.SerializeToString(root)));
+            UtilsHelper.DebugInformation(logger,string.Format("[NextPVR] GetDefaultTimerInfo Response: {0}", json.SerializeToString(root)));
 
             return new SeriesTimerInfo
             {

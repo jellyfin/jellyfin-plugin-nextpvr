@@ -15,16 +15,76 @@ using MediaBrowser.Model.Dto;
 using System.Globalization;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.LiveTv;
+using Microsoft.Extensions.Logging;
 
-namespace NextPvr
+namespace Jellyfin.Plugin.NextPVR
 {
-    public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISupportsLatestMedia, ISupportsMediaProbe, IHasFolderAttributes
+    public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISupportsLatestMedia, ISupportsMediaProbe, IHasFolderAttributes, IDisposable
     {
         public ILiveTvManager _liveTvManager;
+        public event EventHandler ContentChanged;
+        private Timer _updateTimer;
+        private DateTimeOffset _lastUpdate = DateTimeOffset.FromUnixTimeSeconds(0);
+        private CancellationTokenSource _cancellationToken;
+        private readonly ILogger<LiveTvService> _logger;
 
-        public RecordingsChannel(ILiveTvManager liveTvManager)
+        IEnumerable<MyRecordingInfo> allRecordings = null;
+        bool useCachedRecordings = false;
+        public virtual void OnContentChanged()
         {
+            if (ContentChanged != null)
+            {
+                ContentChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        private async void OnUpdateTimerCallbackAsync(object state)
+        {
+            if (GetService().isActive)
+            {
+                DateTimeOffset backendUpate;
+                backendUpate = await GetService().GetLastUpdate(_cancellationToken.Token);
+                if (backendUpate > _lastUpdate)
+                {
+                    useCachedRecordings = false;
+                    OnContentChanged();
+                    _lastUpdate = backendUpate;
+                }
+                else if (backendUpate == DateTimeOffset.FromUnixTimeSeconds(0))
+                {
+                    _logger.LogDebug("Server offline");
+                }
+                else
+                {
+                    _logger.LogDebug("No change");
+                }
+            }
+            else
+            {
+                _logger.LogDebug("Not active");
+            }
+        }
+
+        public RecordingsChannel(ILiveTvManager liveTvManager, ILogger<LiveTvService> logger)
+        {
+            _logger = logger;
             _liveTvManager = liveTvManager;
+            var interval = TimeSpan.FromSeconds(20);
+            _updateTimer = new Timer(OnUpdateTimerCallbackAsync, null, interval, interval);
+            if (_updateTimer != null)
+            {
+                _cancellationToken = new CancellationTokenSource();
+            }
+        }
+
+        public void Dispose()
+        {
+            if (_updateTimer != null)
+            {
+                _updateTimer.Dispose();
+                _logger.LogDebug("{0}", _cancellationToken.IsCancellationRequested);
+                _cancellationToken.Cancel();
+                _updateTimer = null;
+            }
         }
 
         public string Name
@@ -209,7 +269,18 @@ namespace NextPvr
         public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, Func<MyRecordingInfo, bool> filter, CancellationToken cancellationToken)
         {
             var service = GetService();
-            var allRecordings = await service.GetAllRecordingsAsync(cancellationToken).ConfigureAwait(false);
+            if (useCachedRecordings == false)
+            {
+                allRecordings = await service.GetAllRecordingsAsync(cancellationToken).ConfigureAwait(false);
+
+                var channels = await service.GetChannelsAsync(cancellationToken).ConfigureAwait(false);
+
+                useCachedRecordings = true;
+            }
+            else
+            {
+                _logger.LogDebug("using cached recordings");
+            }
 
             var result = new ChannelItemResult()
             {
@@ -236,6 +307,8 @@ namespace NextPvr
                 ImageUrl = item.ImageUrl,
                 //HomePageUrl = item.HomePageUrl
                 Id = item.Id,
+                ParentIndexNumber = item.SeasonNumber,
+                IndexNumber = item.EpisodeNumber,
                 //IndexNumber = item.IndexNumber,
                 MediaType = item.ChannelType == MediaBrowser.Model.LiveTv.ChannelType.TV ? ChannelMediaType.Video : ChannelMediaType.Audio,
                 MediaSources = new List<MediaSourceInfo>
@@ -244,12 +317,14 @@ namespace NextPvr
                     {
                         Path = path,
                         Protocol = path.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? MediaProtocol.Http : MediaProtocol.File,
-                        Id = item.Id
+                        Id = item.Id,
+                        IsInfiniteStream = item.Status == RecordingStatus.InProgress ? true : false,
+                        RunTimeTicks = (item.EndDate - item.StartDate).Ticks,
                     }
                 },
                 //ParentIndexNumber = item.ParentIndexNumber,
                 PremiereDate = item.OriginalAirDate,
-                //ProductionYear = item.ProductionYear,
+                ProductionYear = item.ProductionYear,
                 //Studios = item.Studios,
                 Type = ChannelItemType.Media,
                 DateModified = item.DateLastUpdated,
@@ -265,8 +340,17 @@ namespace NextPvr
         private async Task<ChannelItemResult> GetRecordingGroups(InternalChannelItemQuery query, CancellationToken cancellationToken)
         {
             var service = GetService();
+            if (useCachedRecordings == false)
+            {
+                allRecordings = await service.GetAllRecordingsAsync(cancellationToken).ConfigureAwait(false);
+                var channels = await service.GetChannelsAsync(cancellationToken).ConfigureAwait(false);
+                useCachedRecordings = true;
+            }
+            else
+            {
+                _logger.LogDebug("using cached recordings@2");
+            }
 
-            var allRecordings = await service.GetAllRecordingsAsync(cancellationToken).ConfigureAwait(false);
             var result = new ChannelItemResult()
             {
                 Items = new List<ChannelItemInfo>()
@@ -282,8 +366,9 @@ namespace NextPvr
                 FolderType = ChannelFolderType.Container,
                 Id = "series_" + i.Key.GetMD5().ToString("N"),
                 Type = ChannelItemType.Folder,
-                ImageUrl = i.First().ImageUrl
-            }));
+                DateCreated = i.Last().StartDate,
+                ImageUrl = i.Last().ImageUrl.Replace("=poster", "=landscape")
+            })); ; ; ; ;
 
             var kids = allRecordings.FirstOrDefault(i => i.IsKids);
 
@@ -548,6 +633,22 @@ namespace NextPvr
         /// </summary>
         /// <value>The date last updated.</value>
         public DateTime DateLastUpdated { get; set; }
+        /// <summary>
+        /// Gets or sets the season number
+        /// </summary>
+        /// <value>The date last updated.</value>
+        public int? SeasonNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the episode number
+        /// </summary>
+        /// <value>The date last updated.</value>
+        public int? EpisodeNumber { get; set; }
+        /// <summary>
+        /// Gets or sets the Year
+        /// </summary>
+        /// <value>The date last updated.</value>
+        public int? ProductionYear { get; set; }
 
         public MyRecordingInfo()
         {

@@ -6,7 +6,7 @@ using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Serialization;
 
-namespace NextPvr.Responses
+namespace Jellyfin.Plugin.NextPVR.Responses
 {
     public class TunerResponse
     {
