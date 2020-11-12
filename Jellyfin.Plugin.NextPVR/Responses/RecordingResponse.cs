@@ -85,7 +85,6 @@ namespace Jellyfin.Plugin.NextPVR.Responses
             try
             {
                 info.Id = i.id.ToString(_usCulture);
-                _logger.LogDebug("{0}", i.id);
                 if (i.recurring)
                 {
                     info.SeriesTimerId = i.recurringParent.ToString(_usCulture);
@@ -116,10 +115,6 @@ namespace Jellyfin.Plugin.NextPVR.Responses
                     info.EpisodeNumber = i.episode;
                     info.IsSeries = true;    //!string.IsNullOrEmpty(epg.Subtitle); http://emby.media/community/index.php?/topic/21264-series-record-ability-missing-in-emby-epg/#entry239633
                 }
-                else
-                {
-                    _logger.LogDebug(i.name);
-                }
                 if (i.original != null)
                 {
                     info.OriginalAirDate = i.original;
@@ -144,7 +139,6 @@ namespace Jellyfin.Plugin.NextPVR.Responses
             }
             catch (Exception err)
             {
-                _logger.LogDebug(err.Message);
                 throw (err);
             }
         }
@@ -193,7 +187,6 @@ namespace Jellyfin.Plugin.NextPVR.Responses
             }
             catch (Exception err)
             {
-                _logger.LogDebug(err.Message);
                 throw (err);
             }
         }

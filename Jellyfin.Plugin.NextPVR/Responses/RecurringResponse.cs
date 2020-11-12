@@ -75,7 +75,6 @@ namespace Jellyfin.Plugin.NextPVR.Responses
             }
             catch (Exception err)
             {
-                _logger.LogDebug(err.Message);
                 throw (err);
             }
         }
