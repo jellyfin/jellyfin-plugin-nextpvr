@@ -835,22 +835,18 @@ namespace Jellyfin.Plugin.NextPVR
             {
                 if (httpError.IsTimedOut)
                 {
-                    _logger.LogDebug("timed out");
                     LastUpdatedSidDateTime = DateTimeOffset.MinValue;
                 }
             }
             catch (System.Net.Http.HttpRequestException)
             {
-                _logger.LogDebug("server not running");
                 LastUpdatedSidDateTime = DateTimeOffset.MinValue;
             }
             catch (Exception err)
             {
-                _logger.LogDebug(err.StackTrace);
-                _logger.LogDebug(err.Message);
-                throw;
+                throw (err);
             }
-            _logger.LogInformation("[NextPVR] GetLastUpdateTime " + retTime.ToUnixTimeSeconds());
+            UtilsHelper.DebugInformation(_logger, string.Format("[NextPVR] GetLastUpdateTime {0}", retTime.ToUnixTimeSeconds()));
             return retTime;
         }
 
