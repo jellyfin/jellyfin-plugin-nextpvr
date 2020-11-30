@@ -445,7 +445,7 @@ namespace Jellyfin.Plugin.NextPVR
             bool? error = new CancelDeleteRecordingResponse().RecordingError(stream, _jsonSerializer, _logger);
             if (error == null || error == true)
             {
-                _logger.LogError(string.Format("[NextPVR] Failed to update the timer with ID: {0}", info.Id));
+                _logger.LogError("[NextPVR] Failed to update the timer with ID: {0}", info.Id);
                 throw new Exception(string.Format("Failed to update the timer with ID: {0}", info.Id));
             }
 
