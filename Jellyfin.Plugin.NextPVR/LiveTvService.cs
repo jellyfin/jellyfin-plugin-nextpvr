@@ -205,7 +205,7 @@ namespace Jellyfin.Plugin.NextPVR
 
             if (error == null || error == true)
             {
-                _logger.LogError(string.Format("[NextPVR] Failed to delete the recording for recordingId: {0}", recordingId));
+                _logger.LogError("[NextPVR] Failed to delete the recording for recordingId: {0}", recordingId);
                 throw new Exception(string.Format("Failed to delete the recording for recordingId: {0}", recordingId));
             }
 
