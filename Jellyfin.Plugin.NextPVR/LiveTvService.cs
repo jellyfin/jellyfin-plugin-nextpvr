@@ -361,7 +361,7 @@ namespace Jellyfin.Plugin.NextPVR
             bool? error = new CancelDeleteRecordingResponse().RecordingError(stream, _jsonSerializer, _logger);
             if (error == null || error == true)
             {
-                _logger.LogError(string.Format("[NextPVR] Failed to create or update the timer with Recurring ID: {0}", info.Id));
+                _logger.LogError("[NextPVR] Failed to create or update the timer with Recurring ID: {0}", info.Id);
                 throw new Exception(string.Format("Failed to create or update the timer with Recurring ID: {0}", info.Id));
             }
 
