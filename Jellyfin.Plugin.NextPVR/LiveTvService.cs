@@ -241,7 +241,7 @@ namespace Jellyfin.Plugin.NextPVR
 
             if (error == null || error == true)
             {
-                _logger.LogError(string.Format("[NextPVR] Failed to cancel the recording for recordingId: {0}", timerId));
+                _logger.LogError("[NextPVR] Failed to cancel the recording for recordingId: {0}", timerId);
                 throw new Exception(string.Format("Failed to cancel the recording for recordingId: {0}", timerId));
             }
 
