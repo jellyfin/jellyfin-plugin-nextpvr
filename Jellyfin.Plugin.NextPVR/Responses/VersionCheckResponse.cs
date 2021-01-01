@@ -1,33 +1,31 @@
 ﻿using System;
 using System.IO;
-using MediaBrowser.Model.Serialization;
+using System.Text.Json;
+using System.Threading.Tasks;
+using MediaBrowser.Common.Json;
 
 namespace Jellyfin.Plugin.NextPVR.Responses
 {
     public class VersionCheckResponse
     {
-        private readonly RootObject _root;
 
-        public VersionCheckResponse(Stream stream, IJsonSerializer json)
+        public async Task<bool> UpdateAvailable(Stream stream)
         {
-           _root = json.DeserializeFromStream<RootObject>(stream);
-        }
-
-        public Boolean UpdateAvailable()
-        {
-            if (_root.versionCheck != null)
+            var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, JsonDefaults.GetOptions()).ConfigureAwait(false);
+            if (root.versionCheck != null)
             {
-                return _root.versionCheck.upgradeAvailable;
+                return root.versionCheck.upgradeAvailable;
             }
 
             throw new Exception("Failed to get the Update Status from NextPVR.");
         }
 
-        public string ServerVersion()
+        public async Task<string> ServerVersion(Stream stream)
         {
-            if (_root.versionCheck != null)
+            var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, JsonDefaults.GetOptions()).ConfigureAwait(false);
+            if (root.versionCheck != null)
             {
-                return _root.versionCheck.serverVer;
+                return root.versionCheck.serverVer;
             }
 
             throw new Exception("Failed to get the Server Version from NextPVR.");

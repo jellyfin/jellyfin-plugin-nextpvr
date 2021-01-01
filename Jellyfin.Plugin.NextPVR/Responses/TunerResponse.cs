@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
+using System.Threading.Tasks;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.LiveTv;
@@ -10,16 +13,10 @@ namespace Jellyfin.Plugin.NextPVR.Responses
 {
     public class TunerResponse
     {
-        private readonly RootObject _root;
-
-        public TunerResponse(Stream stream, IJsonSerializer json)
+        public async Task<List<LiveTvTunerInfo>> LiveTvTunerInfos(Stream stream)
         {
-            _root = json.DeserializeFromStream<RootObject>(stream);
-        }
-
-        public List<LiveTvTunerInfo> LiveTvTunerInfos()
-        {
-            return _root.Tuners.Select(GetTunerInformation).ToList();
+            var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, JsonDefaults.GetOptions()).ConfigureAwait(false);
+            return root.Tuners.Select(GetTunerInformation).ToList();
         }
 
         private LiveTvTunerInfo GetTunerInformation(Tuner i)

@@ -5,20 +5,21 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Serialization;
 using Jellyfin.Plugin.NextPVR.Helpers;
+using System.Text.Json;
+using MediaBrowser.Common.Json;
 
 namespace Jellyfin.Plugin.NextPVR.Responses
 {
     public class CancelDeleteRecordingResponse
     {
-        public bool? RecordingError(Stream stream, IJsonSerializer json, ILogger<LiveTvService> logger)
+        public async Task<bool?> RecordingError(Stream stream, ILogger<LiveTvService> logger)
         {
-            var root = json.DeserializeFromStream<RootObject>(stream);
+            var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, JsonDefaults.GetOptions()).ConfigureAwait(false);
 
             if (root.stat != "ok")
             {
-                UtilsHelper.DebugInformation(logger, string.Format("[NextPVR] RecordingError Response: {0}", json.SerializeToString(root)));
+                UtilsHelper.DebugInformation(logger, string.Format("[NextPVR] RecordingError Response: {0}", JsonSerializer.Serialize(root, JsonDefaults.GetOptions())));
                 return true;
             }
             return false;

@@ -9,7 +9,9 @@ using MediaBrowser.Model.LiveTv;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using Jellyfin.Plugin.NextPVR.Helpers;
-
+using System.Text.Json;
+using MediaBrowser.Common.Json;
+using System.Threading.Tasks;
 
 namespace Jellyfin.Plugin.NextPVR.Responses
 {
@@ -26,7 +28,7 @@ namespace Jellyfin.Plugin.NextPVR.Responses
             _fileSystem = fileSystem;
             _logger = logger;
         }
-        public IEnumerable<SeriesTimerInfo> GetSeriesTimers(Stream stream, IJsonSerializer json)
+        public async Task<IEnumerable<SeriesTimerInfo>> GetSeriesTimers(Stream stream)
         {
             if (stream == null)
             {
@@ -34,8 +36,8 @@ namespace Jellyfin.Plugin.NextPVR.Responses
                 throw new ArgumentNullException("stream");
             }
 
-            var root = json.DeserializeFromStream<RootObject>(stream);
-            UtilsHelper.DebugInformation(_logger, string.Format("[NextPVR] GetSeriesTimers Response: {0}", json.SerializeToString(root)));
+            var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, JsonDefaults.GetOptions()).ConfigureAwait(false);
+            UtilsHelper.DebugInformation(_logger, string.Format("[NextPVR] GetSeriesTimers Response: {0}", JsonSerializer.Serialize(root, JsonDefaults.GetOptions())));
             return root.recurrings
                 .Select(i => i)
                 .Select(GetSeriesTimerInfo);

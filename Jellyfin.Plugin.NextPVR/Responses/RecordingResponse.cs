@@ -7,8 +7,10 @@ using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Serialization;
 using Jellyfin.Plugin.NextPVR.Helpers;
+using System.Threading.Tasks;
+using MediaBrowser.Common.Json;
+using System.Text.Json;
 
 namespace Jellyfin.Plugin.NextPVR.Responses
 {
@@ -26,7 +28,7 @@ namespace Jellyfin.Plugin.NextPVR.Responses
             _logger = logger;
         }
 
-        public IEnumerable<MyRecordingInfo> GetRecordings(Stream stream, IJsonSerializer json)
+        public async Task<IEnumerable<MyRecordingInfo>> GetRecordings(Stream stream)
         {
             if (stream == null)
             {
@@ -34,8 +36,8 @@ namespace Jellyfin.Plugin.NextPVR.Responses
                 throw new ArgumentNullException("stream");
             }
 
-            var root = json.DeserializeFromStream<RootObject>(stream);
-            UtilsHelper.DebugInformation(_logger, string.Format("[NextPVR] GetRecordings Response: {0}", json.SerializeToString(root)));
+            var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, JsonDefaults.GetOptions()).ConfigureAwait(false);
+            UtilsHelper.DebugInformation(_logger, string.Format("[NextPVR] GetRecordings Response: {0}", JsonSerializer.Serialize(root, JsonDefaults.GetOptions())));
 
             IEnumerable<MyRecordingInfo> Recordings;
             try
@@ -53,7 +55,7 @@ namespace Jellyfin.Plugin.NextPVR.Responses
             return Recordings;
         }
 
-        public IEnumerable<TimerInfo> GetTimers(Stream stream, IJsonSerializer json)
+        public async Task<IEnumerable<TimerInfo>> GetTimers(Stream stream)
         {
             if (stream == null)
             {
@@ -61,8 +63,8 @@ namespace Jellyfin.Plugin.NextPVR.Responses
                 throw new ArgumentNullException("stream");
             }
 
-            var root = json.DeserializeFromStream<RootObject>(stream);
-            UtilsHelper.DebugInformation(_logger, string.Format("[NextPVR] GetTimers Response: {0}", json.SerializeToString(root)));
+            var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, JsonDefaults.GetOptions()).ConfigureAwait(false);
+            UtilsHelper.DebugInformation(_logger, string.Format("[NextPVR] GetTimers Response: {0}", JsonSerializer.Serialize(root, JsonDefaults.GetOptions())));
             IEnumerable<TimerInfo> Timers;
             try
             {

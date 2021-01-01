@@ -3,18 +3,21 @@ using System.IO;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using Jellyfin.Plugin.NextPVR.Helpers;
+using MediaBrowser.Common.Json;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Jellyfin.Plugin.NextPVR.Responses
 {
     public class InitializeResponse
     {
-        public bool LoggedIn(Stream stream, IJsonSerializer json, ILogger<LiveTvService> logger)
+        public async Task<bool> LoggedIn(Stream stream, ILogger<LiveTvService> logger)
         {
-            var root = json.DeserializeFromStream<RootObject>(stream);
+            var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, JsonDefaults.GetOptions()).ConfigureAwait(false);
 
             if (root.stat != "")
             {
-                UtilsHelper.DebugInformation(logger, string.Format("[NextPVR] Connection validation: {0}", json.SerializeToString(root)));
+                UtilsHelper.DebugInformation(logger, string.Format("[NextPVR] Connection validation: {0}", JsonSerializer.Serialize(root, JsonDefaults.GetOptions())));
                 return root.stat == "ok";
             }
             logger.LogError("[NextPVR] Failed to validate your connection with NextPVR.");

@@ -7,6 +7,9 @@ using MediaBrowser.Controller.LiveTv;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.Serialization;
 using Jellyfin.Plugin.NextPVR.Helpers;
+using System.Threading.Tasks;
+using System.Text.Json;
+using MediaBrowser.Common.Json;
 
 namespace Jellyfin.Plugin.NextPVR.Responses
 {
@@ -20,9 +23,9 @@ namespace Jellyfin.Plugin.NextPVR.Responses
             _baseUrl = baseUrl;
         }
 
-        public IEnumerable<ChannelInfo> GetChannels(Stream stream, IJsonSerializer json,ILogger<LiveTvService> logger)
+        public async Task<IEnumerable<ChannelInfo>> GetChannels(Stream stream, ILogger<LiveTvService> logger)
         {
-            var root = json.DeserializeFromStream<RootObject>(stream);
+            var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, JsonDefaults.GetOptions()).ConfigureAwait(false);
 
             if (root == null)
             {
@@ -32,7 +35,7 @@ namespace Jellyfin.Plugin.NextPVR.Responses
 
             if (root.channels != null)
             {
-                UtilsHelper.DebugInformation(logger, string.Format("[NextPVR] ChannelResponse: {0}", json.SerializeToString(root)));
+                UtilsHelper.DebugInformation(logger, string.Format("[NextPVR] ChannelResponse: {0}", JsonSerializer.Serialize(root, JsonDefaults.GetOptions())));
                 return root.channels.Select(i => new ChannelInfo
                 {
                     Name = i.channelName,
