@@ -92,7 +92,14 @@ namespace Jellyfin.Plugin.NextPVR.Responses
 
                 if (i.file != null)
                 {
-                    info.Url = _baseUrl + "/live?recording=" + i.id;
+                    if (Plugin.Instance.Configuration.RecordingTransport == 2)
+                    {
+                        info.Url = i.file;
+                    }
+                    else
+                    {
+                        info.Url = String.Format("{0}/live?recording={1}", _baseUrl, i.id);
+                    }
                 }
 
                 info.Status = ParseStatus(i.status);

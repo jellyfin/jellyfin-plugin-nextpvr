@@ -21,6 +21,7 @@ namespace Jellyfin.Plugin.NextPVR.Configuration
         public bool ShowRepeat { get; set; }
         public bool GetEpisodeImage { get; set; }
         public string RecordingDefault { get; set; }
+        public  int RecordingTransport { get; set; }
         public int PrePaddingSeconds { get; set; }
         public int PostPaddingSeconds { get; set; }
 /// <summary>
@@ -35,6 +36,7 @@ public SerializableDictionary<String, List<String>> GenreMappings { get; set; }
             EnableDebugLogging = false;
             NewEpisodes = false;
             RecordingDefault = "2";
+            RecordingTransport = 1;
             // Initialise this
             GenreMappings = new SerializableDictionary<string, List<string>>();
             GenreMappings["GENRESPORT"] =  new List<string>() { "Sports", "Football", "Baseball", "Basketball", "Hockey", "Soccer" };

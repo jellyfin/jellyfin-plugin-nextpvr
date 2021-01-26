@@ -40,6 +40,13 @@
                         </select>
                     </div>
 
+                    <div class="selectContainer">
+                        <select is="emby-select" id="selRecTransport" label="Recording Protocol">
+                            <option value="1">Streaming</option>
+                            <option value="2">Filename</option>
+                        </select>
+                    </div>
+
                     <div class="checkboxContainer">
                         <label>
                             <input is="emby-checkbox" type="checkbox" id="chkNewEpisodes" />
@@ -87,7 +94,6 @@
             </div>
         </div>
 
-
         <script type="text/javascript">
             var NextPvrConfigurationPage = {
                 pluginUniqueId: "9574ac10-bf23-49bc-949f-924f23cfa48f"
@@ -103,6 +109,7 @@
                     page.querySelector('#chkDebugLogging').checked = config.EnableDebugLogging;
                     page.querySelector('#chkNewEpisodes').checked = config.NewEpisodes;
                     $('#selRecDefault', page).val(config.RecordingDefault);
+                    $('#selRecTransport', page).val(config.RecordingTransport);
                     loadGenres(config, page);
                     Dashboard.hideLoadingMsg();
                 });
@@ -115,11 +122,10 @@
                 ApiClient.getPluginConfiguration(NextPvrConfigurationPage.pluginUniqueId).then(function(config) {
                     config.WebServiceUrl = $('#txtWebServiceUrl', form).val();
                     config.Pin = $('#txtPin', form).val();
-                    config.EnableDebugLogging = document.getElementById('chkDebugLogging').checked;
-                    //config.EnableDebugLogging = $('#chkDebugLogging', form).checked();
                     config.EnableDebugLogging = form.querySelector('#chkDebugLogging').checked;
                     config.NewEpisodes = form.querySelector('#chkNewEpisodes').checked;
                     config.RecordingDefault = $('#selRecDefault', form).val();
+                    config.RecordingTransport = $('#selRecTransport', form).val();
                     // Copy over the genre mapping fields
                     config.GenreMappings = {
                         "GENREMOVIE": $('#txtMovieGenre', form).val().split(","),

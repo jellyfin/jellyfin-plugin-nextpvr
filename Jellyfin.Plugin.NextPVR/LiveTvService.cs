@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.LiveTv;
@@ -128,7 +128,7 @@ namespace Jellyfin.Plugin.NextPVR
 
             var strb = new StringBuilder();
             var md5Result = GetMd5Hash(strb.Append(":").Append(GetMd5Hash(pin)).Append(":").Append(salt).ToString());
-            
+
             var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
             await using var stream = await httpClient.GetStreamAsync(string.Format("{0}/service?method=session.login&md5={1}&sid={2}", baseUrl, md5Result, sid));
             {
@@ -342,7 +342,7 @@ namespace Jellyfin.Plugin.NextPVR
 
             if (recurringType == 3 || recurringType == 4)
                 url += "&timeslot=true";
-            
+
             await CreateUpdateSeriesTimerAsync(info, url, cancellationToken);
         }
 
@@ -386,7 +386,7 @@ namespace Jellyfin.Plugin.NextPVR
                 info.PostPaddingSeconds / 60,
                 info.KeepUpTo,
                 info.Id);
-            
+
             int recurringType = 2;
 
             if (info.RecordAnyChannel)
@@ -415,7 +415,7 @@ namespace Jellyfin.Plugin.NextPVR
                 }
                 url += string.Format("&recurring_type={0}", recurringType);
             }
-            if (info.RecordNewOnly) 
+            if (info.RecordNewOnly)
                 url += "&only_new=true";
 
             await CreateUpdateSeriesTimerAsync(info, url, cancellationToken);
@@ -495,7 +495,7 @@ namespace Jellyfin.Plugin.NextPVR
             var baseUrl = Plugin.Instance.Configuration.WebServiceUrl;
             _liveStreams++;
 
-            string streamUrl = string.Format("{0}/live?channeloid={1}&client=jellyfin.{2}", baseUrl, channelOid, _liveStreams.ToString());
+            string streamUrl = string.Format("{0}/live?channeloid={1}&client=jellyfin.{2}&sid={3}", baseUrl, channelOid, _liveStreams.ToString(), Sid);
             _logger.LogInformation("[NextPVR] Streaming " + streamUrl);
             return new MediaSourceInfo
             {
@@ -648,7 +648,7 @@ namespace Jellyfin.Plugin.NextPVR
 
             //Version Check
             var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
-            
+
             bool upgradeAvailable;
             string serverVersion;
 
@@ -663,7 +663,7 @@ namespace Jellyfin.Plugin.NextPVR
 
             //Tuner information
             List<LiveTvTunerInfo> tvTunerInfos;
-            
+
             using (var stream = await httpClient.GetStreamAsync(string.Format("{0}/service/method=system.status?sid={1}", baseUrl, Sid), cancellationToken).ConfigureAwait(false))
             {
                 var tuners = new TunerResponse(stream, _jsonSerializer);
@@ -683,7 +683,7 @@ namespace Jellyfin.Plugin.NextPVR
             _logger.LogDebug("[NextPVR] GetLastUpdateTime");
             DateTimeOffset retTime = DateTimeOffset.FromUnixTimeSeconds(0);
             var baseUrl = Plugin.Instance.Configuration.WebServiceUrl;
-            
+
             try
             {
                 await using var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
