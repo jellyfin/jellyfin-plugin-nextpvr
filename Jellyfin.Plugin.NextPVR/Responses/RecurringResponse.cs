@@ -7,7 +7,6 @@ using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Serialization;
 using Jellyfin.Plugin.NextPVR.Helpers;
 using System.Text.Json;
 using MediaBrowser.Common.Json;
@@ -21,6 +20,7 @@ namespace Jellyfin.Plugin.NextPVR.Responses
         private readonly string _baseUrl;
         private IFileSystem _fileSystem;
         private readonly ILogger<LiveTvService> _logger;
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
 
         public RecurringResponse(string baseUrl, IFileSystem fileSystem, ILogger<LiveTvService> logger)
         {
@@ -36,8 +36,8 @@ namespace Jellyfin.Plugin.NextPVR.Responses
                 throw new ArgumentNullException("stream");
             }
 
-            var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, JsonDefaults.GetOptions()).ConfigureAwait(false);
-            UtilsHelper.DebugInformation(_logger, string.Format("[NextPVR] GetSeriesTimers Response: {0}", JsonSerializer.Serialize(root, JsonDefaults.GetOptions())));
+            var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
+            UtilsHelper.DebugInformation(_logger, string.Format("[NextPVR] GetSeriesTimers Response: {0}", JsonSerializer.Serialize(root, _jsonOptions)));
             return root.recurrings
                 .Select(i => i)
                 .Select(GetSeriesTimerInfo);

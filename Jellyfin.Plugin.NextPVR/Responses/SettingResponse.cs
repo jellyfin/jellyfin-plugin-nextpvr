@@ -2,7 +2,6 @@
 using System.IO;
 using MediaBrowser.Controller.LiveTv;
 using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Serialization;
 using Jellyfin.Plugin.NextPVR.Helpers;
 using System.Threading.Tasks;
 using System.Text.Json;
@@ -13,11 +12,12 @@ namespace Jellyfin.Plugin.NextPVR.Responses
     public class SettingResponse
     {
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
 
         public async Task<bool> GetDefaultSettings(Stream stream, ILogger<LiveTvService> logger)
         {
-            var root = await JsonSerializer.DeserializeAsync<ScheduleSettings>(stream, JsonDefaults.GetOptions()).ConfigureAwait(false);
-            UtilsHelper.DebugInformation(logger, string.Format("[NextPVR] GetDefaultTimerInfo Response: {0}", JsonSerializer.Serialize(root, JsonDefaults.GetOptions())));
+            var root = await JsonSerializer.DeserializeAsync<ScheduleSettings>(stream, _jsonOptions).ConfigureAwait(false);
+            UtilsHelper.DebugInformation(logger, string.Format("[NextPVR] GetDefaultTimerInfo Response: {0}", JsonSerializer.Serialize(root, _jsonOptions)));
             Plugin.Instance.Configuration.PostPaddingSeconds = int.Parse(root.postPadding) * 60;
             Plugin.Instance.Configuration.PrePaddingSeconds = int.Parse(root.prePadding) * 60;
             Plugin.Instance.Configuration.ShowRepeat = root.showNewInGuide;
@@ -26,8 +26,8 @@ namespace Jellyfin.Plugin.NextPVR.Responses
 
         public async Task<string> GetSetting(Stream stream, ILogger<LiveTvService> logger)
         {
-            var root = await JsonSerializer.DeserializeAsync<SettingValue>(stream, JsonDefaults.GetOptions()).ConfigureAwait(false);
-            UtilsHelper.DebugInformation(logger, string.Format("[NextPVR] GetSetting Response: {0}", JsonSerializer.Serialize(root, JsonDefaults.GetOptions())));
+            var root = await JsonSerializer.DeserializeAsync<SettingValue>(stream, _jsonOptions).ConfigureAwait(false);
+            UtilsHelper.DebugInformation(logger, string.Format("[NextPVR] GetSetting Response: {0}", JsonSerializer.Serialize(root, _jsonOptions)));
             return root.value;
         }
 

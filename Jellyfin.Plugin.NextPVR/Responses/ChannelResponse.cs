@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using MediaBrowser.Controller.LiveTv;
 using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Serialization;
 using Jellyfin.Plugin.NextPVR.Helpers;
 using System.Threading.Tasks;
 using System.Text.Json;
@@ -17,6 +16,7 @@ namespace Jellyfin.Plugin.NextPVR.Responses
     {
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly string _baseUrl;
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
 
         public ChannelResponse(string baseUrl)
         {
@@ -25,7 +25,7 @@ namespace Jellyfin.Plugin.NextPVR.Responses
 
         public async Task<IEnumerable<ChannelInfo>> GetChannels(Stream stream, ILogger<LiveTvService> logger)
         {
-            var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, JsonDefaults.GetOptions()).ConfigureAwait(false);
+            var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
 
             if (root == null)
             {
@@ -35,7 +35,7 @@ namespace Jellyfin.Plugin.NextPVR.Responses
 
             if (root.channels != null)
             {
-                UtilsHelper.DebugInformation(logger, string.Format("[NextPVR] ChannelResponse: {0}", JsonSerializer.Serialize(root, JsonDefaults.GetOptions())));
+                UtilsHelper.DebugInformation(logger, string.Format("[NextPVR] ChannelResponse: {0}", JsonSerializer.Serialize(root, _jsonOptions)));
                 return root.channels.Select(i => new ChannelInfo
                 {
                     Name = i.channelName,

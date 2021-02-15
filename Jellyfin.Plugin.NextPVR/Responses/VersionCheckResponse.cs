@@ -8,10 +8,11 @@ namespace Jellyfin.Plugin.NextPVR.Responses
 {
     public class VersionCheckResponse
     {
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
 
         public async Task<bool> UpdateAvailable(Stream stream)
         {
-            var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, JsonDefaults.GetOptions()).ConfigureAwait(false);
+            var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
             if (root.versionCheck != null)
             {
                 return root.versionCheck.upgradeAvailable;
@@ -22,7 +23,7 @@ namespace Jellyfin.Plugin.NextPVR.Responses
 
         public async Task<string> ServerVersion(Stream stream)
         {
-            var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, JsonDefaults.GetOptions()).ConfigureAwait(false);
+            var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
             if (root.versionCheck != null)
             {
                 return root.versionCheck.serverVer;

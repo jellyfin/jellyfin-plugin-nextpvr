@@ -18,6 +18,7 @@ namespace Jellyfin.Plugin.NextPVR.Responses
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly string _baseUrl;
         private string _channelId;
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
 
         public ListingsResponse(string baseUrl)
         {
@@ -26,8 +27,8 @@ namespace Jellyfin.Plugin.NextPVR.Responses
 
         public async Task<IEnumerable<ProgramInfo>> GetPrograms(Stream stream, string channelId, ILogger<LiveTvService> logger)
         {
-            var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, JsonDefaults.GetOptions()).ConfigureAwait(false);
-            UtilsHelper.DebugInformation(logger, string.Format("[NextPVR] GetPrograms Response: {0}", JsonSerializer.Serialize(root, JsonDefaults.GetOptions())));
+            var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
+            UtilsHelper.DebugInformation(logger, string.Format("[NextPVR] GetPrograms Response: {0}", JsonSerializer.Serialize(root, _jsonOptions)));
 
             /*
 
