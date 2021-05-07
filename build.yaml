@@ -1,6 +1,7 @@
 ---
 name: "NextPVR"
 guid: "9574ac10-bf23-49bc-949f-924f23cfa48f"
+imageUrl: "https://repo.jellyfin.org/releases/plugin/images/jellyfin-plugin-nextpvr.png"
 version: "5.0.0.0"
 targetAbi: "10.7.0.0"
 framework: "net5.0"
@@ -10,6 +11,6 @@ description: >
 category: "LiveTV"
 owner: "jellyfin"
 artifacts:
-- "Jellyfin.Plugin.NextPVR.dll"
-changelog: >
-  Updated to use NextPVR API v5, no longer compatable with API v4.
+  - "Jellyfin.Plugin.NextPVR.dll"
+changelog: |
+  - update to use NextPVR API v5, no longer compatible with API v4.
