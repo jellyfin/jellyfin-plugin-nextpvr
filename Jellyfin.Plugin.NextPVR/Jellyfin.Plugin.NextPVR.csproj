@@ -7,8 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Configuration\configPage.html" />
-    <EmbeddedResource Include="Configuration\configPage.html" />
+    <None Remove="Web\nextpvr.html" />
+    <None Remove="Web\nextpvr.js" />
+    <EmbeddedResource Include="Web\nextpvr.html" />
+    <EmbeddedResource Include="Web\nextpvr.js" />
   </ItemGroup>
 
   <ItemGroup>

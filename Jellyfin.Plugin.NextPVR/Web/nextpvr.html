@@ -1,0 +1,90 @@
+<div id="nextpvrConfigurationPage" data-role="page" class="page type-interior pluginConfigurationPage " data-controller="__plugin/nextpvrjs">
+
+    <div data-role="content">
+        <div class="content-primary">
+            <form class="nextpvrConfigurationForm">
+                <div class="inputContainer">
+                    <input is="emby-input" type="text" id="txtWebServiceUrl" label="NextPVR Base URL" />
+                    <div class="fieldDescription">
+                        NextPVR backend URL (format --> http://{hostname}:{port}).
+                    </div>
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" type="text" id="txtPin" label="NextPVR PIN" />
+                    <div class="fieldDescription">
+                        NextPVR PIN to access the backend.
+                    </div>
+                </div>
+                <div class="checkboxContainer">
+                    <label>
+                        <input is="emby-checkbox" type="checkbox" id="chkDebugLogging" />
+                        <span>Enable NextPVR debug logging</span>
+                    </label>
+                </div>
+
+                <div class="selectContainer">
+                    <select is="emby-select" id="selRecDefault" label="Series Recording Default">
+                        <option value="1">New episodes on this channel</option>
+                        <option value="2">All episodes on this channel</option>
+                        <option value="3">Daily, this timeslot</option>
+                        <option value="4">Weekly, this timeslot</option>
+                        <option value="99">All Episodes, All Channels</option>
+                    </select>
+                </div>
+
+                <div class="selectContainer">
+                    <select is="emby-select" id="selRecTransport" label="Recording Protocol">
+                        <option value="1">Streaming</option>
+                        <option value="2">Filename</option>
+                    </select>
+                </div>
+
+                <div class="checkboxContainer">
+                    <label>
+                        <input is="emby-checkbox" type="checkbox" id="chkNewEpisodes" />
+                        <span>Default to new episodes only</span>
+                    </label>
+                </div>
+
+                <div is="emby-collapse" title="Program and Recording Category Options">
+                    <div class="collapseContent">
+                        <p>Against each jellyfin category match the NextPVR genres that belong to it</p>
+                        <div class="inputContainer">
+                            <input is="emby-input" id="txtMovieGenre" name="txtMovieGenre" label="Movie genres:" />
+                            <div class="fieldDescription">
+                                Example: Movie,Film,TV Movie
+                            </div>
+                        </div>
+                        <div class="inputContainer">
+                            <input is="emby-input" id="txtSportsGenre" name="txtSportsGenre" label="Sports genres:" />
+                            <div class="fieldDescription">
+                                Example: Sport,Football
+                            </div>
+                        </div>
+                        <div class="inputContainer">
+                            <input is="emby-input" id="txtNewsGenre" name="txtNewsGenre" label="News or documentary genres:" />
+                            <div class="fieldDescription">
+                                Example: News Report,Daily News
+                            </div>
+                        </div>
+                        <div class="inputContainer">
+                            <input is="emby-input" id="txtKidsGenre" name="txtKidsGenre" label="Kids genres:" />
+                            <div class="fieldDescription">
+                                Example: Cartoon,Animation
+                            </div>
+                        </div>
+                        <div class="inputContainer">
+                            <input is="emby-input" id="txtLiveGenre" name="txtLiveGenre" label="Live genres:" />
+                            <div class="fieldDescription">
+                                Example: Live Gameshow,Live Sports
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button is="emby-button" type="submit" class="raised button-submit block">
+                    <span>${Save}</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
