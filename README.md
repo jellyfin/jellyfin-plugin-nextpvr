@@ -2,7 +2,7 @@
 <h3 align="center">Part of the <a href="https://jellyfin.org">Jellyfin Project</a></h3>
 
 <p align="center">
-<img alt="Logo Banner" src="https://raw.githubusercontent.com/jellyfin/jellyfin-ux/master/branding/SVG/banner-logo-solid.svg?sanitize=true"/>
+<img alt="Plugin Banner" src="https://raw.githubusercontent.com/jellyfin/jellyfin-ux/master/plugins/SVG/jellyfin-plugin-nextpvr.svg?sanitize=true"/>
 <br/>
 <br/>
 <a href="https://github.com/jellyfin/jellyfin-plugin-nextpvr/actions?query=workflow%3A%22Test+Build+Plugin%22">
@@ -18,18 +18,33 @@
 
 ## About
 
-The Jellyfin NextPVR plugin can be used for watching media provided by a <a href="http://www.nextpvr.com">NextPVR</a> server.
+This plugin provides access to live TV, program guide, and recordings from a [NextPVR](http://www.nextpvr.com) server.
 
-## Build & Installation Process
+## Installation
 
-1. Clone this repository
+[See the official documentation for install instructions](https://jellyfin.org/docs/general/server/plugins/index.html#installing).
 
-2. Ensure you have .NET Core SDK set up and installed
+## Build
 
-3. Build the plugin with your favorite IDE or the `dotnet` command
+1. To build this plugin you will need [.Net 5.x](https://dotnet.microsoft.com/download/dotnet/5.0).
 
-```sh
-dotnet publish --configuration Release --output bin
-```
+2. Build plugin with following command
+  ```
+  dotnet publish --configuration Release --output bin
+  ```
 
-4. Place the resulting `Jellyfin.Plugin.NextPvr.dll` file in a folder called `plugins/` inside your Jellyfin data directory
+3. Place the dll-file in the `plugins/nextpvr` folder (you might need to create the folders) of your JF install
+
+## Releasing
+
+To release the plugin we recommend [JPRM](https://github.com/oddstr13/jellyfin-plugin-repository-manager) that will build and package the plugin.
+For additional context and for how to add the packaged plugin zip to a plugin manifest see the [JPRM documentation](https://github.com/oddstr13/jellyfin-plugin-repository-manager) for more info.
+
+## Contributing
+
+We welcome all contributions and pull requests! If you have a larger feature in mind please open an issue so we can discuss the implementation before you start.
+In general refer to our [contributing guidelines](https://github.com/jellyfin/.github/blob/master/CONTRIBUTING.md) for further information.
+
+## Licence
+
+This plugins code and packages are distributed under the MIT License. See [LICENSE](./LICENSE) for more information.
