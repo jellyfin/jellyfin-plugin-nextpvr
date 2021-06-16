@@ -27,8 +27,13 @@ namespace Jellyfin.Plugin.NextPVR
             {
                 new PluginPageInfo
                 {
-                    Name = Name,
-                    EmbeddedResourcePath = GetType().Namespace + ".Configuration.configPage.html"
+                    Name = "nextpvr",
+                    EmbeddedResourcePath = GetType().Namespace + ".Web.nextpvr.html",
+                },
+                new PluginPageInfo
+                {
+                    Name = "nextpvrjs",
+                    EmbeddedResourcePath = GetType().Namespace + ".Web.nextpvr.js"
                 }
             };
         }
