@@ -6,8 +6,6 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Serialization;
 using Jellyfin.Plugin.NextPVR.Helpers;
 using Jellyfin.Plugin.NextPVR.Responses;
 using System;
@@ -31,7 +29,6 @@ namespace Jellyfin.Plugin.NextPVR
     public class LiveTvService : ILiveTvService
     {
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IJsonSerializer _jsonSerializer;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly ILogger<LiveTvService> _logger;
         private int _liveStreams;
@@ -44,10 +41,9 @@ namespace Jellyfin.Plugin.NextPVR
 
         public DateTimeOffset LastRecordingChange = DateTimeOffset.MinValue;
 
-        public LiveTvService(IHttpClientFactory httpClientFactory, IJsonSerializer jsonSerializer, ILogger<LiveTvService> logger, ICryptoProvider cryptoProvider, IFileSystem fileSystem)
+        public LiveTvService(IHttpClientFactory httpClientFactory, ILogger<LiveTvService> logger, ICryptoProvider cryptoProvider, IFileSystem fileSystem)
         {
             _httpClientFactory = httpClientFactory;
-            _jsonSerializer = jsonSerializer;
             _logger = logger;
             LastUpdatedSidDateTime = DateTime.UtcNow;
             _fileSystem = fileSystem;
@@ -89,7 +85,7 @@ namespace Jellyfin.Plugin.NextPVR
             var baseUrl = Plugin.Instance.Configuration.WebServiceUrl;
             var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
             await using var stream = await httpClient.GetStreamAsync(string.Format("{0}/service?method=session.initiate&ver=1.0&device=jellyfin", baseUrl), cancellationToken).ConfigureAwait(false);
-            var clientKeys = new InstantiateResponse().GetClientKeys(stream, _jsonSerializer, _logger);
+            var clientKeys = await new InstantiateResponse().GetClientKeys(stream, _logger).ConfigureAwait(false);
 
             var sid = clientKeys.sid;
             var salt = clientKeys.salt;
@@ -132,7 +128,7 @@ namespace Jellyfin.Plugin.NextPVR
             var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
             await using var stream = await httpClient.GetStreamAsync(string.Format("{0}/service?method=session.login&md5={1}&sid={2}", baseUrl, md5Result, sid));
             {
-                return new InitializeResponse().LoggedIn(stream, _jsonSerializer, _logger);
+                return await new InitializeResponse().LoggedIn(stream, _logger).ConfigureAwait(false);
             }
         }
 
@@ -158,7 +154,7 @@ namespace Jellyfin.Plugin.NextPVR
             await using var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
                 .GetStreamAsync(string.Format("{0}/service?method=channel.list&sid={1}", baseUrl, Sid), cancellationToken);
 
-            return new ChannelResponse(Plugin.Instance.Configuration.WebServiceUrl).GetChannels(stream, _jsonSerializer, _logger).ToList();
+            return await new ChannelResponse(Plugin.Instance.Configuration.WebServiceUrl).GetChannels(stream, _logger).ConfigureAwait(false);
 
         }
 
@@ -181,7 +177,7 @@ namespace Jellyfin.Plugin.NextPVR
 
             await using var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
                 .GetStreamAsync(string.Format("{0}/service?method=recording.list&filter=ready&sid={1}", baseUrl, Sid), cancellationToken);
-            return new RecordingResponse(baseUrl, _fileSystem, _logger).GetRecordings(stream, _jsonSerializer);
+            return await new RecordingResponse(baseUrl, _fileSystem, _logger).GetRecordings(stream).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -201,7 +197,7 @@ namespace Jellyfin.Plugin.NextPVR
                 .GetStreamAsync(string.Format("{0}/service?method=recording.delete&recording_id={1}&sid={2}", baseUrl, recordingId, Sid), cancellationToken);
             LastRecordingChange = DateTimeOffset.UtcNow;
 
-            bool? error = new CancelDeleteRecordingResponse().RecordingError(stream, _jsonSerializer, _logger);
+            bool? error = await new CancelDeleteRecordingResponse().RecordingError(stream, _logger).ConfigureAwait(false);
 
             if (error == null || error == true)
             {
@@ -237,7 +233,7 @@ namespace Jellyfin.Plugin.NextPVR
                 .GetStreamAsync(string.Format("{0}/service?method=recording.delete&recording_id={1}&sid={2}", baseUrl, timerId, Sid), cancellationToken);
 
             LastRecordingChange = DateTimeOffset.UtcNow;
-            bool? error = new CancelDeleteRecordingResponse().RecordingError(stream, _jsonSerializer, _logger);
+            bool? error = await new CancelDeleteRecordingResponse().RecordingError(stream, _logger).ConfigureAwait(false);
 
             if (error == null || error == true)
             {
@@ -268,7 +264,7 @@ namespace Jellyfin.Plugin.NextPVR
                     info.PostPaddingSeconds / 60,
                     info.Id), cancellationToken);
 
-            bool? error = new CancelDeleteRecordingResponse().RecordingError(stream, _jsonSerializer, _logger);
+            bool? error = await new CancelDeleteRecordingResponse().RecordingError(stream, _logger).ConfigureAwait(false);
             if (error == null || error == true)
             {
                 _logger.LogError(string.Format("[NextPVR] Failed to create the timer with programId: {0}", info.ProgramId));
@@ -292,7 +288,7 @@ namespace Jellyfin.Plugin.NextPVR
             await using var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
                 .GetStreamAsync(string.Format("{0}/service?method=recording.list&filter=pending&sid={1}", baseUrl, Sid), cancellationToken);
 
-            return new RecordingResponse(baseUrl, _fileSystem, _logger).GetTimers(stream, _jsonSerializer);
+            return await new RecordingResponse(baseUrl, _fileSystem, _logger).GetTimers(stream).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -308,7 +304,7 @@ namespace Jellyfin.Plugin.NextPVR
             await using var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
                 .GetStreamAsync(string.Format("{0}/service?method=recording.recurring.list&sid={1}", baseUrl, Sid), cancellationToken);
 
-            return new RecurringResponse(baseUrl, _fileSystem, _logger).GetSeriesTimers(stream, _jsonSerializer);
+            return await new RecurringResponse(baseUrl, _fileSystem, _logger).GetSeriesTimers(stream).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -358,7 +354,7 @@ namespace Jellyfin.Plugin.NextPVR
             await using var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
                 .GetStreamAsync(url, cancellationToken);
 
-            bool? error = new CancelDeleteRecordingResponse().RecordingError(stream, _jsonSerializer, _logger);
+            bool? error = await new CancelDeleteRecordingResponse().RecordingError(stream, _logger).ConfigureAwait(false);
             if (error == null || error == true)
             {
                 _logger.LogError("[NextPVR] Failed to create or update the timer with Recurring ID: {0}", info.Id);
@@ -442,7 +438,7 @@ namespace Jellyfin.Plugin.NextPVR
                     info.Id,
                     info.ProgramId), cancellationToken);
 
-            bool? error = new CancelDeleteRecordingResponse().RecordingError(stream, _jsonSerializer, _logger);
+            bool? error = await new CancelDeleteRecordingResponse().RecordingError(stream, _logger).ConfigureAwait(false);
             if (error == null || error == true)
             {
                 _logger.LogError("[NextPVR] Failed to update the timer with ID: {0}", info.Id);
@@ -467,7 +463,7 @@ namespace Jellyfin.Plugin.NextPVR
             await using var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
                 .GetStreamAsync(string.Format("{0}/service?method=recording.recurring.delete&recurring_id={1}&sid={2}", baseUrl, timerId, Sid), cancellationToken);
 
-            bool? error = new CancelDeleteRecordingResponse().RecordingError(stream, _jsonSerializer, _logger);
+            bool? error = await new CancelDeleteRecordingResponse().RecordingError(stream, _logger).ConfigureAwait(false);
 
             if (error == null || error == true)
             {
@@ -615,7 +611,7 @@ namespace Jellyfin.Plugin.NextPVR
             var baseUrl = Plugin.Instance.Configuration.WebServiceUrl;
             await using var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
                 .GetStreamAsync(string.Format("{0}/service?method=setting.list&sid={1}", baseUrl, Sid), cancellationToken);
-            return new SettingResponse().GetDefaultSettings(stream, _jsonSerializer, _logger);
+            return await new SettingResponse().GetDefaultSettings(stream, _logger).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
@@ -629,7 +625,7 @@ namespace Jellyfin.Plugin.NextPVR
                     ((DateTimeOffset) startDateUtc).ToUnixTimeSeconds(),
                     ((DateTimeOffset) endDateUtc).ToUnixTimeSeconds(),
                     channelId), cancellationToken);
-            return new ListingsResponse(baseUrl).GetPrograms(stream, _jsonSerializer, channelId, _logger).ToList();
+            return await new ListingsResponse(baseUrl).GetPrograms(stream, channelId, _logger).ConfigureAwait(false);
         }
 
         public Task RecordLiveStream(string id, CancellationToken cancellationToken)
@@ -654,10 +650,10 @@ namespace Jellyfin.Plugin.NextPVR
 
             await using (var stream = await httpClient.GetStreamAsync(string.Format("{0}/service?method=setting.version&sid={1}", baseUrl, Sid), cancellationToken))
             {
-                var versionCheckResponse = new VersionCheckResponse(stream, _jsonSerializer);
+                var versionCheckResponse = new VersionCheckResponse();
 
-                upgradeAvailable = versionCheckResponse.UpdateAvailable();
-                serverVersion = versionCheckResponse.ServerVersion();
+                upgradeAvailable = await versionCheckResponse.UpdateAvailable(stream).ConfigureAwait(false);
+                serverVersion = await versionCheckResponse.ServerVersion(stream).ConfigureAwait(false);
             }
 
 
@@ -666,8 +662,7 @@ namespace Jellyfin.Plugin.NextPVR
 
             using (var stream = await httpClient.GetStreamAsync(string.Format("{0}/service/method=system.status?sid={1}", baseUrl, Sid), cancellationToken).ConfigureAwait(false))
             {
-                var tuners = new TunerResponse(stream, _jsonSerializer);
-                tvTunerInfos = tuners.LiveTvTunerInfos();
+                tvTunerInfos = await new TunerResponse().LiveTvTunerInfos(stream).ConfigureAwait(false);
             }
 
             return new LiveTvServiceStatusInfo
@@ -688,7 +683,7 @@ namespace Jellyfin.Plugin.NextPVR
             {
                 await using var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
                     .GetStreamAsync(string.Format("{0}/service?method=recording.lastupdated&ignore_resume=true&sid={1}", baseUrl, Sid));
-                retTime = new LastUpdateResponse().GetUpdateTime(stream, _jsonSerializer, _logger);
+                retTime = await new LastUpdateResponse().GetUpdateTime(stream, _logger).ConfigureAwait(false);
                 if (retTime == DateTimeOffset.FromUnixTimeSeconds(0))
                 {
                     LastUpdatedSidDateTime = DateTimeOffset.MinValue;
@@ -716,7 +711,7 @@ namespace Jellyfin.Plugin.NextPVR
             await using var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
                 .GetStreamAsync(string.Format("{0}/service?method=setting.get&key={1}&sid={2}", baseUrl, key, Sid), cancellationToken);
 
-            return new SettingResponse().GetSetting(stream, _jsonSerializer, _logger);
+            return await new SettingResponse().GetSetting(stream, _logger).ConfigureAwait(false);
         }
 
         public string HomePageUrl

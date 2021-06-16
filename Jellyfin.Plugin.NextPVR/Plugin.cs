@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Plugins;
-using MediaBrowser.Model.Serialization;
 using Jellyfin.Plugin.NextPVR.Configuration;
-using System.IO;
-using MediaBrowser.Model.Drawing;
+using MediaBrowser.Model.Serialization;
 
 namespace Jellyfin.Plugin.NextPVR
 {
