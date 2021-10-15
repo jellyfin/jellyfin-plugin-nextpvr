@@ -2,19 +2,22 @@
 using System.IO;
 using MediaBrowser.Controller.LiveTv;
 using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Serialization;
 using Jellyfin.Plugin.NextPVR.Helpers;
+using System.Threading.Tasks;
+using System.Text.Json;
+using MediaBrowser.Common.Json;
 
 namespace Jellyfin.Plugin.NextPVR.Responses
 {
     public class TimerDefaultsResponse
     {
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
 
-        public SeriesTimerInfo GetDefaultTimerInfo(Stream stream, IJsonSerializer json, ILogger<LiveTvService> logger)
+        public async Task<SeriesTimerInfo> GetDefaultTimerInfo(Stream stream, ILogger<LiveTvService> logger)
         {
-            var root = GetScheduleSettings(stream, json);
-            UtilsHelper.DebugInformation(logger,string.Format("[NextPVR] GetDefaultTimerInfo Response: {0}", json.SerializeToString(root)));
+            var root = await JsonSerializer.DeserializeAsync<ScheduleSettings>(stream, _jsonOptions).ConfigureAwait(false);
+            UtilsHelper.DebugInformation(logger,string.Format("[NextPVR] GetDefaultTimerInfo Response: {0}", JsonSerializer.Serialize(root, _jsonOptions)));
 
             return new SeriesTimerInfo
             {
@@ -24,11 +27,6 @@ namespace Jellyfin.Plugin.NextPVR.Responses
                 RecordAnyTime = root.recordAnyTimeslot,
                 RecordNewOnly = root.onlyNew
             };
-        }
-
-        public ScheduleSettings GetScheduleSettings(Stream stream, IJsonSerializer json)
-        {
-            return json.DeserializeFromStream<ScheduleSettings>(stream);
         }
     }
 
