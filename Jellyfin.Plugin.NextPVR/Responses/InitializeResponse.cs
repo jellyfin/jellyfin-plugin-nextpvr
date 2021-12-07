@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.IO;
 using Microsoft.Extensions.Logging;
 using Jellyfin.Plugin.NextPVR.Helpers;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -10,7 +10,7 @@ namespace Jellyfin.Plugin.NextPVR.Responses
 {
     public class InitializeResponse
     {
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         
         public async Task<bool> LoggedIn(Stream stream, ILogger<LiveTvService> logger)
         {

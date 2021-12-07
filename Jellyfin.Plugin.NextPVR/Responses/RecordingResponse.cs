@@ -9,7 +9,7 @@ using MediaBrowser.Model.LiveTv;
 using Microsoft.Extensions.Logging;
 using Jellyfin.Plugin.NextPVR.Helpers;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using System.Text.Json;
 
 namespace Jellyfin.Plugin.NextPVR.Responses
@@ -20,7 +20,7 @@ namespace Jellyfin.Plugin.NextPVR.Responses
         private readonly string _baseUrl;
         private IFileSystem _fileSystem;
         private readonly ILogger<LiveTvService> _logger;
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
         public RecordingResponse(string baseUrl, IFileSystem fileSystem, ILogger<LiveTvService> logger)
         {

@@ -5,14 +5,14 @@ using Microsoft.Extensions.Logging;
 using Jellyfin.Plugin.NextPVR.Helpers;
 using System.Threading.Tasks;
 using System.Text.Json;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 
 namespace Jellyfin.Plugin.NextPVR.Responses
 {
     public class TimerDefaultsResponse
     {
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
         public async Task<SeriesTimerInfo> GetDefaultTimerInfo(Stream stream, ILogger<LiveTvService> logger)
         {

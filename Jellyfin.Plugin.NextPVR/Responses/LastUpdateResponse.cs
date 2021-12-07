@@ -5,14 +5,14 @@ using MediaBrowser.Controller.LiveTv;
 using Microsoft.Extensions.Logging;
 using Jellyfin.Plugin.NextPVR.Helpers;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using System.Text.Json;
 
 namespace Jellyfin.Plugin.NextPVR.Responses
 {
     public class LastUpdateResponse
     {
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         public async Task<DateTimeOffset> GetUpdateTime(Stream stream, ILogger<LiveTvService> logger)
         {
             var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
