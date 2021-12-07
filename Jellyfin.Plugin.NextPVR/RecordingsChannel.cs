@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
@@ -261,13 +261,12 @@ namespace Jellyfin.Plugin.NextPVR
 
                 useCachedRecordings = true;
             }
-
+            List<ChannelItemInfo> pluginItems = new List<ChannelItemInfo>();
+            pluginItems.AddRange(allRecordings.Where(filter).Select(ConvertToChannelItem));
             var result = new ChannelItemResult()
             {
-                Items = new List<ChannelItemInfo>()
+                Items = pluginItems
             };
-
-            result.Items.AddRange(allRecordings.Where(filter).Select(ConvertToChannelItem));
 
             return result;
         }
@@ -319,6 +318,7 @@ namespace Jellyfin.Plugin.NextPVR
 
         private async Task<ChannelItemResult> GetRecordingGroups(InternalChannelItemQuery query, CancellationToken cancellationToken)
         {
+            List<ChannelItemInfo> pluginItems = new List<ChannelItemInfo>();
             var service = GetService();
             if (useCachedRecordings == false)
             {
@@ -326,17 +326,11 @@ namespace Jellyfin.Plugin.NextPVR
                 var channels = await service.GetChannelsAsync(cancellationToken).ConfigureAwait(false);
                 useCachedRecordings = true;
             }
-
-            var result = new ChannelItemResult()
-            {
-                Items = new List<ChannelItemInfo>()
-            };
-
             var series = allRecordings
                 .Where(i => i.IsSeries)
                 .ToLookup(i => i.Name, StringComparer.OrdinalIgnoreCase);
 
-            result.Items.AddRange(series.OrderBy(i => i.Key).Select(i => new ChannelItemInfo
+            pluginItems.AddRange(series.OrderBy(i => i.Key).Select(i => new ChannelItemInfo
             {
                 Name = i.Key,
                 FolderType = ChannelFolderType.Container,
@@ -350,7 +344,7 @@ namespace Jellyfin.Plugin.NextPVR
 
             if (kids != null)
             {
-                result.Items.Add(new ChannelItemInfo
+                pluginItems.Add(new ChannelItemInfo
                 {
                     Name = "Kids",
                     FolderType = ChannelFolderType.Container,
@@ -363,7 +357,7 @@ namespace Jellyfin.Plugin.NextPVR
             var movies = allRecordings.FirstOrDefault(i => i.IsMovie);
             if (movies != null)
             {
-                result.Items.Add(new ChannelItemInfo
+                pluginItems.Add(new ChannelItemInfo
                 {
                     Name = "Movies",
                     FolderType = ChannelFolderType.Container,
@@ -376,7 +370,7 @@ namespace Jellyfin.Plugin.NextPVR
             var news = allRecordings.FirstOrDefault(i => i.IsNews);
             if (news != null)
             {
-                result.Items.Add(new ChannelItemInfo
+                pluginItems.Add(new ChannelItemInfo
                 {
                     Name = "News",
                     FolderType = ChannelFolderType.Container,
@@ -389,7 +383,7 @@ namespace Jellyfin.Plugin.NextPVR
             var sports = allRecordings.FirstOrDefault(i => i.IsSports);
             if (sports != null)
             {
-                result.Items.Add(new ChannelItemInfo
+                pluginItems.Add(new ChannelItemInfo
                 {
                     Name = "Sports",
                     FolderType = ChannelFolderType.Container,
@@ -402,7 +396,7 @@ namespace Jellyfin.Plugin.NextPVR
             var other = allRecordings.FirstOrDefault(i => !i.IsSports && !i.IsNews && !i.IsMovie && !i.IsKids && !i.IsSeries);
             if (other != null)
             {
-                result.Items.Add(new ChannelItemInfo
+                pluginItems.Add(new ChannelItemInfo
                 {
                     Name = "Others",
                     FolderType = ChannelFolderType.Container,
@@ -411,7 +405,10 @@ namespace Jellyfin.Plugin.NextPVR
                     ImageUrl = other.ImageUrl
                 });
             }
-
+            var result = new ChannelItemResult()
+            {
+                Items = pluginItems
+            };
             return result;
         }
     }
