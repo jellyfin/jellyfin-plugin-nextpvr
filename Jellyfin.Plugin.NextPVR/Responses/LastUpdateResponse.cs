@@ -1,33 +1,34 @@
-﻿using System.Globalization;
+﻿using System;
 using System.IO;
-using System;
-using MediaBrowser.Controller.LiveTv;
-using Microsoft.Extensions.Logging;
-using Jellyfin.Plugin.NextPVR.Helpers;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Extensions.Json;
-using System.Text.Json;
+using Jellyfin.Plugin.NextPVR.Helpers;
+using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Plugin.NextPVR.Responses
+namespace Jellyfin.Plugin.NextPVR.Responses;
+
+public class LastUpdateResponse
 {
-    public class LastUpdateResponse
-    {
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
-        public async Task<DateTimeOffset> GetUpdateTime(Stream stream, ILogger<LiveTvService> logger)
-        {
-            var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
-            UtilsHelper.DebugInformation(logger, string.Format("[NextPVR] LastUpdate Response: {0}", JsonSerializer.Serialize(root, _jsonOptions)));
-            return DateTimeOffset.FromUnixTimeSeconds(root.last_update);
-        }
-    }
+    private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
-    // Classes created with http://json2csharp.com/
-
-    public class RootObject
+    public async Task<DateTimeOffset> GetUpdateTime(Stream stream, ILogger<LiveTvService> logger)
     {
-        public int last_update { get; set; }
-        public string stat { get; set; }
-        public int code { get; set; }
-        public string msg { get; set; }
+        var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
+        UtilsHelper.DebugInformation(logger, $"[NextPVR] LastUpdate Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
+        return DateTimeOffset.FromUnixTimeSeconds(root.LastUpdate);
     }
+}
+
+// Classes created with http://json2csharp.com/
+
+public class RootObject
+{
+    public int LastUpdate { get; set; }
+
+    public string Stat { get; set; }
+
+    public int Code { get; set; }
+
+    public string Msg { get; set; }
 }

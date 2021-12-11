@@ -1,35 +1,31 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Jellyfin.Plugin.NextPVR.Helpers;
+﻿using System.IO;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Jellyfin.Extensions.Json;
+using Jellyfin.Plugin.NextPVR.Helpers;
+using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Plugin.NextPVR.Responses
+namespace Jellyfin.Plugin.NextPVR.Responses;
+
+public class CancelDeleteRecordingResponse
 {
-    public class CancelDeleteRecordingResponse
+    private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
+
+    public async Task<bool?> RecordingError(Stream stream, ILogger<LiveTvService> logger)
     {
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
+        var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
 
-        public async Task<bool?> RecordingError(Stream stream, ILogger<LiveTvService> logger)
+        if (root.Stat != "ok")
         {
-            var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
-
-            if (root.stat != "ok")
-            {
-                UtilsHelper.DebugInformation(logger, string.Format("[NextPVR] RecordingError Response: {0}", JsonSerializer.Serialize(root, _jsonOptions)));
-                return true;
-            }
-            return false;
+            UtilsHelper.DebugInformation(logger, $"[NextPVR] RecordingError Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
+            return true;
         }
 
-        public class RootObject
-        {
-            public string stat { get; set; }
-        }
+        return false;
+    }
+
+    private class RootObject
+    {
+        public string Stat { get; set; }
     }
 }

@@ -1,69 +1,75 @@
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
+using System.Threading.Tasks;
+using Jellyfin.Extensions.Json;
+using Jellyfin.Plugin.NextPVR.Helpers;
 using MediaBrowser.Controller.LiveTv;
 using Microsoft.Extensions.Logging;
-using Jellyfin.Plugin.NextPVR.Helpers;
-using System.Threading.Tasks;
-using System.Text.Json;
-using Jellyfin.Extensions.Json;
 
-namespace Jellyfin.Plugin.NextPVR.Responses
+namespace Jellyfin.Plugin.NextPVR.Responses;
+
+public class ChannelResponse
 {
-    public class ChannelResponse
+    private readonly string _baseUrl;
+    private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
+
+    public ChannelResponse(string baseUrl)
     {
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-        private readonly string _baseUrl;
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
-        public ChannelResponse(string baseUrl)
-        {
-            _baseUrl = baseUrl;
-        }
-
-        public async Task<IEnumerable<ChannelInfo>> GetChannels(Stream stream, ILogger<LiveTvService> logger)
-        {
-            var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
-
-            if (root == null)
-            {
-                logger.LogError("Failed to download channel information.");
-                throw new Exception("Failed to download channel information.");
-            }
-
-            if (root.channels != null)
-            {
-                UtilsHelper.DebugInformation(logger, string.Format("[NextPVR] ChannelResponse: {0}", JsonSerializer.Serialize(root, _jsonOptions)));
-                return root.channels.Select(i => new ChannelInfo
-                {
-                    Name = i.channelName,
-                    Number = i.channelNumberFormated,
-                    Id = i.channelId.ToString(_usCulture),
-                    ImageUrl = string.Format("{0}/service?method=channel.icon&channel_id={1}", _baseUrl, i.channelId),
-                    ChannelType = ChannelHelper.GetChannelType(i.channelType),
-                    HasImage = i.channelIcon
-                });
-            }
-
-            return new List<ChannelInfo>();
-        }
-        // Classes created with http://json2csharp.com/
-        public class Channel
-        {
-            public int channelId { get; set; }
-            public int channelNumber { get; set; }
-            public int channelMinor { get; set; }
-            public string channelNumberFormated { get; set; }
-            public int channelType { get; set; }
-            public string channelName { get; set; }
-            public string channelDetails { get; set; }
-            public bool channelIcon { get; set; }
-        }
-
-        public class RootObject
-        {
-            public List<Channel> channels { get; set; }
-        }
+        _baseUrl = baseUrl;
     }
+
+    public async Task<IEnumerable<ChannelInfo>> GetChannels(Stream stream, ILogger<LiveTvService> logger)
+    {
+        var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
+
+        if (root == null)
+        {
+            logger.LogError("Failed to download channel information");
+            throw new JsonException("Failed to download channel information.");
+        }
+
+        if (root.Channels != null)
+        {
+            UtilsHelper.DebugInformation(logger, $"[NextPVR] ChannelResponse: {JsonSerializer.Serialize(root, _jsonOptions)}");
+            return root.Channels.Select(i => new ChannelInfo
+            {
+                Name = i.ChannelName,
+                Number = i.ChannelNumberFormated,
+                Id = i.ChannelId.ToString(CultureInfo.InvariantCulture),
+                ImageUrl = $"{_baseUrl}/service?method=channel.icon&channel_id={i.ChannelId}",
+                ChannelType = ChannelHelper.GetChannelType(i.ChannelType),
+                HasImage = i.ChannelIcon
+            });
+        }
+
+        return new List<ChannelInfo>();
     }
+
+    // Classes created with http://json2csharp.com/
+    private class Channel
+    {
+        public int ChannelId { get; set; }
+
+        public int ChannelNumber { get; set; }
+
+        public int ChannelMinor { get; set; }
+
+        public string ChannelNumberFormated { get; set; }
+
+        public int ChannelType { get; set; }
+
+        public string ChannelName { get; set; }
+
+        public string ChannelDetails { get; set; }
+
+        public bool ChannelIcon { get; set; }
+    }
+
+    private class RootObject
+    {
+        public List<Channel> Channels { get; set; }
+    }
+}

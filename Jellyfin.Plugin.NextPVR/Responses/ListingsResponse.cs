@@ -3,114 +3,120 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Model.LiveTv;
-using Microsoft.Extensions.Logging;
-using Jellyfin.Plugin.NextPVR.Helpers;
-using System.Threading.Tasks;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Jellyfin.Extensions.Json;
+using Jellyfin.Plugin.NextPVR.Helpers;
+using MediaBrowser.Controller.LiveTv;
+using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Plugin.NextPVR.Responses
+namespace Jellyfin.Plugin.NextPVR.Responses;
+
+public class ListingsResponse
 {
-    class ListingsResponse
+    private readonly string _baseUrl;
+    private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
+    private string _channelId;
+
+    public ListingsResponse(string baseUrl)
     {
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-        private readonly string _baseUrl;
-        private string _channelId;
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
+        _baseUrl = baseUrl;
+    }
 
-        public ListingsResponse(string baseUrl)
+    public async Task<IEnumerable<ProgramInfo>> GetPrograms(Stream stream, string channelId, ILogger<LiveTvService> logger)
+    {
+        var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
+        UtilsHelper.DebugInformation(logger, $"[NextPVR] GetPrograms Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
+        _channelId = channelId;
+        return root.Listings
+            .Select(i => i)
+            .Select(GetProgram);
+    }
+
+    private ProgramInfo GetProgram(Listing epg)
+    {
+        var genreMapper = new GenreMapper(Plugin.Instance.Configuration);
+        var info = new ProgramInfo
         {
-            _baseUrl = baseUrl;
-        }
+            ChannelId = _channelId,
+            Id = epg.Id.ToString(CultureInfo.InvariantCulture),
+            Overview = epg.Description,
+            EpisodeTitle = epg.Subtitle,
+            SeasonNumber = epg.Season,
+            EpisodeNumber = epg.Episode,
+            StartDate = DateTimeOffset.FromUnixTimeSeconds(epg.Start).DateTime,
+            EndDate = DateTimeOffset.FromUnixTimeSeconds(epg.End).DateTime,
+            Genres = new List<string>(), // epg.genres.Where(g => !string.IsNullOrWhiteSpace(g)).ToList(),
+            OriginalAirDate = epg.Original == null ? epg.Original : DateTime.SpecifyKind((DateTime)epg.Original, DateTimeKind.Local),
+            ProductionYear = epg.Year,
+            Name = epg.Name,
+            OfficialRating = epg.Rating,
+            IsPremiere = epg.Significance != null && epg.Significance.Contains("Premiere", StringComparison.OrdinalIgnoreCase),
+            // CommunityRating = ParseCommunityRating(epg.StarRating),
+            // Audio = ParseAudio(epg.Audio),
+            // IsHD = string.Equals(epg.Quality, "hdtv", StringComparison.OrdinalIgnoreCase),
+            IsLive = epg.Significance != null && epg.Significance.Contains("Live", StringComparison.OrdinalIgnoreCase),
+            IsRepeat = !Plugin.Instance.Configuration.ShowRepeat || !epg.Firstrun,
+            IsSeries = true, // !string.IsNullOrEmpty(epg.Subtitle),  http://emby.media/community/index.php?/topic/21264-series-record-ability-missing-in-emby-epg/#entry239633
+            HasImage = Plugin.Instance.Configuration.GetEpisodeImage,
+            ImageUrl = Plugin.Instance.Configuration.GetEpisodeImage ? $"{_baseUrl}/service?method=channel.show.artwork&name={Uri.EscapeDataString(epg.Name)}" : null,
+            BackdropImageUrl = Plugin.Instance.Configuration.GetEpisodeImage ? $"{_baseUrl}/service?method=channel.show.artwork&prefer=landscape&name={Uri.EscapeDataString(epg.Name)}" : null,
+        };
 
-        public async Task<IEnumerable<ProgramInfo>> GetPrograms(Stream stream, string channelId, ILogger<LiveTvService> logger)
+        if (epg.Genres != null)
         {
-            var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
-            UtilsHelper.DebugInformation(logger, string.Format("[NextPVR] GetPrograms Response: {0}", JsonSerializer.Serialize(root, _jsonOptions)));
-
-            /*
-
-            return listings.Where(i => string.Equals(i.Channel.channelOID.ToString(_usCulture), channelId, StringComparison.OrdinalIgnoreCase))
-            .SelectMany(i => i.EPGEvents.Select(e => GetProgram(i.Channel, e.epgEventJSONObject.epgEvent)));
-            */
-            _channelId = channelId;
-            return root.listings
-               .Select(i => i)
-               .Select(GetProgram);
-        }
-
-        private ProgramInfo GetProgram(Listing epg)
-        {
-            var genreMapper = new GenreMapper(Plugin.Instance.Configuration);
-            var info = new ProgramInfo
+            info.Genres = epg.Genres;
+            info.Genres[0] += " Movie";
+            genreMapper.PopulateProgramGenres(info);
+            if (info.IsMovie)
             {
-                ChannelId = _channelId,
-                Id = epg.id.ToString(),
-                Overview = epg.description,
-                EpisodeTitle = epg.subtitle,
-                SeasonNumber = epg.season,
-                EpisodeNumber = epg.episode,
-                StartDate = DateTimeOffset.FromUnixTimeSeconds(epg.start).DateTime,
-                EndDate = DateTimeOffset.FromUnixTimeSeconds(epg.end).DateTime,
-                Genres = new List<string>(), // epg.genres.Where(g => !string.IsNullOrWhiteSpace(g)).ToList(),
-                OriginalAirDate = epg.original == null ? epg.original : DateTime.SpecifyKind((System.DateTime)epg.original, DateTimeKind.Local),
-                ProductionYear = epg.year,
-                Name = epg.name,
-                OfficialRating = epg.rating,
-                IsPremiere = epg.significance != null ? epg.significance.Contains("Premiere") : false,
-                //CommunityRating = ParseCommunityRating(epg.StarRating),
-                //Audio = ParseAudio(epg.Audio),
-                //IsHD = string.Equals(epg.Quality, "hdtv", StringComparison.OrdinalIgnoreCase),
-                IsLive = epg.significance != null ? epg.significance.Contains("Live") : false,
-                IsRepeat = Plugin.Instance.Configuration.ShowRepeat ? !epg.firstrun : true,
-                IsSeries = true, //!string.IsNullOrEmpty(epg.Subtitle),  http://emby.media/community/index.php?/topic/21264-series-record-ability-missing-in-emby-epg/#entry239633
-                HasImage = Plugin.Instance.Configuration.GetEpisodeImage,
-                ImageUrl = Plugin.Instance.Configuration.GetEpisodeImage ? string.Format("{0}/service?method=channel.show.artwork&name={1}", _baseUrl, Uri.EscapeDataString(epg.name)) : null,
-                BackdropImageUrl = Plugin.Instance.Configuration.GetEpisodeImage ? string.Format("{0}/service?method=channel.show.artwork&prefer=landscape&name={1}", _baseUrl, Uri.EscapeDataString(epg.name)) : null,
-            };
-
-            if (epg.genres != null)
-            {
-                info.Genres = epg.genres;
-                info.Genres[0] += " Movie";
-                genreMapper.PopulateProgramGenres(info);
-                if (info.IsMovie)
-                {
-                    info.IsRepeat = false;
-                    info.IsSeries = false;
-                }
+                info.IsRepeat = false;
+                info.IsSeries = false;
             }
-            return info;
         }
 
-        // Classes created with http://json2csharp.com/
+        return info;
+    }
 
-        public class Listing
-        {
-            public int id { get; set; }
-            public string name { get; set; }
-            public string description { get; set; }
-            public string subtitle { get; set; }
-            public List<string> genres { get; set; }
-            public bool firstrun { get; set; }
-            public int start { get; set; }
-            public int end { get; set; }
-            public string rating { get; set; }
-            public DateTime? original { get; set; }
-            public int? season { get; set; }
-            public int? episode { get; set; }
-            public int? year { get; set; }
-            public string significance { get; set; }
-            public string recording_status { get; set; }
-            public int recording_id { get; set; }
-        }
+    // Classes created with http://json2csharp.com/
 
-        public class RootObject
-        {
-            public List<Listing> listings { get; set; }
-        }
+    private class Listing
+    {
+        public int Id { get; set; }
 
+        public string Name { get; set; }
+
+        public string Description { get; set; }
+
+        public string Subtitle { get; set; }
+
+        public List<string> Genres { get; set; }
+
+        public bool Firstrun { get; set; }
+
+        public int Start { get; set; }
+
+        public int End { get; set; }
+
+        public string Rating { get; set; }
+
+        public DateTime? Original { get; set; }
+
+        public int? Season { get; set; }
+
+        public int? Episode { get; set; }
+
+        public int? Year { get; set; }
+
+        public string Significance { get; set; }
+
+        public string RecordingStatus { get; set; }
+
+        public int RecordingId { get; set; }
+    }
+
+    private class RootObject
+    {
+        public List<Listing> Listings { get; set; }
     }
 }

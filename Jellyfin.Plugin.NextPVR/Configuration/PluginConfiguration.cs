@@ -1,49 +1,62 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Jellyfin.Plugin.NextPVR.Entities;
-
 
 using MediaBrowser.Model.Plugins;
 
-namespace Jellyfin.Plugin.NextPVR.Configuration
-{
-    /// <summary>
-    /// Class PluginConfiguration
-    /// </summary>
-    public class PluginConfiguration : BasePluginConfiguration
-    {
-        public string WebServiceUrl { get; set; }
+namespace Jellyfin.Plugin.NextPVR.Configuration;
 
-        public string Pin { get; set; }
-
-        public Boolean EnableDebugLogging { get; set; }
-        public Boolean NewEpisodes { get; set; }
-        public bool ShowRepeat { get; set; }
-        public bool GetEpisodeImage { get; set; }
-        public string RecordingDefault { get; set; }
-        public  int RecordingTransport { get; set; }
-        public int PrePaddingSeconds { get; set; }
-        public int PostPaddingSeconds { get; set; }
 /// <summary>
-/// The genre mappings, to map localised NextPVR genres, to Emby categories.
+/// Class PluginConfiguration.
 /// </summary>
-public SerializableDictionary<String, List<String>> GenreMappings { get; set; }
-
-        public PluginConfiguration()
+public class PluginConfiguration : BasePluginConfiguration
+{
+    public PluginConfiguration()
+    {
+        Pin = "0000";
+        WebServiceUrl = "http://localhost:8866";
+        EnableDebugLogging = false;
+        NewEpisodes = false;
+        RecordingDefault = "2";
+        RecordingTransport = 1;
+        // Initialise this
+        GenreMappings = new SerializableDictionary<string, List<string>>();
+        GenreMappings["GENRESPORT"] = new List<string>()
         {
-            Pin = "0000";
-            WebServiceUrl = "http://localhost:8866";
-            EnableDebugLogging = false;
-            NewEpisodes = false;
-            RecordingDefault = "2";
-            RecordingTransport = 1;
-            // Initialise this
-            GenreMappings = new SerializableDictionary<string, List<string>>();
-            GenreMappings["GENRESPORT"] =  new List<string>() { "Sports", "Football", "Baseball", "Basketball", "Hockey", "Soccer" };
-            GenreMappings["GENRENEWS"] = new List<string>() { "News" };
-            GenreMappings["GENREKIDS"] = new List<string>() { "Kids", "Children" };
-            GenreMappings["GENREMOVIE"] = new List<string>() { "Movie", "Film" };
-            GenreMappings["GENRELIVE"] = new List<string>() { "Awards" };
-        }
+            "Sports",
+            "Football",
+            "Baseball",
+            "Basketball",
+            "Hockey",
+            "Soccer"
+        };
+        GenreMappings["GENRENEWS"] = new List<string>() { "News" };
+        GenreMappings["GENREKIDS"] = new List<string>() { "Kids", "Children" };
+        GenreMappings["GENREMOVIE"] = new List<string>() { "Movie", "Film" };
+        GenreMappings["GENRELIVE"] = new List<string>() { "Awards" };
     }
+
+    public string WebServiceUrl { get; set; }
+
+    public string Pin { get; set; }
+
+    public bool EnableDebugLogging { get; set; }
+
+    public bool NewEpisodes { get; set; }
+
+    public bool ShowRepeat { get; set; }
+
+    public bool GetEpisodeImage { get; set; }
+
+    public string RecordingDefault { get; set; }
+
+    public int RecordingTransport { get; set; }
+
+    public int PrePaddingSeconds { get; set; }
+
+    public int PostPaddingSeconds { get; set; }
+
+    /// <summary>
+    /// Gets or sets the genre mappings, to map localised NextPVR genres, to Jellyfin categories.
+    /// </summary>
+    public SerializableDictionary<string, List<string>> GenreMappings { get; set; }
 }

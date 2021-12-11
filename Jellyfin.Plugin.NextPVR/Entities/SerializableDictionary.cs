@@ -3,70 +3,68 @@ using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
 
-namespace Jellyfin.Plugin.NextPVR.Entities
+namespace Jellyfin.Plugin.NextPVR.Entities;
+
+[XmlRoot("dictionary")]
+public class SerializableDictionary<TKey, TValue> : Dictionary<TKey, TValue>, IXmlSerializable
 {
-    [XmlRoot("dictionary")]
-    public class SerializableDictionary<TKey, TValue> : Dictionary<TKey, TValue>, IXmlSerializable
+    public XmlSchema GetSchema()
     {
-        #region IXmlSerializable Members
+        return null;
+    }
 
-        public XmlSchema GetSchema()
+    public void ReadXml(XmlReader reader)
+    {
+        var keySerializer = new XmlSerializer(typeof(TKey));
+        var valueSerializer = new XmlSerializer(typeof(TValue));
+
+        var wasEmpty = reader.IsEmptyElement;
+        reader.Read();
+
+        if (wasEmpty)
         {
-            return null;
+            return;
         }
 
-        public void ReadXml(XmlReader reader)
+        while (reader.NodeType != XmlNodeType.EndElement)
         {
-            var keySerializer = new XmlSerializer(typeof (TKey));
-            var valueSerializer = new XmlSerializer(typeof (TValue));
+            reader.ReadStartElement("item");
 
-            var wasEmpty = reader.IsEmptyElement;
-            reader.Read();
-
-            if (wasEmpty)
-                return;
-
-            while (reader.NodeType != XmlNodeType.EndElement)
-            {
-                reader.ReadStartElement("item");
-
-                reader.ReadStartElement("key");
-                var key = (TKey) keySerializer.Deserialize(reader);
-                reader.ReadEndElement();
-
-                reader.ReadStartElement("value");
-                var value = (TValue) valueSerializer.Deserialize(reader);
-                reader.ReadEndElement();
-
-                Add(key, value);
-
-                reader.ReadEndElement();
-                reader.MoveToContent();
-            }
+            reader.ReadStartElement("key");
+            var key = (TKey)keySerializer.Deserialize(reader);
             reader.ReadEndElement();
+
+            reader.ReadStartElement("value");
+            var value = (TValue)valueSerializer.Deserialize(reader);
+            reader.ReadEndElement();
+
+            Add(key, value);
+
+            reader.ReadEndElement();
+            reader.MoveToContent();
         }
 
-        public void WriteXml(XmlWriter writer)
+        reader.ReadEndElement();
+    }
+
+    public void WriteXml(XmlWriter writer)
+    {
+        var keySerializer = new XmlSerializer(typeof(TKey));
+        var valueSerializer = new XmlSerializer(typeof(TValue));
+
+        foreach (TKey key in Keys)
         {
-            var keySerializer = new XmlSerializer(typeof (TKey));
-            var valueSerializer = new XmlSerializer(typeof (TValue));
+            writer.WriteStartElement("item");
+            writer.WriteStartElement("key");
+            keySerializer.Serialize(writer, key);
+            writer.WriteEndElement();
 
-            foreach (TKey key in Keys)
-            {
-                writer.WriteStartElement("item");
-                writer.WriteStartElement("key");
-                keySerializer.Serialize(writer, key);
-                writer.WriteEndElement();
+            writer.WriteStartElement("value");
+            var value = this[key];
+            valueSerializer.Serialize(writer, value);
+            writer.WriteEndElement();
 
-                writer.WriteStartElement("value");
-                var value = this[key];
-                valueSerializer.Serialize(writer, value);
-                writer.WriteEndElement();
-
-                writer.WriteEndElement();
-            }
+            writer.WriteEndElement();
         }
-
-        #endregion
     }
 }

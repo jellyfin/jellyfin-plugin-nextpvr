@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -7,72 +8,77 @@ using Jellyfin.Extensions.Json;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.LiveTv;
 
-namespace Jellyfin.Plugin.NextPVR.Responses
+namespace Jellyfin.Plugin.NextPVR.Responses;
+
+public class TunerResponse
 {
-    public class TunerResponse
+    private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
+
+    public async Task<List<LiveTvTunerInfo>> LiveTvTunerInfos(Stream stream)
     {
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
+        var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
+        return root.Tuners.Select(GetTunerInformation).ToList();
+    }
 
-        public async Task<List<LiveTvTunerInfo>> LiveTvTunerInfos(Stream stream)
+    private LiveTvTunerInfo GetTunerInformation(Tuner i)
+    {
+        LiveTvTunerInfo tunerinfo = new LiveTvTunerInfo();
+
+        tunerinfo.Name = i.TunerName;
+        tunerinfo.Status = GetStatus(i);
+
+        if (i.Recordings.Count > 0)
         {
-            var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
-            return root.Tuners.Select(GetTunerInformation).ToList();
+            tunerinfo.ChannelId = i.Recordings.Single().Recording.ChannelOid.ToString(CultureInfo.InvariantCulture);
         }
 
-        private LiveTvTunerInfo GetTunerInformation(Tuner i)
+        return tunerinfo;
+    }
+
+    private LiveTvTunerStatus GetStatus(Tuner i)
+    {
+        if (i.Recordings.Count > 0)
         {
-            LiveTvTunerInfo tunerinfo = new LiveTvTunerInfo();
-
-            tunerinfo.Name = i.tunerName;
-            tunerinfo.Status = GetStatus(i);
-
-            if (i.recordings.Count > 0)
-            {
-                tunerinfo.ChannelId = i.recordings.Single().Recording.channelOID.ToString();
-            }
-
-            return tunerinfo;
+            return LiveTvTunerStatus.RecordingTv;
         }
 
-        private LiveTvTunerStatus GetStatus(Tuner i)
+        if (i.LiveTv.Count > 0)
         {
-            if (i.recordings.Count > 0)
-            {
-                return LiveTvTunerStatus.RecordingTv;
-            }
-
-            if (i.liveTV.Count > 0)
-            {
-                return LiveTvTunerStatus.LiveTv;
-            }
-
-            return LiveTvTunerStatus.Available;
+            return LiveTvTunerStatus.LiveTv;
         }
 
-        public class Recording
-        {
-            public int tunerOID { get; set; }
-            public string recName { get; set; }
-            public int channelOID { get; set; }
-            public int recordingOID { get; set; }
-        }
+        return LiveTvTunerStatus.Available;
+    }
 
-        public class Recordings
-        {
-            public Recording Recording { get; set; }
-        }
+    private class Recording
+    {
+        public int TunerOid { get; set; }
 
-        public class Tuner
-        {
-            public string tunerName { get; set; }
-            public string tunerStatus { get; set; }
-            public List<Recordings> recordings { get; set; }
-            public List<object> liveTV { get; set; }
-        }
+        public string RecName { get; set; }
 
-        public class RootObject
-        {
-            public List<Tuner> Tuners { get; set; }
-        }
+        public int ChannelOid { get; set; }
+
+        public int RecordingOid { get; set; }
+    }
+
+    private class Recordings
+    {
+        public Recording Recording { get; set; }
+    }
+
+    private class Tuner
+    {
+        public string TunerName { get; set; }
+
+        public string TunerStatus { get; set; }
+
+        public List<Recordings> Recordings { get; set; }
+
+        public List<object> LiveTv { get; set; }
+    }
+
+    private class RootObject
+    {
+        public List<Tuner> Tuners { get; set; }
     }
 }

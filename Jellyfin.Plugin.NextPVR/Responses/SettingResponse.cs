@@ -1,67 +1,85 @@
 ﻿using System.Globalization;
 using System.IO;
-using MediaBrowser.Controller.LiveTv;
-using Microsoft.Extensions.Logging;
-using Jellyfin.Plugin.NextPVR.Helpers;
-using System.Threading.Tasks;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Jellyfin.Extensions.Json;
+using Jellyfin.Plugin.NextPVR.Helpers;
+using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Plugin.NextPVR.Responses
+namespace Jellyfin.Plugin.NextPVR.Responses;
+
+public class SettingResponse
 {
-    public class SettingResponse
+    private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
+
+    public async Task<bool> GetDefaultSettings(Stream stream, ILogger<LiveTvService> logger)
     {
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
+        var root = await JsonSerializer.DeserializeAsync<ScheduleSettings>(stream, _jsonOptions).ConfigureAwait(false);
+        UtilsHelper.DebugInformation(logger, $"[NextPVR] GetDefaultTimerInfo Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
+        Plugin.Instance.Configuration.PostPaddingSeconds = int.Parse(root.PostPadding, CultureInfo.InvariantCulture) * 60;
+        Plugin.Instance.Configuration.PrePaddingSeconds = int.Parse(root.PrePadding, CultureInfo.InvariantCulture) * 60;
+        Plugin.Instance.Configuration.ShowRepeat = root.ShowNewInGuide;
+        return true;
+    }
 
-        public async Task<bool> GetDefaultSettings(Stream stream, ILogger<LiveTvService> logger)
-        {
-            var root = await JsonSerializer.DeserializeAsync<ScheduleSettings>(stream, _jsonOptions).ConfigureAwait(false);
-            UtilsHelper.DebugInformation(logger, string.Format("[NextPVR] GetDefaultTimerInfo Response: {0}", JsonSerializer.Serialize(root, _jsonOptions)));
-            Plugin.Instance.Configuration.PostPaddingSeconds = int.Parse(root.postPadding) * 60;
-            Plugin.Instance.Configuration.PrePaddingSeconds = int.Parse(root.prePadding) * 60;
-            Plugin.Instance.Configuration.ShowRepeat = root.showNewInGuide;
-            return true;
-        }
+    public async Task<string> GetSetting(Stream stream, ILogger<LiveTvService> logger)
+    {
+        var root = await JsonSerializer.DeserializeAsync<SettingValue>(stream, _jsonOptions).ConfigureAwait(false);
+        UtilsHelper.DebugInformation(logger, $"[NextPVR] GetSetting Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
+        return root.Value;
+    }
 
-        public async Task<string> GetSetting(Stream stream, ILogger<LiveTvService> logger)
-        {
-            var root = await JsonSerializer.DeserializeAsync<SettingValue>(stream, _jsonOptions).ConfigureAwait(false);
-            UtilsHelper.DebugInformation(logger, string.Format("[NextPVR] GetSetting Response: {0}", JsonSerializer.Serialize(root, _jsonOptions)));
-            return root.value;
-        }
+    // Classes created with http://json2csharp.com/
 
-        // Classes created with http://json2csharp.com/
+    private class ScheduleSettings
+    {
+        public string Version { get; set; }
 
-        private class ScheduleSettings
-        {
-            public string version { get; set; }
-            public string nextPVRVersion { get; set; }
-            public string readableVersion { get; set; }
-            public bool liveTimeshift { get; set; }
-            public bool liveTimeshiftBufferInfo { get; set; }
-            public bool channelsUseSegmenter { get; set; }
-            public bool recordingsUseSegmenter { get; set; }
-            public int whatsNewDays { get; set; }
-            public int skipForwardSeconds { get; set; }
-            public int skipBackSeconds { get; set; }
-            public int skipFFSeconds { get; set; }
-            public int skipRWSeconds { get; set; }
-            public string recordingView { get; set; }
-            public string prePadding { get; set; }
-            public string postPadding { get; set; }
-            public bool confirmOnDelete { get; set; }
-            public bool showNewInGuide { get; set; }
-            public int slipSeconds { get; set; }
-            public string recordingDirectories { get; set; }
-            public bool channelDetailsLevel { get; set; }
-            public string time { get; set; }
-            public int timeEpoch { get; set; }
-        }
+        public string NextPvrVersion { get; set; }
 
-        private class SettingValue
-        {
-            public string value { get; set; }
-        }
+        public string ReadableVersion { get; set; }
+
+        public bool LiveTimeshift { get; set; }
+
+        public bool LiveTimeshiftBufferInfo { get; set; }
+
+        public bool ChannelsUseSegmenter { get; set; }
+
+        public bool RecordingsUseSegmenter { get; set; }
+
+        public int WhatsNewDays { get; set; }
+
+        public int SkipForwardSeconds { get; set; }
+
+        public int SkipBackSeconds { get; set; }
+
+        public int SkipFfSeconds { get; set; }
+
+        public int SkipRwSeconds { get; set; }
+
+        public string RecordingView { get; set; }
+
+        public string PrePadding { get; set; }
+
+        public string PostPadding { get; set; }
+
+        public bool ConfirmOnDelete { get; set; }
+
+        public bool ShowNewInGuide { get; set; }
+
+        public int SlipSeconds { get; set; }
+
+        public string RecordingDirectories { get; set; }
+
+        public bool ChannelDetailsLevel { get; set; }
+
+        public string Time { get; set; }
+
+        public int TimeEpoch { get; set; }
+    }
+
+    private class SettingValue
+    {
+        public string Value { get; set; }
     }
 }

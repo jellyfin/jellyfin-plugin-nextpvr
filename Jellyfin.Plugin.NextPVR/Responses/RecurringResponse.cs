@@ -3,107 +3,112 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.LiveTv;
-using Microsoft.Extensions.Logging;
-using Jellyfin.Plugin.NextPVR.Helpers;
 using System.Text.Json;
-using Jellyfin.Extensions.Json;
 using System.Threading.Tasks;
+using Jellyfin.Extensions.Json;
+using Jellyfin.Plugin.NextPVR.Helpers;
+using MediaBrowser.Controller.LiveTv;
+using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Plugin.NextPVR.Responses
+namespace Jellyfin.Plugin.NextPVR.Responses;
+
+internal class RecurringResponse
 {
-    class RecurringResponse
+    private readonly ILogger<LiveTvService> _logger;
+    private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
+
+    public RecurringResponse(ILogger<LiveTvService> logger)
     {
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-        private readonly string _baseUrl;
-        private IFileSystem _fileSystem;
-        private readonly ILogger<LiveTvService> _logger;
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
+        _logger = logger;
+    }
 
-        public RecurringResponse(string baseUrl, IFileSystem fileSystem, ILogger<LiveTvService> logger)
+    public async Task<IEnumerable<SeriesTimerInfo>> GetSeriesTimers(Stream stream)
+    {
+        if (stream == null)
         {
-            _baseUrl = baseUrl;
-            _fileSystem = fileSystem;
-            _logger = logger;
-        }
-        public async Task<IEnumerable<SeriesTimerInfo>> GetSeriesTimers(Stream stream)
-        {
-            if (stream == null)
-            {
-                _logger.LogError("[NextPVR] GetSeriesTimers stream == null");
-                throw new ArgumentNullException("stream");
-            }
-
-            var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
-            UtilsHelper.DebugInformation(_logger, string.Format("[NextPVR] GetSeriesTimers Response: {0}", JsonSerializer.Serialize(root, _jsonOptions)));
-            return root.recurrings
-                .Select(i => i)
-                .Select(GetSeriesTimerInfo);
-        }
-        private SeriesTimerInfo GetSeriesTimerInfo(Recurring i)
-        {
-            var info = new SeriesTimerInfo();
-            try
-            {
-                info.ChannelId = i.channelID.ToString();
-
-                info.Id = i.id.ToString(_usCulture);
-
-                info.StartDate = DateTimeOffset.FromUnixTimeSeconds(i.startTimeTicks).DateTime;
-                info.EndDate = DateTimeOffset.FromUnixTimeSeconds(i.endTimeTicks).DateTime;
-
-                info.PrePaddingSeconds = i.prePadding * 60;
-                info.PostPaddingSeconds = i.postPadding * 60;
-
-                info.Name = i.name ?? i.epgTitle;
-                info.RecordNewOnly = i.onlyNewEpisodes;
-                if (info.ChannelId == "0")
-                    info.RecordAnyChannel = true;
-
-                if (i.days == null)
-                {
-                    info.RecordAnyTime = true;
-                }
-                else
-                {
-                    info.Days = (i.days ?? string.Empty).Split(':')
-                        .Select(d => (DayOfWeek)Enum.Parse(typeof(DayOfWeek), d.Trim(), true))
-                        .ToList();
-                }
-
-                return info;
-            }
-            catch (Exception err)
-            {
-                throw (err);
-            }
-        }
-        private class Recurring
-        {
-            public int id { get; set; }
-            public int type { get; set; }
-            public string name { get; set; }
-            public int channelID { get; set; }
-            public string channel { get; set; }
-            public string period { get; set; }
-            public int keep { get; set; }
-            public int prePadding { get; set; }
-            public int postPadding { get; set; }
-            public string epgTitle { get; set; }
-            public string directoryID { get; set; }
-            public string days { get; set; }
-            public bool enabled { get; set; }
-            public bool onlyNewEpisodes { get; set; }
-            public int startTimeTicks { get; set; }
-            public int endTimeTicks { get; set; }
-            public string advancedRules { get; set; }
+            _logger.LogError("[NextPVR] GetSeriesTimers stream == null");
+            throw new ArgumentNullException(nameof(stream));
         }
 
-        private class RootObject
+        var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
+        UtilsHelper.DebugInformation(_logger, $"[NextPVR] GetSeriesTimers Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
+        return root.Recurrings
+            .Select(i => i)
+            .Select(GetSeriesTimerInfo);
+    }
+
+    private SeriesTimerInfo GetSeriesTimerInfo(Recurring i)
+    {
+        var info = new SeriesTimerInfo
         {
-            public List<Recurring> recurrings { get; set; }
+            ChannelId = i.ChannelId.ToString(CultureInfo.InvariantCulture),
+            Id = i.Id.ToString(CultureInfo.InvariantCulture),
+            StartDate = DateTimeOffset.FromUnixTimeSeconds(i.StartTimeTicks).DateTime,
+            EndDate = DateTimeOffset.FromUnixTimeSeconds(i.EndTimeTicks).DateTime,
+            PrePaddingSeconds = i.PrePadding * 60,
+            PostPaddingSeconds = i.PostPadding * 60,
+            Name = i.Name ?? i.EpgTitle,
+            RecordNewOnly = i.OnlyNewEpisodes
+        };
+
+        if (info.ChannelId == "0")
+        {
+            info.RecordAnyChannel = true;
         }
+
+        if (i.Days == null)
+        {
+            info.RecordAnyTime = true;
+        }
+        else
+        {
+            info.Days = (i.Days ?? string.Empty).Split(':')
+                .Select(d => (DayOfWeek)Enum.Parse(typeof(DayOfWeek), d.Trim(), true))
+                .ToList();
+        }
+
+        return info;
+    }
+
+    private class Recurring
+    {
+        public int Id { get; set; }
+
+        public int Type { get; set; }
+
+        public string Name { get; set; }
+
+        public int ChannelId { get; set; }
+
+        public string Channel { get; set; }
+
+        public string Period { get; set; }
+
+        public int Keep { get; set; }
+
+        public int PrePadding { get; set; }
+
+        public int PostPadding { get; set; }
+
+        public string EpgTitle { get; set; }
+
+        public string DirectoryId { get; set; }
+
+        public string Days { get; set; }
+
+        public bool Enabled { get; set; }
+
+        public bool OnlyNewEpisodes { get; set; }
+
+        public int StartTimeTicks { get; set; }
+
+        public int EndTimeTicks { get; set; }
+
+        public string AdvancedRules { get; set; }
+    }
+
+    private class RootObject
+    {
+        public List<Recurring> Recurrings { get; set; }
     }
 }

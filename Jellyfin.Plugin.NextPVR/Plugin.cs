@@ -1,72 +1,56 @@
 ﻿using System;
 using System.Collections.Generic;
+using Jellyfin.Plugin.NextPVR.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Plugins;
-using Jellyfin.Plugin.NextPVR.Configuration;
 using MediaBrowser.Model.Serialization;
 
-namespace Jellyfin.Plugin.NextPVR
+namespace Jellyfin.Plugin.NextPVR;
+
+/// <summary>
+/// Class Plugin.
+/// </summary>
+public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
 {
-    /// <summary>
-    /// Class Plugin
-    /// </summary>
-    public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
+    private readonly Guid _id = new Guid("9574ac10-bf23-49bc-949f-924f23cfa48f");
+
+    public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
+        : base(applicationPaths, xmlSerializer)
     {
-        public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
-            : base(applicationPaths, xmlSerializer)
-        {
-            Instance = this;
-        }
+        Instance = this;
+    }
 
-        public IEnumerable<PluginPageInfo> GetPages()
+    /// <inheritdoc />
+    public override Guid Id => _id;
+
+    /// <inheritdoc />
+    public override string Name => "NextPVR";
+
+    /// <inheritdoc />
+    public override string Description => "Provides live TV using NextPVR as the backend.";
+
+    /// <summary>
+    /// Gets the instance.
+    /// </summary>
+    /// <value>The instance.</value>
+    public static Plugin Instance { get; private set; }
+
+    /// <inheritdoc />
+    public IEnumerable<PluginPageInfo> GetPages()
+    {
+        return new[]
         {
-            return new[]
+            new PluginPageInfo
             {
-                new PluginPageInfo
-                {
-                    Name = "nextpvr",
-                    EmbeddedResourcePath = GetType().Namespace + ".Web.nextpvr.html",
-                },
-                new PluginPageInfo
-                {
-                    Name = "nextpvrjs",
-                    EmbeddedResourcePath = GetType().Namespace + ".Web.nextpvr.js"
-                }
-            };
-        }
-
-        private Guid _id = new Guid("9574ac10-bf23-49bc-949f-924f23cfa48f");
-        public override Guid Id
-        {
-            get { return _id; }
-        }
-
-        /// <summary>
-        /// Gets the name of the plugin
-        /// </summary>
-        /// <value>The name.</value>
-        public override string Name
-        {
-            get { return "NextPVR"; }
-        }
-
-        /// <summary>
-        /// Gets the description.
-        /// </summary>
-        /// <value>The description.</value>
-        public override string Description
-        {
-            get
+                Name = "nextpvr",
+                EmbeddedResourcePath = GetType().Namespace + ".Web.nextpvr.html",
+            },
+            new PluginPageInfo
             {
-                return "Provides live TV using NextPVR as the backend.";
+                Name = "nextpvrjs",
+                EmbeddedResourcePath = GetType().Namespace + ".Web.nextpvr.js"
             }
-        }
-
-        /// <summary>
-        /// Gets the instance.
-        /// </summary>
-        /// <value>The instance.</value>
-        public static Plugin Instance { get; private set; }
+        };
     }
 }

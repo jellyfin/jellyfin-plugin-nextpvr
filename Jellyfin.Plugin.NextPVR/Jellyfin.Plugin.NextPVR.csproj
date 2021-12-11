@@ -4,6 +4,11 @@
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyVersion>5.0.0.0</AssemblyVersion>
     <FileVersion>5.0.0.0</FileVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <CodeAnalysisRuleSet>../jellyfin.ruleset</CodeAnalysisRuleSet>
+    <NoWarn>CA2227;CA1002;CA2007;CS1591</NoWarn>    
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,10 +19,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jellyfin.Controller" Version="10.8.0-alpha2" />
-    <PackageReference Include="Jellyfin.Extensions" Version="10.8.0-alpha2" />
+    <PackageReference Include="Jellyfin.Controller" Version="10.*-*" />
+    <PackageReference Include="Jellyfin.Extensions" Version="10.*-*" />
     <PackageReference Include="System.Memory" Version="4.5.*" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
+    <PackageReference Include="SerilogAnalyzer" Version="0.15.0" PrivateAssets="All" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.376" PrivateAssets="All" />
+    <PackageReference Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>
