@@ -13,16 +13,6 @@ owner: "jellyfin"
 artifacts:
   - "Jellyfin.Plugin.NextPVR.dll"
 changelog: |2-
-  ### New features and improvements ###
-  - chore: plugin images (#24) @h1dden-da3m0n
-  - Increase sid security (#19) @emveepee
-
-  ### Dependency updates ###
-  - chore(deps): bump release-drafter/release-drafter from v5.14.0 to v5.15.0 (#22) @dependabot
-
-  ### CI & build changes ###
-  - Update ci (#26) @h1dden-da3m0n
-  - chore(ci): builds, releas drafter and more (#21) @h1dden-da3m0n
-
   ### Code or Repo Maintenance ###
-  - remove jQuery and update to es6 (#25) @grafixeyehero
+  - Changes for 10.8 alpha2 (#31) @emveepee
+  - Use System.Text.Json (#17) @daullmer
