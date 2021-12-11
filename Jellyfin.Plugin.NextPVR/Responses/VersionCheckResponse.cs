@@ -2,13 +2,13 @@
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 
 namespace Jellyfin.Plugin.NextPVR.Responses
 {
     public class VersionCheckResponse
     {
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
         public async Task<bool> UpdateAvailable(Stream stream)
         {

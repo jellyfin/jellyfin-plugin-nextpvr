@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.LiveTv;
 
@@ -11,7 +11,7 @@ namespace Jellyfin.Plugin.NextPVR.Responses
 {
     public class TunerResponse
     {
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
         public async Task<List<LiveTvTunerInfo>> LiveTvTunerInfos(Stream stream)
         {

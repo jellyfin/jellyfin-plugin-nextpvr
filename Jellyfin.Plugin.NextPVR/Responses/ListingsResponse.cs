@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 using Jellyfin.Plugin.NextPVR.Helpers;
 using System.Threading.Tasks;
 using System.Text.Json;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 
 namespace Jellyfin.Plugin.NextPVR.Responses
 {
@@ -18,7 +18,7 @@ namespace Jellyfin.Plugin.NextPVR.Responses
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly string _baseUrl;
         private string _channelId;
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
         public ListingsResponse(string baseUrl)
         {
