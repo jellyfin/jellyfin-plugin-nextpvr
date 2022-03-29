@@ -14,7 +14,7 @@ namespace Jellyfin.Plugin.NextPVR.Responses;
 public class ChannelResponse
 {
     private readonly string _baseUrl;
-    private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
+    private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.CamelCaseOptions;
 
     public ChannelResponse(string baseUrl)
     {

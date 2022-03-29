@@ -12,7 +12,7 @@ namespace Jellyfin.Plugin.NextPVR.Responses;
 
 public class TunerResponse
 {
-    private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
+    private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.CamelCaseOptions;
 
     public async Task<List<LiveTvTunerInfo>> LiveTvTunerInfos(Stream stream)
     {

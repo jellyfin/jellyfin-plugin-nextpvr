@@ -15,7 +15,7 @@ namespace Jellyfin.Plugin.NextPVR.Responses;
 internal class RecurringResponse
 {
     private readonly ILogger<LiveTvService> _logger;
-    private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
+    private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.CamelCaseOptions;
 
     public RecurringResponse(ILogger<LiveTvService> logger)
     {

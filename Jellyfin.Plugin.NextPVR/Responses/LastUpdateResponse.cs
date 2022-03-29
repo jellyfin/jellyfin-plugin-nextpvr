@@ -10,7 +10,7 @@ namespace Jellyfin.Plugin.NextPVR.Responses;
 
 public class LastUpdateResponse
 {
-    private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
+    private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.CamelCaseOptions;
 
     public async Task<DateTimeOffset> GetUpdateTime(Stream stream, ILogger<LiveTvService> logger)
     {

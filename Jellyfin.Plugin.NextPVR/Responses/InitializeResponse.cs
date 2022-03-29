@@ -9,7 +9,7 @@ namespace Jellyfin.Plugin.NextPVR.Responses;
 
 public class InitializeResponse
 {
-    private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
+    private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.CamelCaseOptions;
 
     public async Task<bool> LoggedIn(Stream stream, ILogger<LiveTvService> logger)
     {

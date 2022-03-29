@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -18,7 +18,7 @@ public class RecordingResponse
 {
     private readonly string _baseUrl;
     private readonly ILogger<LiveTvService> _logger;
-    private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
+    private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.CamelCaseOptions;
 
     public RecordingResponse(string baseUrl, ILogger<LiveTvService> logger)
     {

@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Extensions.Json;
@@ -9,7 +9,7 @@ namespace Jellyfin.Plugin.NextPVR.Responses;
 
 public class CancelDeleteRecordingResponse
 {
-    private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
+    private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.CamelCaseOptions;
 
     public async Task<bool?> RecordingError(Stream stream, ILogger<LiveTvService> logger)
     {
