@@ -66,7 +66,6 @@ public class ListingsResponse
         if (epg.Genres != null)
         {
             info.Genres = epg.Genres;
-            info.Genres[0] += " Movie";
             genreMapper.PopulateProgramGenres(info);
             if (info.IsMovie)
             {
