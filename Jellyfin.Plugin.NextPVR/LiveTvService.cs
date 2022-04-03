@@ -476,6 +476,7 @@ public class LiveTvService : ILiveTvService
             Id = _liveStreams.ToString(CultureInfo.InvariantCulture),
             Path = streamUrl,
             Protocol = MediaProtocol.Http,
+            RequiresOpening = true,
             MediaStreams = new List<MediaStream>
             {
                 new MediaStream
