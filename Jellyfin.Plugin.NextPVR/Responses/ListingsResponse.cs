@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -15,7 +15,7 @@ namespace Jellyfin.Plugin.NextPVR.Responses;
 public class ListingsResponse
 {
     private readonly string _baseUrl;
-    private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
+    private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.CamelCaseOptions;
     private string _channelId;
 
     public ListingsResponse(string baseUrl)
@@ -66,7 +66,6 @@ public class ListingsResponse
         if (epg.Genres != null)
         {
             info.Genres = epg.Genres;
-            info.Genres[0] += " Movie";
             genreMapper.PopulateProgramGenres(info);
             if (info.IsMovie)
             {

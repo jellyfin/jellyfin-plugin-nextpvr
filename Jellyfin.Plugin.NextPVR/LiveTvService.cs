@@ -457,9 +457,10 @@ public class LiveTvService : ILiveTvService
         _logger.LogInformation("[NextPVR] Cancelled Recording for recordingId: {TimerId}", timerId);
     }
 
-    public Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(string channelId, CancellationToken cancellationToken)
+    public async Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(string channelId, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var source = await GetChannelStream(channelId, string.Empty, cancellationToken);
+        return new List<MediaSourceInfo>() { source };
     }
 
     public Task<MediaSourceInfo> GetChannelStream(string channelId, string streamId, CancellationToken cancellationToken)
@@ -475,6 +476,7 @@ public class LiveTvService : ILiveTvService
             Id = _liveStreams.ToString(CultureInfo.InvariantCulture),
             Path = streamUrl,
             Protocol = MediaProtocol.Http,
+            RequiresOpening = true,
             MediaStreams = new List<MediaStream>
             {
                 new MediaStream

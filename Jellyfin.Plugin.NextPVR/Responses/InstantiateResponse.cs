@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -11,7 +11,7 @@ namespace Jellyfin.Plugin.NextPVR.Responses;
 
 public class InstantiateResponse
 {
-    private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
+    private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.CamelCaseOptions;
 
     public async Task<ClientKeys> GetClientKeys(Stream stream, ILogger<LiveTvService> logger)
     {
