@@ -14,5 +14,8 @@ artifacts:
   - "Jellyfin.Plugin.NextPVR.dll"
 changelog: |2-
   ### Code or Repo Maintenance ###
-  - Changes for 10.8 alpha2 (#31) @emveepee
-  - Use System.Text.Json (#17) @daullmer
+  - More  changes for 10.8 beta (#39) @emveepee
+  - Use meta ci (#36) @crobibero
+
+  ### CI & build changes ###
+  - Use meta ci (#36) @crobibero
