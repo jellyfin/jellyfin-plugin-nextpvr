@@ -1,8 +1,8 @@
 name: "NextPVR"
 guid: "9574ac10-bf23-49bc-949f-924f23cfa48f"
 imageUrl: "https://repo.jellyfin.org/releases/plugin/images/jellyfin-plugin-nextpvr.png"
-version: "8"
-targetAbi: "10.8.0.0"
+version: 9
+targetAbi: "10.8.13.0"
 framework: "net6.0"
 overview: "Live TV plugin for NextPVR"
 description: >
@@ -13,9 +13,5 @@ owner: "jellyfin"
 artifacts:
   - "Jellyfin.Plugin.NextPVR.dll"
 changelog: |2-
-  ### Code or Repo Maintenance ###
-  - More  changes for 10.8 beta (#39) @emveepee
-  - Use meta ci (#36) @crobibero
-
   ### CI & build changes ###
-  - Use meta ci (#36) @crobibero
+  - fix: meta ci workflows (#41) @h1dden-da3m0n
