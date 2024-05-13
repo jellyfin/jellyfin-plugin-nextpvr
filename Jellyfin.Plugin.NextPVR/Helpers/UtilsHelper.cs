@@ -1,23 +1,7 @@
-﻿using MediaBrowser.Model.LiveTv;
+using MediaBrowser.Model.LiveTv;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Plugin.NextPVR.Helpers;
-
-public static class ChannelHelper
-{
-    public static ChannelType GetChannelType(int channelType)
-    {
-        ChannelType type = channelType switch
-        {
-            1 => ChannelType.TV,
-            10 => ChannelType.Radio,
-            _ => ChannelType.TV
-        };
-
-        return type;
-    }
-}
-
 public static class UtilsHelper
 {
     public static void DebugInformation(ILogger<LiveTvService> logger, string message)

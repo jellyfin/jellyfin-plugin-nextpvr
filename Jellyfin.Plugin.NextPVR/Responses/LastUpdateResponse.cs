@@ -19,18 +19,16 @@ public class LastUpdateResponse
         UtilsHelper.DebugInformation(logger, $"[NextPVR] LastUpdate Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
         return DateTimeOffset.FromUnixTimeSeconds(root.LastUpdate);
     }
-}
 
-// Classes created with http://json2csharp.com/
+    private sealed class RootObject
+    {
+        [JsonPropertyName("last_update")]
+        public int LastUpdate { get; set; }
 
-public class RootObject
-{
-    [JsonPropertyName("last_update")]
-    public int LastUpdate { get; set; }
+        public string Stat { get; set; }
 
-    public string Stat { get; set; }
+        public int Code { get; set; }
 
-    public int Code { get; set; }
-
-    public string Msg { get; set; }
+        public string Msg { get; set; }
+    }
 }

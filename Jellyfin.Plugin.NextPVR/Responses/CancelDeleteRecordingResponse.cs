@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Extensions.Json;
@@ -24,7 +24,7 @@ public class CancelDeleteRecordingResponse
         return false;
     }
 
-    private class RootObject
+    private sealed class RootObject
     {
         public string Stat { get; set; }
     }

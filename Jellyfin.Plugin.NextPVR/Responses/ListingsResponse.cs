@@ -79,7 +79,7 @@ public class ListingsResponse
 
     // Classes created with http://json2csharp.com/
 
-    private class Listing
+    private sealed class Listing
     {
         public int Id { get; set; }
 
@@ -114,7 +114,7 @@ public class ListingsResponse
         public int RecordingId { get; set; }
     }
 
-    private class RootObject
+    private sealed class RootObject
     {
         public List<Listing> Listings { get; set; }
     }

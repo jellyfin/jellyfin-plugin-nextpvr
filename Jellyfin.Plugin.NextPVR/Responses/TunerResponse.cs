@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -14,27 +14,29 @@ public class TunerResponse
 {
     private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.CamelCaseOptions;
 
-    public async Task<List<LiveTvTunerInfo>> LiveTvTunerInfos(Stream stream)
+    public async Task<List<TunerHostInfo>> LiveTvTunerInfo(Stream stream)
     {
         var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
         return root.Tuners.Select(GetTunerInformation).ToList();
     }
 
-    private LiveTvTunerInfo GetTunerInformation(Tuner i)
+    private TunerHostInfo GetTunerInformation(Tuner i)
     {
-        LiveTvTunerInfo tunerinfo = new LiveTvTunerInfo();
+        TunerHostInfo tunerinfo = new TunerHostInfo();
 
-        tunerinfo.Name = i.TunerName;
+        tunerinfo.FriendlyName = i.TunerName;
+        /*
         tunerinfo.Status = GetStatus(i);
 
         if (i.Recordings.Count > 0)
         {
             tunerinfo.ChannelId = i.Recordings.Single().Recording.ChannelOid.ToString(CultureInfo.InvariantCulture);
         }
-
+        */
         return tunerinfo;
     }
 
+    /*
     private LiveTvTunerStatus GetStatus(Tuner i)
     {
         if (i.Recordings.Count > 0)
@@ -49,8 +51,9 @@ public class TunerResponse
 
         return LiveTvTunerStatus.Available;
     }
+    */
 
-    private class Recording
+    private sealed class Recording
     {
         public int TunerOid { get; set; }
 
@@ -61,12 +64,12 @@ public class TunerResponse
         public int RecordingOid { get; set; }
     }
 
-    private class Recordings
+    private sealed class Recordings
     {
         public Recording Recording { get; set; }
     }
 
-    private class Tuner
+    private sealed class Tuner
     {
         public string TunerName { get; set; }
 
@@ -77,7 +80,7 @@ public class TunerResponse
         public List<object> LiveTv { get; set; }
     }
 
-    private class RootObject
+    private sealed class RootObject
     {
         public List<Tuner> Tuners { get; set; }
     }

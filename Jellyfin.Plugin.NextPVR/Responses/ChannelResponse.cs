@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -49,7 +49,7 @@ public class ChannelResponse
     }
 
     // Classes created with http://json2csharp.com/
-    private class Channel
+    private sealed class Channel
     {
         public int ChannelId { get; set; }
 
@@ -68,7 +68,7 @@ public class ChannelResponse
         public bool ChannelIcon { get; set; }
     }
 
-    private class RootObject
+    private sealed class RootObject
     {
         public List<Channel> Channels { get; set; }
     }
