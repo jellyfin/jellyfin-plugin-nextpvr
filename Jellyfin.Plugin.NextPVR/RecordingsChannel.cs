@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -8,7 +8,6 @@ using Jellyfin.Plugin.NextPVR.Entities;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Dto;
@@ -20,7 +19,6 @@ namespace Jellyfin.Plugin.NextPVR;
 
 public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISupportsLatestMedia, ISupportsMediaProbe, IHasFolderAttributes, IDisposable
 {
-    private readonly ILiveTvManager _liveTvManager;
     private readonly CancellationTokenSource _cancellationToken;
     private Timer _updateTimer;
     private DateTimeOffset _lastUpdate = DateTimeOffset.FromUnixTimeSeconds(0);
@@ -28,9 +26,8 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
     private IEnumerable<MyRecordingInfo> _allRecordings;
     private bool _useCachedRecordings;
 
-    public RecordingsChannel(ILiveTvManager liveTvManager)
+    public RecordingsChannel()
     {
-        _liveTvManager = liveTvManager;
         var interval = TimeSpan.FromSeconds(20);
         _updateTimer = new Timer(OnUpdateTimerCallbackAsync, null, interval, interval);
         if (_updateTimer != null)
@@ -116,7 +113,13 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
 
     private LiveTvService GetService()
     {
-        return _liveTvManager.Services.OfType<LiveTvService>().FirstOrDefault();
+        LiveTvService service = LiveTvService.Instance;
+        if (service is not null && !service.IsActive)
+        {
+            service.EnsureConnectionAsync(new System.Threading.CancellationToken(false)).Wait();
+        }
+
+        return service;
     }
 
     public bool CanDelete(BaseItem item)
@@ -338,12 +341,7 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
     private async void OnUpdateTimerCallbackAsync(object state)
     {
         var service = GetService();
-        if (service is null)
-        {
-            return;
-        }
-
-        if (service.IsActive)
+        if (service is not null && service.IsActive)
         {
             var backendUpdate = await service.GetLastUpdate(_cancellationToken.Token).ConfigureAwait(false);
             if (backendUpdate > _lastUpdate)

@@ -36,9 +36,12 @@ public class LiveTvService : ILiveTvService
         _httpClientFactory = httpClientFactory;
         _logger = logger;
         LastUpdatedSidDateTime = DateTime.UtcNow;
+        Instance = this;
     }
 
     private string Sid { get; set; }
+
+    public static LiveTvService Instance { get; private set; }
 
     public bool IsActive => Sid != null;
 
@@ -59,7 +62,7 @@ public class LiveTvService : ILiveTvService
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    private async Task EnsureConnectionAsync(CancellationToken cancellationToken)
+    public async Task EnsureConnectionAsync(CancellationToken cancellationToken)
     {
         var config = Plugin.Instance.Configuration;
 
