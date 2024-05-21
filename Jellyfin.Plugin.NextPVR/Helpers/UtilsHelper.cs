@@ -2,6 +2,7 @@ using MediaBrowser.Model.LiveTv;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Plugin.NextPVR.Helpers;
+
 public static class UtilsHelper
 {
     public static void DebugInformation(ILogger<LiveTvService> logger, string message)
