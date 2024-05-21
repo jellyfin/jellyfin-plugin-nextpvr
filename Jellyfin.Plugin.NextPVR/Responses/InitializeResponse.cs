@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Extensions.Json;
@@ -25,7 +25,7 @@ public class InitializeResponse
         throw new JsonException("Failed to validate your connection with NextPVR.");
     }
 
-    private class RootObject
+    private sealed class RootObject
     {
         public string Stat { get; set; }
 

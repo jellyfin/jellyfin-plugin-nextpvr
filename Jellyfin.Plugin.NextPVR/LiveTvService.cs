@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
@@ -35,9 +36,12 @@ public class LiveTvService : ILiveTvService
         _httpClientFactory = httpClientFactory;
         _logger = logger;
         LastUpdatedSidDateTime = DateTime.UtcNow;
+        Instance = this;
     }
 
     private string Sid { get; set; }
+
+    public static LiveTvService Instance { get; private set; }
 
     public bool IsActive => Sid != null;
 
@@ -58,7 +62,7 @@ public class LiveTvService : ILiveTvService
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    private async Task EnsureConnectionAsync(CancellationToken cancellationToken)
+    public async Task EnsureConnectionAsync(CancellationToken cancellationToken)
     {
         var config = Plugin.Instance.Configuration;
 
@@ -132,7 +136,7 @@ public class LiveTvService : ILiveTvService
     private string GetMd5Hash(string value)
     {
 #pragma warning disable CA5351
-        var hashValue = MD5.Create().ComputeHash(new UTF8Encoding().GetBytes(value));
+        var hashValue = MD5.HashData(new UTF8Encoding().GetBytes(value));
 #pragma warning restore CA5351
         // Bit convertor return the byte to string as all caps hex values separated by "-"
         return BitConverter.ToString(hashValue).Replace("-", string.Empty, StringComparison.Ordinal).ToLowerInvariant();
@@ -587,19 +591,19 @@ public class LiveTvService : ILiveTvService
         throw new NotImplementedException();
     }
 
-    public Task<ImageStream> GetChannelImageAsync(string channelId, CancellationToken cancellationToken)
+    public Task<Stream> GetChannelImageAsync(string channelId, CancellationToken cancellationToken)
     {
         // Leave as is. This is handled by supplying image url to ChannelInfo
         throw new NotImplementedException();
     }
 
-    public Task<ImageStream> GetProgramImageAsync(string programId, string channelId, CancellationToken cancellationToken)
+    public Task<Stream> GetProgramImageAsync(string programId, string channelId, CancellationToken cancellationToken)
     {
         // Leave as is. This is handled by supplying image url to ProgramInfo
         throw new NotImplementedException();
     }
 
-    public Task<ImageStream> GetRecordingImageAsync(string recordingId, CancellationToken cancellationToken)
+    public Task<Stream> GetRecordingImageAsync(string recordingId, CancellationToken cancellationToken)
     {
         // Leave as is. This is handled by supplying image url to RecordingInfo
         throw new NotImplementedException();

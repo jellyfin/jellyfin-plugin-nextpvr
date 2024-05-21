@@ -98,7 +98,7 @@ public class RecordingResponse
             }
             else
             {
-                info.Url = $"{_baseUrl}/live?recording={i.Id}";
+                info.Url = $"{_baseUrl}/live?recording={i.Id}&sid=jellyfin";
             }
         }
 
@@ -215,7 +215,7 @@ public class RecordingResponse
         return RecordingStatus.New;
     }
 
-    private class Recording
+    private sealed class Recording
     {
         public int Id { get; set; }
 
@@ -280,7 +280,7 @@ public class RecordingResponse
         public int? Year { get; set; }
     }
 
-    private class RootObject
+    private sealed class RootObject
     {
         public List<Recording> Recordings { get; set; }
     }

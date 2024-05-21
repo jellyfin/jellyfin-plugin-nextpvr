@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Plugin.NextPVR.Responses;
 
-internal class RecurringResponse
+internal sealed class RecurringResponse
 {
     private readonly ILogger<LiveTvService> _logger;
     private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.CamelCaseOptions;
@@ -70,7 +70,7 @@ internal class RecurringResponse
         return info;
     }
 
-    private class Recurring
+    private sealed class Recurring
     {
         public int Id { get; set; }
 
@@ -107,7 +107,7 @@ internal class RecurringResponse
         public string AdvancedRules { get; set; }
     }
 
-    private class RootObject
+    private sealed class RootObject
     {
         public List<Recurring> Recurrings { get; set; }
     }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Jellyfin.Plugin.NextPVR.Configuration;
@@ -45,29 +45,29 @@ public class GenreMapper
     {
         if (genreMappings != null)
         {
-            if (_configuration.GenreMappings.ContainsKey(GenreMovie) && _configuration.GenreMappings[GenreMovie] != null)
+            if (_configuration.GenreMappings.TryGetValue(GenreMovie, out var value) && value != null)
             {
-                _movieGenres.AddRange(_configuration.GenreMappings[GenreMovie]);
+                _movieGenres.AddRange(value);
             }
 
-            if (_configuration.GenreMappings.ContainsKey(GenreSport) && _configuration.GenreMappings[GenreSport] != null)
+            if (_configuration.GenreMappings.TryGetValue(GenreSport, out value) && value != null)
             {
-                _sportGenres.AddRange(_configuration.GenreMappings[GenreSport]);
+                _sportGenres.AddRange(value);
             }
 
-            if (_configuration.GenreMappings.ContainsKey(GenreNews) && _configuration.GenreMappings[GenreNews] != null)
+            if (_configuration.GenreMappings.TryGetValue(GenreNews, out value) && value != null)
             {
-                _newsGenres.AddRange(_configuration.GenreMappings[GenreNews]);
+                _newsGenres.AddRange(value);
             }
 
-            if (_configuration.GenreMappings.ContainsKey(GenreKids) && _configuration.GenreMappings[GenreKids] != null)
+            if (_configuration.GenreMappings.TryGetValue(GenreKids, out value) && value != null)
             {
-                _kidsGenres.AddRange(_configuration.GenreMappings[GenreKids]);
+                _kidsGenres.AddRange(value);
             }
 
-            if (_configuration.GenreMappings.ContainsKey(GenreLive) && _configuration.GenreMappings[GenreLive] != null)
+            if (_configuration.GenreMappings.TryGetValue(GenreLive, out value) && value != null)
             {
-                _liveGenres.AddRange(_configuration.GenreMappings[GenreLive]);
+                _liveGenres.AddRange(value);
             }
         }
     }

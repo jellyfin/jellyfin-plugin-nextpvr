@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -31,7 +31,7 @@ public class SettingResponse
 
     // Classes created with http://json2csharp.com/
 
-    private class ScheduleSettings
+    private sealed class ScheduleSettings
     {
         public string Version { get; set; }
 
@@ -78,7 +78,7 @@ public class SettingResponse
         public int TimeEpoch { get; set; }
     }
 
-    private class SettingValue
+    private sealed class SettingValue
     {
         public string Value { get; set; }
     }
