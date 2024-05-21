@@ -2,8 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <AssemblyVersion>6.0.0.0</AssemblyVersion>
-    <FileVersion>6.0.0.0</FileVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
