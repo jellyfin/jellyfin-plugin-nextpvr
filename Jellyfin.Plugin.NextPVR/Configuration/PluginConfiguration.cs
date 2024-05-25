@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using Jellyfin.Plugin.NextPVR.Entities;
 
 using MediaBrowser.Model.Plugins;
@@ -54,6 +55,10 @@ public class PluginConfiguration : BasePluginConfiguration
     public int PrePaddingSeconds { get; set; }
 
     public int PostPaddingSeconds { get; set; }
+
+    public string StoredSid { get; set; }
+
+    public DateTime SidModified { get; set; }
 
     /// <summary>
     /// Gets or sets the genre mappings, to map localised NextPVR genres, to Jellyfin categories.
