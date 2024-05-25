@@ -12,7 +12,6 @@ using Jellyfin.Plugin.NextPVR.Entities;
 using Jellyfin.Plugin.NextPVR.Helpers;
 using Jellyfin.Plugin.NextPVR.Responses;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -39,7 +38,9 @@ public class LiveTvService : ILiveTvService
         Instance = this;
     }
 
-    private string Sid { get; set; }
+    public string Sid { get; set; }
+
+    public DateTime DateRecordingModified { get; set; }
 
     public static LiveTvService Instance { get; private set; }
 
@@ -65,22 +66,23 @@ public class LiveTvService : ILiveTvService
     public async Task EnsureConnectionAsync(CancellationToken cancellationToken)
     {
         var config = Plugin.Instance.Configuration;
-
-        if (string.IsNullOrEmpty(config.WebServiceUrl))
         {
-            _logger.LogError("[NextPVR] Web service url must be configured");
-            throw new InvalidOperationException("NextPvr web service url must be configured.");
-        }
+            if (string.IsNullOrEmpty(config.WebServiceUrl))
+            {
+                _logger.LogError("[NextPVR] Web service url must be configured");
+                throw new InvalidOperationException("NextPvr web service url must be configured.");
+            }
 
-        if (string.IsNullOrEmpty(config.Pin))
-        {
-            _logger.LogError("[NextPVR] Pin must be configured");
-            throw new InvalidOperationException("NextPvr pin must be configured.");
-        }
+            if (string.IsNullOrEmpty(config.Pin))
+            {
+                _logger.LogError("[NextPVR] Pin must be configured");
+                throw new InvalidOperationException("NextPvr pin must be configured.");
+            }
 
-        if (string.IsNullOrEmpty(Sid) || ((!string.IsNullOrEmpty(Sid)) && (LastUpdatedSidDateTime.AddMinutes(5) < DateTime.UtcNow)))
-        {
-            await InitiateSession(cancellationToken).ConfigureAwait(false);
+            if (string.IsNullOrEmpty(Sid) || ((!string.IsNullOrEmpty(Sid)) && (LastUpdatedSidDateTime.AddMinutes(5) < DateTime.UtcNow)))
+            {
+                await InitiateSession(cancellationToken).ConfigureAwait(false);
+            }
         }
     }
 
@@ -92,6 +94,22 @@ public class LiveTvService : ILiveTvService
         _logger.LogInformation("[NextPVR] Start InitiateSession");
         var baseUrl = Plugin.Instance.Configuration.WebServiceUrl;
         var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
+
+        if (!string.IsNullOrEmpty(Plugin.Instance.Configuration.StoredSid) && Plugin.Instance.Configuration.SidModified != DateTime.MinValue)
+        {
+            string request = $"{baseUrl}/service?method=session.valid&device=jellyfin&sid={Plugin.Instance.Configuration.StoredSid}";
+            await using var vstream = await httpClient.GetStreamAsync(request, cancellationToken).ConfigureAwait(false);
+            bool valid = await new InitializeResponse().LoggedIn(vstream, _logger).ConfigureAwait(false);
+            if (valid)
+            {
+                Sid = Plugin.Instance.Configuration.StoredSid;
+                DateRecordingModified = Plugin.Instance.Configuration.SidModified;
+                LastUpdatedSidDateTime = DateTimeOffset.UtcNow;
+                _logger.LogInformation("[NextPVR] Valid sid: {0}", Sid);
+                return;
+            }
+        }
+
         await using var stream = await httpClient.GetStreamAsync($"{baseUrl}/service?method=session.initiate&ver=1.0&device=jellyfin", cancellationToken).ConfigureAwait(false);
         var clientKeys = await new InstantiateResponse().GetClientKeys(stream, _logger).ConfigureAwait(false);
 
@@ -106,6 +124,10 @@ public class LiveTvService : ILiveTvService
             _logger.LogInformation("[NextPVR] Session initiated");
             Sid = sid;
             LastUpdatedSidDateTime = DateTimeOffset.UtcNow;
+            Plugin.Instance.Configuration.StoredSid = Sid;
+            Plugin.Instance.Configuration.SidModified = DateTime.Now;
+            Plugin.Instance.SaveConfiguration();
+            DateRecordingModified = Plugin.Instance.Configuration.SidModified;
             await GetDefaultSettingsAsync(cancellationToken).ConfigureAwait(false);
             Plugin.Instance.Configuration.GetEpisodeImage = await GetBackendSettingAsync("/Settings/General/ArtworkFromSchedulesDirect", cancellationToken).ConfigureAwait(false) == "true";
         }
@@ -121,7 +143,7 @@ public class LiveTvService : ILiveTvService
         _logger.LogInformation("[NextPVR] Start Login procedure for Sid: {0} & Salt: {1}", sid, salt);
         var baseUrl = Plugin.Instance.Configuration.WebServiceUrl;
         var pin = Plugin.Instance.Configuration.Pin;
-        _logger.LogInformation("[NextPVR] Pin: {0}", pin);
+        _logger.LogInformation("[NextPVR] PIN: {0}", pin == "0000" ? pin : "Not default");
 
         var strb = new StringBuilder();
         var md5Result = GetMd5Hash(strb.Append(':').Append(GetMd5Hash(pin)).Append(':').Append(salt).ToString());

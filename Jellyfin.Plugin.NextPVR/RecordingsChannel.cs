@@ -235,7 +235,7 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
             PremiereDate = item.OriginalAirDate,
             ProductionYear = item.ProductionYear,
             Type = ChannelItemType.Media,
-            DateModified = item.DateLastUpdated,
+            DateModified = LiveTvService.Instance.DateRecordingModified,
             Overview = item.Overview,
             IsLiveStream = item.Status == RecordingStatus.InProgress,
             Etag = item.Status.ToString()

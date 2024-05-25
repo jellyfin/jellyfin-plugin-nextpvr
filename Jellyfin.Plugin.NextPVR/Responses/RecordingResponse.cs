@@ -98,7 +98,7 @@ public class RecordingResponse
             }
             else
             {
-                info.Url = $"{_baseUrl}/live?recording={i.Id}&sid=jellyfin";
+                info.Url = $"{_baseUrl}/live?recording={i.Id}&sid={LiveTvService.Instance.Sid}";
             }
         }
 
