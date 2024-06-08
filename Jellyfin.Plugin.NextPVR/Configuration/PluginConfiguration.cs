@@ -19,6 +19,9 @@ public class PluginConfiguration : BasePluginConfiguration
         NewEpisodes = false;
         RecordingDefault = "2";
         RecordingTransport = 1;
+        EnableInProgress = false;
+        PollInterval = 20;
+        BackendVersion = 0;
         // Initialise this
         GenreMappings = new SerializableDictionary<string, List<string>>();
         GenreMappings["GENRESPORT"] = new List<string>()
@@ -38,9 +41,19 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public string WebServiceUrl { get; set; }
 
+    public string CurrentWebServiceURL { get; set; }
+
+    public int BackendVersion { get; set; }
+
     public string Pin { get; set; }
 
+    public string StoredSid { get; set; }
+
     public bool EnableDebugLogging { get; set; }
+
+    public bool EnableInProgress { get; set; }
+
+    public int PollInterval { get; set; }
 
     public bool NewEpisodes { get; set; }
 
@@ -56,9 +69,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public int PostPaddingSeconds { get; set; }
 
-    public string StoredSid { get; set; }
-
-    public DateTime SidModified { get; set; }
+    public DateTime RecordingModificationTime { get; set; }
 
     /// <summary>
     /// Gets or sets the genre mappings, to map localised NextPVR genres, to Jellyfin categories.

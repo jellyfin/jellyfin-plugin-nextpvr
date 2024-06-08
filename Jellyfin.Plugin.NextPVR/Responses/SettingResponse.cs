@@ -1,6 +1,6 @@
-using System.Globalization;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Plugin.NextPVR.Helpers;
@@ -16,9 +16,10 @@ public class SettingResponse
     {
         var root = await JsonSerializer.DeserializeAsync<ScheduleSettings>(stream, _jsonOptions).ConfigureAwait(false);
         UtilsHelper.DebugInformation(logger, $"[NextPVR] GetDefaultTimerInfo Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
-        Plugin.Instance.Configuration.PostPaddingSeconds = int.Parse(root.PostPadding, CultureInfo.InvariantCulture) * 60;
-        Plugin.Instance.Configuration.PrePaddingSeconds = int.Parse(root.PrePadding, CultureInfo.InvariantCulture) * 60;
+        Plugin.Instance.Configuration.PostPaddingSeconds = root.PostPadding;
+        Plugin.Instance.Configuration.PrePaddingSeconds = root.PrePadding;
         Plugin.Instance.Configuration.ShowRepeat = root.ShowNewInGuide;
+        Plugin.Instance.Configuration.BackendVersion = root.NextPvrVersion;
         return true;
     }
 
@@ -35,7 +36,8 @@ public class SettingResponse
     {
         public string Version { get; set; }
 
-        public string NextPvrVersion { get; set; }
+        [JsonPropertyName("nextPVRVersion")]
+        public int NextPvrVersion { get; set; }
 
         public string ReadableVersion { get; set; }
 
@@ -59,9 +61,9 @@ public class SettingResponse
 
         public string RecordingView { get; set; }
 
-        public string PrePadding { get; set; }
+        public int PrePadding { get; set; }
 
-        public string PostPadding { get; set; }
+        public int PostPadding { get; set; }
 
         public bool ConfirmOnDelete { get; set; }
 
