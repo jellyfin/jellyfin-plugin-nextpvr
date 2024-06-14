@@ -26,7 +26,7 @@ public class ListingsResponse
     public async Task<IEnumerable<ProgramInfo>> GetPrograms(Stream stream, string channelId, ILogger<LiveTvService> logger)
     {
         var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
-        UtilsHelper.DebugInformation(logger, $"[NextPVR] GetPrograms Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
+        UtilsHelper.DebugInformation(logger, $"GetPrograms Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
         _channelId = channelId;
         return root.Listings
             .Select(i => i)

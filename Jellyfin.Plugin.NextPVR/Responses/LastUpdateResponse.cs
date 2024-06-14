@@ -16,7 +16,7 @@ public class LastUpdateResponse
     public async Task<DateTimeOffset> GetUpdateTime(Stream stream, ILogger<LiveTvService> logger)
     {
         var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
-        UtilsHelper.DebugInformation(logger, $"[NextPVR] LastUpdate Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
+        UtilsHelper.DebugInformation(logger, $"LastUpdate Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
         return DateTimeOffset.FromUnixTimeSeconds(root.LastUpdate);
     }
 

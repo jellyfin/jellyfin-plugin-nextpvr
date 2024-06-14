@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Jellyfin.Plugin.NextPVR.Entities;
 
@@ -23,20 +23,22 @@ public class PluginConfiguration : BasePluginConfiguration
         PollInterval = 20;
         BackendVersion = 0;
         // Initialise this
-        GenreMappings = new SerializableDictionary<string, List<string>>();
-        GenreMappings["GENRESPORT"] = new List<string>()
+        GenreMappings = new SerializableDictionary<string, List<string>>
         {
-            "Sports",
-            "Football",
-            "Baseball",
-            "Basketball",
-            "Hockey",
-            "Soccer"
+            ["GENRESPORT"] =
+            [
+                "Sports",
+                "Football",
+                "Baseball",
+                "Basketball",
+                "Hockey",
+                "Soccer"
+            ],
+            ["GENRENEWS"] = ["News"],
+            ["GENREKIDS"] = ["Kids", "Children"],
+            ["GENREMOVIE"] = ["Movie", "Film"],
+            ["GENRELIVE"] = ["Awards"]
         };
-        GenreMappings["GENRENEWS"] = new List<string>() { "News" };
-        GenreMappings["GENREKIDS"] = new List<string>() { "Kids", "Children" };
-        GenreMappings["GENREMOVIE"] = new List<string>() { "Movie", "Film" };
-        GenreMappings["GENRELIVE"] = new List<string>() { "Awards" };
     }
 
     public string WebServiceUrl { get; set; }

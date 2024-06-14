@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Extensions.Json;
@@ -17,11 +17,11 @@ public class InitializeResponse
 
         if (!string.IsNullOrEmpty(root.Stat))
         {
-            UtilsHelper.DebugInformation(logger, $"[NextPVR] Connection validation: {JsonSerializer.Serialize(root, _jsonOptions)}");
+            UtilsHelper.DebugInformation(logger, $"Connection validation: {JsonSerializer.Serialize(root, _jsonOptions)}");
             return root.Stat == "ok";
         }
 
-        logger.LogError("[NextPVR] Failed to validate your connection with NextPVR");
+        logger.LogError("Failed to validate your connection with NextPVR");
         throw new JsonException("Failed to validate your connection with NextPVR.");
     }
 

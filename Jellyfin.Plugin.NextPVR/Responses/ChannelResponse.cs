@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -33,7 +33,7 @@ public class ChannelResponse
 
         if (root.Channels != null)
         {
-            UtilsHelper.DebugInformation(logger, $"[NextPVR] ChannelResponse: {JsonSerializer.Serialize(root, _jsonOptions)}");
+            UtilsHelper.DebugInformation(logger, $"ChannelResponse: {JsonSerializer.Serialize(root, _jsonOptions)}");
             return root.Channels.Select(i => new ChannelInfo
             {
                 Name = i.ChannelName,

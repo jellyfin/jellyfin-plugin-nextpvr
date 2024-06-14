@@ -21,11 +21,11 @@ public class InstantiateResponse
 
             if (root.Sid != null && root.Salt != null)
             {
-                UtilsHelper.DebugInformation(logger, $"[NextPVR] ClientKeys: {JsonSerializer.Serialize(root, _jsonOptions)}");
+                UtilsHelper.DebugInformation(logger, $"ClientKeys: {JsonSerializer.Serialize(root, _jsonOptions)}");
                 return root;
             }
 
-            logger.LogError("[NextPVR] Failed to validate the ClientKeys from NextPVR");
+            logger.LogError("Failed to validate the ClientKeys from NextPVR");
             throw new JsonException("Failed to load the ClientKeys from NextPVR.");
         }
         catch

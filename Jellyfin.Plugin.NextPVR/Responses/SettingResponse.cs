@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -15,7 +15,7 @@ public class SettingResponse
     public async Task<bool> GetDefaultSettings(Stream stream, ILogger<LiveTvService> logger)
     {
         var root = await JsonSerializer.DeserializeAsync<ScheduleSettings>(stream, _jsonOptions).ConfigureAwait(false);
-        UtilsHelper.DebugInformation(logger, $"[NextPVR] GetDefaultTimerInfo Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
+        UtilsHelper.DebugInformation(logger, $"GetDefaultTimerInfo Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
         Plugin.Instance.Configuration.PostPaddingSeconds = root.PostPadding;
         Plugin.Instance.Configuration.PrePaddingSeconds = root.PrePadding;
         Plugin.Instance.Configuration.ShowRepeat = root.ShowNewInGuide;
@@ -26,7 +26,7 @@ public class SettingResponse
     public async Task<string> GetSetting(Stream stream, ILogger<LiveTvService> logger)
     {
         var root = await JsonSerializer.DeserializeAsync<SettingValue>(stream, _jsonOptions).ConfigureAwait(false);
-        UtilsHelper.DebugInformation(logger, $"[NextPVR] GetSetting Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
+        UtilsHelper.DebugInformation(logger, $"GetSetting Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
         return root.Value;
     }
 

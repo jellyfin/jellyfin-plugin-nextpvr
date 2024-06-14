@@ -26,16 +26,16 @@ public class RecordingResponse
         _logger = logger;
     }
 
-    public async Task<IEnumerable<MyRecordingInfo>> GetRecordings(Stream stream)
+    public async Task<IReadOnlyList<MyRecordingInfo>> GetRecordings(Stream stream)
     {
         if (stream == null)
         {
-            _logger.LogError("[NextPVR] GetRecording stream == null");
+            _logger.LogError("GetRecording stream == null");
             throw new ArgumentNullException(nameof(stream));
         }
 
         var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
-        UtilsHelper.DebugInformation(_logger, $"[NextPVR] GetRecordings Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
+        UtilsHelper.DebugInformation(_logger, $"GetRecordings Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
 
         IEnumerable<MyRecordingInfo> recordings;
         try
@@ -47,23 +47,23 @@ public class RecordingResponse
         }
         catch (Exception err)
         {
-            _logger.LogWarning(err, "[NextPVR] Get recordings");
+            _logger.LogWarning(err, "Get recordings");
             throw;
         }
 
-        return recordings;
+        return recordings.ToList();
     }
 
     public async Task<IEnumerable<TimerInfo>> GetTimers(Stream stream)
     {
         if (stream == null)
         {
-            _logger.LogError("[NextPVR] GetTimers stream == null");
+            _logger.LogError("GetTimers stream == null");
             throw new ArgumentNullException(nameof(stream));
         }
 
         var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
-        UtilsHelper.DebugInformation(_logger, $"[NextPVR] GetTimers Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
+        UtilsHelper.DebugInformation(_logger, $"GetTimers Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
         IEnumerable<TimerInfo> timers;
         try
         {
@@ -73,7 +73,7 @@ public class RecordingResponse
         }
         catch (Exception err)
         {
-            _logger.LogWarning(err, "[NextPVR] Get timers");
+            _logger.LogWarning(err, "Get timers");
             throw;
         }
 

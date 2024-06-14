@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -37,7 +37,7 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
     private IEnumerable<MyRecordingInfo> _allRecordings;
     private bool _useCachedRecordings = false;
     private DateTime _cachedRecordingModificationTime;
-    private string _cachekeyBase;
+    private string _cacheKeyBase;
     private int _pollInterval = -1;
 
     public RecordingsChannel(IApplicationPaths applicationPaths, ILibraryManager libraryManager, IFileSystem fileSystem, ILogger<RecordingsChannel> logger)
@@ -45,7 +45,7 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
         _fileSystem = fileSystem;
         _logger = logger;
         string channelId = libraryManager.GetNewItemId($"Channel {Name}", typeof(Channel)).ToString("N", CultureInfo.InvariantCulture);
-        string version = BaseExtensions.GetMD5($"{DataVersion}2").ToString("N", CultureInfo.InvariantCulture);
+        string version = $"{DataVersion}2".GetMD5().ToString("N", CultureInfo.InvariantCulture);
         _recordingCacheDirectory = Path.Join(applicationPaths.CachePath, "channels", channelId, version);
         CleanCache(true);
         _cancellationToken = new CancellationTokenSource();
@@ -57,7 +57,7 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
     public string Description => "NextPVR Recordings";
 
 #pragma warning disable CA1819
-    public string[] Attributes => new[] { "Recordings" };
+    public string[] Attributes => ["Recordings"];
 #pragma warning restore CA1819
 
     public string DataVersion => "1";
@@ -86,7 +86,7 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
     public string GetCacheKey(string userId)
     {
         DateTimeOffset dto = LiveTvService.Instance.RecordingModificationTime;
-        return $"{dto.ToUnixTimeSeconds()}-{_cachekeyBase}";
+        return $"{dto.ToUnixTimeSeconds()}-{_cacheKeyBase}";
     }
 
     private void CleanCache(bool cleanAll = false)
@@ -94,22 +94,25 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
         if (!string.IsNullOrEmpty(_recordingCacheDirectory) && Directory.Exists(_recordingCacheDirectory))
         {
             string[] cachedJson = Directory.GetFiles(_recordingCacheDirectory, "*.json");
-            _logger.LogInformation("Cleaning JSON cache {0} {1}", _recordingCacheDirectory, cachedJson.Length);
+            _logger.LogInformation("Cleaning JSON cache {CacheDirectory} {FileCount}", _recordingCacheDirectory, cachedJson.Length);
             foreach (string fileName in cachedJson)
             {
-                if (cleanAll == true || _fileSystem.GetLastWriteTimeUtc(fileName).Add(TimeSpan.FromHours(3)) <= DateTimeOffset.UtcNow)
+                if (cleanAll || _fileSystem.GetLastWriteTimeUtc(fileName).Add(TimeSpan.FromHours(3)) <= DateTimeOffset.UtcNow)
                 {
                     _fileSystem.DeleteFile(fileName);
                 }
             }
         }
-
-        return;
     }
 
     public InternalChannelFeatures GetChannelFeatures()
     {
-        return new InternalChannelFeatures { ContentTypes = new List<ChannelMediaContentType> { ChannelMediaContentType.Movie, ChannelMediaContentType.Episode, ChannelMediaContentType.Clip }, MediaTypes = new List<ChannelMediaType> { ChannelMediaType.Audio, ChannelMediaType.Video }, SupportsContentDownloading = true };
+        return new InternalChannelFeatures
+        {
+            ContentTypes = [ChannelMediaContentType.Movie, ChannelMediaContentType.Episode, ChannelMediaContentType.Clip],
+            MediaTypes = [ChannelMediaType.Audio, ChannelMediaType.Video],
+            SupportsContentDownloading = true
+        };
     }
 
     public Task<DynamicImageResponse> GetChannelImage(ImageType type, CancellationToken cancellationToken)
@@ -315,15 +318,15 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
                     _logger.LogDebug("{0} Reload cache", name);
                     _allRecordings = await service.GetAllRecordingsAsync(cancellationToken).ConfigureAwait(false);
                     int maxId = _allRecordings.Max(r => int.Parse(r.Id, CultureInfo.InvariantCulture));
-                    int inProcessCount = _allRecordings.Where(r => r.Status == RecordingStatus.InProgress).Count();
+                    int inProcessCount = _allRecordings.Count(r => r.Status == RecordingStatus.InProgress);
                     string keyBase = $"{maxId}-{inProcessCount}-{_allRecordings.Count()}";
-                    if (keyBase != _cachekeyBase && !service.FlagRecordingChange)
+                    if (keyBase != _cacheKeyBase && !service.FlagRecordingChange)
                     {
                         _logger.LogDebug("External recording list change {0}", keyBase);
                         CleanCache(true);
                     }
 
-                    _cachekeyBase = keyBase;
+                    _cacheKeyBase = keyBase;
                     _lastUpdate = DateTimeOffset.UtcNow;
                     service.FlagRecordingChange = false;
                     _useCachedRecordings = true;

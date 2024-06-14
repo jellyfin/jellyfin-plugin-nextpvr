@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -26,12 +26,12 @@ internal sealed class RecurringResponse
     {
         if (stream == null)
         {
-            _logger.LogError("[NextPVR] GetSeriesTimers stream == null");
+            _logger.LogError("GetSeriesTimers stream == null");
             throw new ArgumentNullException(nameof(stream));
         }
 
         var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
-        UtilsHelper.DebugInformation(_logger, $"[NextPVR] GetSeriesTimers Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
+        UtilsHelper.DebugInformation(_logger, $"GetSeriesTimers Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
         return root.Recurrings
             .Select(i => i)
             .Select(GetSeriesTimerInfo);

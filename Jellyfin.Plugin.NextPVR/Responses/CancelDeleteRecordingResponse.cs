@@ -17,7 +17,7 @@ public class CancelDeleteRecordingResponse
 
         if (root.Stat != "ok")
         {
-            UtilsHelper.DebugInformation(logger, $"[NextPVR] RecordingError Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
+            UtilsHelper.DebugInformation(logger, $"RecordingError Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
             return true;
         }
 
