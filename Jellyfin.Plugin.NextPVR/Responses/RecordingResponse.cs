@@ -90,6 +90,7 @@ public class RecordingResponse
             info.SeriesTimerId = i.RecurringParent.ToString(CultureInfo.InvariantCulture);
         }
 
+        info.Status = ParseStatus(i.Status);
         if (i.File != null)
         {
             if (Plugin.Instance.Configuration.RecordingTransport == 2)
@@ -98,11 +99,23 @@ public class RecordingResponse
             }
             else
             {
-                info.Url = $"{_baseUrl}/live?recording={i.Id}&sid={LiveTvService.Instance.Sid}";
+                string sidParameter = null;
+                if (Plugin.Instance.Configuration.RecordingTransport == 1 || Plugin.Instance.Configuration.BackendVersion < 60106)
+                {
+                    sidParameter = $"&sid={LiveTvService.Instance.Sid}";
+                }
+
+                if (info.Status == RecordingStatus.InProgress)
+                {
+                    info.Url = $"{_baseUrl}/live?recording={i.Id}{sidParameter}&growing=true";
+                }
+                else
+                {
+                    info.Url = $"{_baseUrl}/live?recording={i.Id}{sidParameter}";
+                }
             }
         }
 
-        info.Status = ParseStatus(i.Status);
         info.StartDate = DateTimeOffset.FromUnixTimeSeconds(i.StartTime).DateTime;
         info.EndDate = DateTimeOffset.FromUnixTimeSeconds(i.StartTime + i.Duration).DateTime;
 
@@ -121,6 +134,11 @@ public class RecordingResponse
             info.SeasonNumber = i.Season;
             info.EpisodeNumber = i.Episode;
             info.IsSeries = true;
+            string se = string.Format(CultureInfo.InvariantCulture, "S{0:D2}E{1:D2} - ", i.Season, i.Episode);
+            if (i.Subtitle.StartsWith(se, StringComparison.CurrentCulture))
+            {
+                info.EpisodeTitle = i.Subtitle.Substring(se.Length);
+            }
         }
 
         if (i.Original != null)
@@ -165,8 +183,18 @@ public class RecordingResponse
         info.Name = i.Name;
         info.Overview = i.Desc;
         info.EpisodeTitle = i.Subtitle;
-        info.SeasonNumber = i.Season;
-        info.EpisodeNumber = i.Episode;
+        if (i.Season.HasValue)
+        {
+            info.SeasonNumber = i.Season;
+            info.EpisodeNumber = i.Episode;
+            info.IsSeries = true;
+            string se = string.Format(CultureInfo.InvariantCulture, "S{0:D2}E{1:D2} - ", i.Season, i.Episode);
+            if (i.Subtitle.StartsWith(se, StringComparison.CurrentCulture))
+            {
+                info.EpisodeTitle = i.Subtitle.Substring(se.Length);
+            }
+        }
+
         info.OfficialRating = i.Rating;
         if (i.Original != null)
         {

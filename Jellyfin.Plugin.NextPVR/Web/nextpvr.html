@@ -22,6 +22,20 @@
                     </label>
                 </div>
 
+                <div class="checkboxContainer">
+                    <label>
+                        <input is="emby-checkbox" type="checkbox" id="chkInProgress" />
+                        <span>Force in-progress recordings</span>
+                    </label>
+                </div>
+
+                <div class="inputContainer">
+                    <input is="emby-input" type="number" id="numPoll" required pattern="[0-9]*" min="0" max="600" step="10" label="Poll NextPVR Server"/>
+                    <div class="fieldDescription">
+                        Check to reload recording changes from the server in (seconds). Use 0 to disable polling.
+                    </div>
+                </div>
+
                 <div class="selectContainer">
                     <select is="emby-select" id="selRecDefault" label="Series Recording Default">
                         <option value="1">New episodes on this channel</option>
@@ -34,8 +48,9 @@
 
                 <div class="selectContainer">
                     <select is="emby-select" id="selRecTransport" label="Recording Protocol">
-                        <option value="1">Streaming</option>
                         <option value="2">Filename</option>
+                        <option value="1">Streaming</option>
+                        <option value="3">Unauthenticated streaming</option>
                     </select>
                 </div>
 

@@ -1,6 +1,4 @@
-using Jellyfin.Plugin.NextPVR;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Plugins;

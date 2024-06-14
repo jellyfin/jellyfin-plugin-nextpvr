@@ -2,6 +2,10 @@ const NextPvrConfigurationPage = {
     pluginUniqueId: '9574ac10-bf23-49bc-949f-924f23cfa48f'
 };
 
+var authentication = "";
+var transport;
+var inprogress;
+
 function loadGenres(config, page) {
     if (config != null && config.GenreMappings) {
         if (config.GenreMappings['GENREMOVIE'] != null) {
@@ -21,23 +25,28 @@ function loadGenres(config, page) {
         }
     }
 }
-export default function (view) {
-    view.addEventListener('viewshow', function () {
+export default function(view) {
+    view.addEventListener('viewshow', function() {
         Dashboard.showLoadingMsg();
         const page = this;
 
         ApiClient.getPluginConfiguration(NextPvrConfigurationPage.pluginUniqueId).then(function(config) {
             page.querySelector('#txtWebServiceUrl').value = config.WebServiceUrl || '';
             page.querySelector('#txtPin').value = config.Pin || '';
+            page.querySelector('#numPoll').value = config.PollInterval;
             page.querySelector('#chkDebugLogging').checked = config.EnableDebugLogging;
+            page.querySelector('#chkInProgress').checked = config.EnableInProgress;
             page.querySelector('#chkNewEpisodes').checked = config.NewEpisodes;
             page.querySelector('#selRecDefault').value = config.RecordingDefault;
             page.querySelector('#selRecTransport').value = config.RecordingTransport;
             loadGenres(config, page);
+            authentication = config.WebServiceUrl + config.Pin;
+            transport = config.RecordingTransport;
+            inprogress = config.EnableInProgress;
             Dashboard.hideLoadingMsg();
         });
     });
-    view.querySelector('.nextpvrConfigurationForm').addEventListener('submit', function (e) {
+    view.querySelector('.nextpvrConfigurationForm').addEventListener('submit', function(e) {
         Dashboard.showLoadingMsg();
         const form = this;
 
@@ -45,9 +54,24 @@ export default function (view) {
             config.WebServiceUrl = form.querySelector('#txtWebServiceUrl').value;
             config.Pin = form.querySelector('#txtPin').value;
             config.EnableDebugLogging = form.querySelector('#chkDebugLogging').checked;
+            config.EnableInProgress = form.querySelector('#chkInProgress').checked;
             config.NewEpisodes = form.querySelector('#chkNewEpisodes').checked;
             config.RecordingDefault = form.querySelector('#selRecDefault').value;
             config.RecordingTransport = form.querySelector('#selRecTransport').value;
+            config.PollInterval = form.querySelector('#numPoll').value;
+            if (authentication != config.WebServiceUrl + config.Pin) {
+                config.StoredSid = "";
+                config.CurrentWebServiceURL = "";
+                // Date will be  updated;
+                var myJsDate = new Date();
+                config.RecordingModificationTime = myJsDate.toISOString();
+            } else if (transport != config.RecordingTransport || inprogress != config.EnableInProgress) {
+                var myJsDate = new Date();
+                config.RecordingModificationTime = myJsDate.toISOString();
+            }
+            authentication = config.WebServiceUrl + config.Pin;
+            transport = config.RecordingTransport;
+            inprogress = config.EnableInProgress;
             // Copy over the genre mapping fields
             config.GenreMappings = {
                 'GENREMOVIE': form.querySelector('#txtMovieGenre').value.split(','),
