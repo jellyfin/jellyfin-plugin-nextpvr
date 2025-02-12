@@ -621,10 +621,10 @@ public class LiveTvService : ILiveTvService
 
             UtilsHelper.DebugInformation(_logger, $"GetLastUpdateTime {retTime.ToUnixTimeSeconds()}");
         }
-        catch (HttpRequestException)
+        catch (Exception ex)
         {
             LastUpdatedSidDateTime = DateTimeOffset.MinValue;
-            _logger.LogWarning("Could not connect to servier");
+            _logger.LogWarning(ex, "Could not connect to server");
             Sid = null;
         }
 
