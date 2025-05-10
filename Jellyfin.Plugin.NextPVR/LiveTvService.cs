@@ -17,6 +17,7 @@ using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.Extensions.Logging;
 using IConfigurationManager = MediaBrowser.Common.Configuration.IConfigurationManager;
 
@@ -213,7 +214,7 @@ public class LiveTvService : ILiveTvService
         var hashValue = MD5.HashData(new UTF8Encoding().GetBytes(value));
 #pragma warning restore CA5351
         // Bit convertor return the byte to string as all caps hex values separated by "-"
-        return BitConverter.ToString(hashValue).Replace("-", string.Empty, StringComparison.Ordinal).ToLowerInvariant();
+        return Convert.ToHexStringLower(hashValue).Replace("-", string.Empty, StringComparison.Ordinal);
     }
 
     /// <summary>

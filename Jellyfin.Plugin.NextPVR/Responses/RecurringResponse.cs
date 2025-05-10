@@ -63,7 +63,7 @@ internal sealed class RecurringResponse
         else
         {
             info.Days = (i.Days ?? string.Empty).Split(':')
-                .Select(d => (DayOfWeek)Enum.Parse(typeof(DayOfWeek), d.Trim(), true))
+                .Select(d => Enum.Parse<DayOfWeek>(d.Trim(), true))
                 .ToList();
         }
 
