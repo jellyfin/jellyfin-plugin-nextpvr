@@ -116,8 +116,8 @@ public class RecordingResponse
             }
         }
 
-        info.StartDate = DateTimeOffset.FromUnixTimeSeconds(i.StartTime).DateTime;
-        info.EndDate = DateTimeOffset.FromUnixTimeSeconds(i.StartTime + i.Duration).DateTime;
+        info.StartDate = DateTimeOffset.FromUnixTimeSeconds(i.StartTime).UtcDateTime;
+        info.EndDate = DateTimeOffset.FromUnixTimeSeconds(i.StartTime + i.Duration).UtcDateTime;
 
         info.ProgramId = i.EpgEventId.ToString(CultureInfo.InvariantCulture);
         info.EpisodeTitle = i.Subtitle;
@@ -175,8 +175,8 @@ public class RecordingResponse
         info.ChannelId = i.ChannelId.ToString(CultureInfo.InvariantCulture);
         info.Id = i.Id.ToString(CultureInfo.InvariantCulture);
         info.Status = ParseStatus(i.Status);
-        info.StartDate = DateTimeOffset.FromUnixTimeSeconds(i.StartTime).DateTime;
-        info.EndDate = DateTimeOffset.FromUnixTimeSeconds(i.StartTime + i.Duration).DateTime;
+        info.StartDate = DateTimeOffset.FromUnixTimeSeconds(i.StartTime).UtcDateTime;
+        info.EndDate = DateTimeOffset.FromUnixTimeSeconds(i.StartTime + i.Duration).UtcDateTime;
         info.PrePaddingSeconds = i.PrePadding * 60;
         info.PostPaddingSeconds = i.PostPadding * 60;
         info.ProgramId = i.EpgEventId.ToString(CultureInfo.InvariantCulture);
