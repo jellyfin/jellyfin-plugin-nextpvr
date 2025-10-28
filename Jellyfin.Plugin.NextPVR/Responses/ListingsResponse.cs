@@ -36,6 +36,13 @@ public class ListingsResponse
     private ProgramInfo GetProgram(Listing epg)
     {
         var genreMapper = new GenreMapper(Plugin.Instance.Configuration);
+
+        string backgroundUrl = Plugin.Instance.Configuration.GetEpisodeImage ? $"{_baseUrl}/service?method=channel.show.artwork&prefer=landscape&name={Uri.EscapeDataString(epg.Name)}" : null;
+        if (!string.IsNullOrEmpty(epg.Deferredartwork))
+        {
+            backgroundUrl = epg.Deferredartwork;
+        }
+
         var info = new ProgramInfo
         {
             ChannelId = _channelId,
@@ -60,7 +67,7 @@ public class ListingsResponse
             IsSeries = true, // !string.IsNullOrEmpty(epg.Subtitle),  http://emby.media/community/index.php?/topic/21264-series-record-ability-missing-in-emby-epg/#entry239633
             HasImage = Plugin.Instance.Configuration.GetEpisodeImage,
             ImageUrl = Plugin.Instance.Configuration.GetEpisodeImage ? $"{_baseUrl}/service?method=channel.show.artwork&name={Uri.EscapeDataString(epg.Name)}" : null,
-            BackdropImageUrl = Plugin.Instance.Configuration.GetEpisodeImage ? $"{_baseUrl}/service?method=channel.show.artwork&prefer=landscape&name={Uri.EscapeDataString(epg.Name)}" : null,
+            BackdropImageUrl = backgroundUrl
         };
 
         if (epg.Genres != null)
@@ -92,6 +99,8 @@ public class ListingsResponse
         public List<string> Genres { get; set; }
 
         public bool Firstrun { get; set; }
+
+        public string Deferredartwork { get; set; }
 
         public int Start { get; set; }
 

@@ -595,8 +595,9 @@ public class LiveTvService : ILiveTvService
     {
         _logger.LogInformation("Start GetPrograms Async, retrieve all Programs");
         await EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
+        string fastArt = Plugin.Instance.Configuration.BackendVersion >= 70003 ? "&fastart" : string.Empty;
         await using var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
-            .GetStreamAsync($"{_baseUrl}/service?method=channel.listings&sid={Sid}&start={((DateTimeOffset)startDateUtc).ToUnixTimeSeconds()}&end={((DateTimeOffset)endDateUtc).ToUnixTimeSeconds()}&channel_id={channelId}", cancellationToken);
+            .GetStreamAsync($"{_baseUrl}/service?method=channel.listings&sid={Sid}&start={((DateTimeOffset)startDateUtc).ToUnixTimeSeconds()}&end={((DateTimeOffset)endDateUtc).ToUnixTimeSeconds()}&channel_id={channelId}{fastArt}", cancellationToken);
         return await new ListingsResponse(_baseUrl).GetPrograms(stream, channelId, _logger).ConfigureAwait(false);
     }
 
