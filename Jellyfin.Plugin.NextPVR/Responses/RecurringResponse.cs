@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -43,8 +43,8 @@ internal sealed class RecurringResponse
         {
             ChannelId = i.ChannelId.ToString(CultureInfo.InvariantCulture),
             Id = i.Id.ToString(CultureInfo.InvariantCulture),
-            StartDate = DateTimeOffset.FromUnixTimeSeconds(i.StartTimeTicks).DateTime,
-            EndDate = DateTimeOffset.FromUnixTimeSeconds(i.EndTimeTicks).DateTime,
+            StartDate = DateTimeOffset.FromUnixTimeSeconds(i.StartTimeTicks).UtcDateTime,
+            EndDate = DateTimeOffset.FromUnixTimeSeconds(i.EndTimeTicks).UtcDateTime,
             PrePaddingSeconds = i.PrePadding * 60,
             PostPaddingSeconds = i.PostPadding * 60,
             Name = i.Name ?? i.EpgTitle,
