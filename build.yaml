@@ -1,8 +1,8 @@
 name: "NextPVR"
 guid: "9574ac10-bf23-49bc-949f-924f23cfa48f"
 imageUrl: "https://repo.jellyfin.org/releases/plugin/images/jellyfin-plugin-nextpvr.png"
-version: 12
-targetAbi: "10.11.0.0"
+version: 13
+targetAbi: "10.11.1.0"
 framework: "net9.0"
 overview: "Live TV plugin for NextPVR"
 description: >
@@ -13,5 +13,5 @@ owner: "jellyfin"
 artifacts:
   - "Jellyfin.Plugin.NextPVR.dll"
 changelog: |-
-  - Jellyfin 10.11 support (#65) @crobibero
-  - Fix unhandled TaskCancelledException for HTTPClient (#61) @prahal
+  - UTC fixes (#70) @emveepee
+  - Use 7.0.3 deferred art (#71) @emveepee
