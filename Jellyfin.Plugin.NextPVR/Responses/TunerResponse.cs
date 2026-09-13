@@ -25,14 +25,22 @@ public class TunerResponse
     public async Task<List<TunerHostInfo>> LiveTvTunerInfo(Stream stream)
     {
         var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
+
+        if (root?.Tuners is null)
+        {
+            throw new JsonException("Failed to download the tuner information.");
+        }
+
         return root.Tuners.Select(GetTunerInformation).ToList();
     }
 
     private TunerHostInfo GetTunerInformation(Tuner i)
     {
-        TunerHostInfo tunerinfo = new TunerHostInfo();
+        TunerHostInfo tunerinfo = new TunerHostInfo
+        {
+            FriendlyName = i.TunerName
+        };
 
-        tunerinfo.FriendlyName = i.TunerName;
         /*
         tunerinfo.Status = GetStatus(i);
 
@@ -65,7 +73,7 @@ public class TunerResponse
     {
         public int TunerOid { get; set; }
 
-        public string RecName { get; set; }
+        public string? RecName { get; set; }
 
         public int ChannelOid { get; set; }
 
@@ -74,22 +82,22 @@ public class TunerResponse
 
     private sealed class Recordings
     {
-        public Recording Recording { get; set; }
+        public Recording? Recording { get; set; }
     }
 
     private sealed class Tuner
     {
-        public string TunerName { get; set; }
+        public string TunerName { get; set; } = string.Empty;
 
-        public string TunerStatus { get; set; }
+        public string? TunerStatus { get; set; }
 
-        public List<Recordings> Recordings { get; set; }
+        public List<Recordings>? Recordings { get; set; }
 
-        public List<object> LiveTv { get; set; }
+        public List<object>? LiveTv { get; set; }
     }
 
     private sealed class RootObject
     {
-        public List<Tuner> Tuners { get; set; }
+        public List<Tuner>? Tuners { get; set; }
     }
 }

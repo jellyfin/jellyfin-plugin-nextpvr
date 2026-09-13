@@ -19,7 +19,7 @@ public class ListingsResponse
 {
     private readonly string _baseUrl;
     private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.CamelCaseOptions;
-    private string _channelId;
+    private string _channelId = string.Empty;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ListingsResponse"/> class.
@@ -41,6 +41,13 @@ public class ListingsResponse
     {
         var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
         UtilsHelper.DebugInformation(logger, $"GetPrograms Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
+
+        if (root?.Listings is null)
+        {
+            logger.LogError("Failed to download the program information");
+            throw new JsonException("Failed to download the program information.");
+        }
+
         _channelId = channelId;
         return root.Listings
             .Select(i => i)
@@ -51,7 +58,7 @@ public class ListingsResponse
     {
         var genreMapper = new GenreMapper(Plugin.Instance.Configuration);
 
-        string backgroundUrl = Plugin.Instance.Configuration.GetEpisodeImage ? $"{_baseUrl}/service?method=channel.show.artwork&prefer=landscape&name={Uri.EscapeDataString(epg.Name)}" : null;
+        string? backgroundUrl = Plugin.Instance.Configuration.GetEpisodeImage ? $"{_baseUrl}/service?method=channel.show.artwork&prefer=landscape&name={Uri.EscapeDataString(epg.Name)}" : null;
         if (!string.IsNullOrEmpty(epg.Deferredartwork))
         {
             backgroundUrl = epg.Deferredartwork;
@@ -68,15 +75,15 @@ public class ListingsResponse
             StartDate = DateTimeOffset.FromUnixTimeSeconds(epg.Start).UtcDateTime,
             EndDate = DateTimeOffset.FromUnixTimeSeconds(epg.End).UtcDateTime,
             Genres = [], // epg.genres.Where(g => !string.IsNullOrWhiteSpace(g)).ToList(),
-            OriginalAirDate = epg.Original == null ? epg.Original : DateTime.SpecifyKind((DateTime)epg.Original, DateTimeKind.Local),
+            OriginalAirDate = epg.Original is null ? epg.Original : DateTime.SpecifyKind((DateTime)epg.Original, DateTimeKind.Local),
             ProductionYear = epg.Year,
             Name = epg.Name,
             OfficialRating = epg.Rating,
-            IsPremiere = epg.Significance != null && epg.Significance.Contains("Premiere", StringComparison.OrdinalIgnoreCase),
+            IsPremiere = epg.Significance is not null && epg.Significance.Contains("Premiere", StringComparison.OrdinalIgnoreCase),
             // CommunityRating = ParseCommunityRating(epg.StarRating),
             // Audio = ParseAudio(epg.Audio),
             // IsHD = string.Equals(epg.Quality, "hdtv", StringComparison.OrdinalIgnoreCase),
-            IsLive = epg.Significance != null && epg.Significance.Contains("Live", StringComparison.OrdinalIgnoreCase),
+            IsLive = epg.Significance is not null && epg.Significance.Contains("Live", StringComparison.OrdinalIgnoreCase),
             IsRepeat = !Plugin.Instance.Configuration.ShowRepeat || !epg.Firstrun,
             IsSeries = true, // !string.IsNullOrEmpty(epg.Subtitle),  http://emby.media/community/index.php?/topic/21264-series-record-ability-missing-in-emby-epg/#entry239633
             HasImage = Plugin.Instance.Configuration.GetEpisodeImage,
@@ -84,7 +91,7 @@ public class ListingsResponse
             BackdropImageUrl = backgroundUrl
         };
 
-        if (epg.Genres != null)
+        if (epg.Genres is not null)
         {
             info.Genres = epg.Genres;
             genreMapper.PopulateProgramGenres(info);
@@ -104,23 +111,23 @@ public class ListingsResponse
     {
         public int Id { get; set; }
 
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
 
-        public string Subtitle { get; set; }
+        public string? Subtitle { get; set; }
 
-        public List<string> Genres { get; set; }
+        public List<string>? Genres { get; set; }
 
         public bool Firstrun { get; set; }
 
-        public string Deferredartwork { get; set; }
+        public string? Deferredartwork { get; set; }
 
         public int Start { get; set; }
 
         public int End { get; set; }
 
-        public string Rating { get; set; }
+        public string Rating { get; set; } = string.Empty;
 
         public DateTime? Original { get; set; }
 
@@ -130,15 +137,15 @@ public class ListingsResponse
 
         public int? Year { get; set; }
 
-        public string Significance { get; set; }
+        public string? Significance { get; set; }
 
-        public string RecordingStatus { get; set; }
+        public string? RecordingStatus { get; set; }
 
         public int RecordingId { get; set; }
     }
 
     private sealed class RootObject
     {
-        public List<Listing> Listings { get; set; }
+        public List<Listing>? Listings { get; set; }
     }
 }

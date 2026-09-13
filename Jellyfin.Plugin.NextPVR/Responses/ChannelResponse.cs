@@ -38,13 +38,13 @@ public class ChannelResponse
     {
         var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
 
-        if (root == null)
+        if (root is null)
         {
             logger.LogError("Failed to download channel information");
             throw new JsonException("Failed to download channel information.");
         }
 
-        if (root.Channels != null)
+        if (root.Channels is not null)
         {
             UtilsHelper.DebugInformation(logger, $"ChannelResponse: {JsonSerializer.Serialize(root, _jsonOptions)}");
             return root.Channels.Select(i => new ChannelInfo
@@ -70,19 +70,19 @@ public class ChannelResponse
 
         public int ChannelMinor { get; set; }
 
-        public string ChannelNumberFormated { get; set; }
+        public string ChannelNumberFormated { get; set; } = string.Empty;
 
         public int ChannelType { get; set; }
 
-        public string ChannelName { get; set; }
+        public string ChannelName { get; set; } = string.Empty;
 
-        public string ChannelDetails { get; set; }
+        public string? ChannelDetails { get; set; }
 
         public bool ChannelIcon { get; set; }
     }
 
     private sealed class RootObject
     {
-        public List<Channel> Channels { get; set; }
+        public List<Channel>? Channels { get; set; }
     }
 }

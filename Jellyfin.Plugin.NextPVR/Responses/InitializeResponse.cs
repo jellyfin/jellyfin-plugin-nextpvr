@@ -24,7 +24,7 @@ public class InitializeResponse
     {
         var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
 
-        if (!string.IsNullOrEmpty(root.Stat))
+        if (root is not null && !string.IsNullOrEmpty(root.Stat))
         {
             UtilsHelper.DebugInformation(logger, $"Connection validation: {JsonSerializer.Serialize(root, _jsonOptions)}");
             return root.Stat == "ok";
@@ -36,8 +36,8 @@ public class InitializeResponse
 
     private sealed class RootObject
     {
-        public string Stat { get; set; }
+        public string? Stat { get; set; }
 
-        public string Sid { get; set; }
+        public string? Sid { get; set; }
     }
 }

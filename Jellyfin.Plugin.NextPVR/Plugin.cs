@@ -39,7 +39,7 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     /// Gets the instance.
     /// </summary>
     /// <value>The instance.</value>
-    public static Plugin Instance { get; private set; }
+    public static Plugin Instance { get; private set; } = null!;
 
     /// <inheritdoc />
     public IEnumerable<PluginPageInfo> GetPages()

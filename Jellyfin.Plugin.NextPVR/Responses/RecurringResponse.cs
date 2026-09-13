@@ -24,14 +24,21 @@ internal sealed class RecurringResponse
 
     public async Task<IEnumerable<SeriesTimerInfo>> GetSeriesTimers(Stream stream)
     {
-        if (stream == null)
+        if (stream is null)
         {
-            _logger.LogError("GetSeriesTimers stream == null");
+            _logger.LogError("GetSeriesTimers stream is null");
             throw new ArgumentNullException(nameof(stream));
         }
 
         var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
         UtilsHelper.DebugInformation(_logger, $"GetSeriesTimers Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
+
+        if (root?.Recurrings is null)
+        {
+            _logger.LogError("Failed to download the recurring recordings");
+            throw new JsonException("Failed to download the recurring recordings.");
+        }
+
         return root.Recurrings
             .Select(i => i)
             .Select(GetSeriesTimerInfo);
@@ -56,7 +63,7 @@ internal sealed class RecurringResponse
             info.RecordAnyChannel = true;
         }
 
-        if (i.Days == null)
+        if (i.Days is null)
         {
             info.RecordAnyTime = true;
         }
@@ -76,13 +83,13 @@ internal sealed class RecurringResponse
 
         public int Type { get; set; }
 
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         public int ChannelId { get; set; }
 
-        public string Channel { get; set; }
+        public string? Channel { get; set; }
 
-        public string Period { get; set; }
+        public string? Period { get; set; }
 
         public int Keep { get; set; }
 
@@ -90,11 +97,11 @@ internal sealed class RecurringResponse
 
         public int PostPadding { get; set; }
 
-        public string EpgTitle { get; set; }
+        public string EpgTitle { get; set; } = string.Empty;
 
-        public string DirectoryId { get; set; }
+        public string? DirectoryId { get; set; }
 
-        public string Days { get; set; }
+        public string? Days { get; set; }
 
         public bool Enabled { get; set; }
 
@@ -104,11 +111,11 @@ internal sealed class RecurringResponse
 
         public int EndTimeTicks { get; set; }
 
-        public string AdvancedRules { get; set; }
+        public string? AdvancedRules { get; set; }
     }
 
     private sealed class RootObject
     {
-        public List<Recurring> Recurrings { get; set; }
+        public List<Recurring>? Recurrings { get; set; }
     }
 }

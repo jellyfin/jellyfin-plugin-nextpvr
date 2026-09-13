@@ -24,6 +24,12 @@ public class CancelDeleteRecordingResponse
     {
         var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
 
+        if (root is null)
+        {
+            logger.LogError("Failed to read the recording response");
+            return null;
+        }
+
         if (root.Stat != "ok")
         {
             UtilsHelper.DebugInformation(logger, $"RecordingError Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
@@ -35,6 +41,6 @@ public class CancelDeleteRecordingResponse
 
     private sealed class RootObject
     {
-        public string Stat { get; set; }
+        public string? Stat { get; set; }
     }
 }

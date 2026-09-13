@@ -26,6 +26,13 @@ public class LastUpdateResponse
     {
         var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
         UtilsHelper.DebugInformation(logger, $"LastUpdate Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
+
+        if (root is null)
+        {
+            logger.LogError("Failed to read the last update time");
+            throw new JsonException("Failed to read the last update time.");
+        }
+
         return DateTimeOffset.FromUnixTimeSeconds(root.LastUpdate);
     }
 
@@ -34,10 +41,10 @@ public class LastUpdateResponse
         [JsonPropertyName("last_update")]
         public int LastUpdate { get; set; }
 
-        public string Stat { get; set; }
+        public string? Stat { get; set; }
 
         public int Code { get; set; }
 
-        public string Msg { get; set; }
+        public string? Msg { get; set; }
     }
 }

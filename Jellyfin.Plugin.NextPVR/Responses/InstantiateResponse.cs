@@ -21,14 +21,14 @@ public class InstantiateResponse
     /// </summary>
     /// <param name="stream">The response stream to read.</param>
     /// <param name="logger">The logger to write diagnostic output to.</param>
-    /// <returns>The <see cref="ClientKeys"/> of the new session.</returns>
+    /// <returns>The <see cref="ClientKeys"/> of the new session, with both keys present.</returns>
     public async Task<ClientKeys> GetClientKeys(Stream stream, ILogger<LiveTvService> logger)
     {
         try
         {
             var root = await JsonSerializer.DeserializeAsync<ClientKeys>(stream, _jsonOptions).ConfigureAwait(false);
 
-            if (root.Sid != null && root.Salt != null)
+            if (root?.Sid is not null && root.Salt is not null)
             {
                 UtilsHelper.DebugInformation(logger, $"ClientKeys: {JsonSerializer.Serialize(root, _jsonOptions)}");
                 return root;

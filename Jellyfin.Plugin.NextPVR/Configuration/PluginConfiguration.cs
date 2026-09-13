@@ -52,7 +52,7 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>
     /// Gets or sets the web service URL that the current session was established with.
     /// </summary>
-    public string CurrentWebServiceURL { get; set; }
+    public string? CurrentWebServiceURL { get; set; }
 
     /// <summary>
     /// Gets or sets the version of the NextPVR backend.
@@ -68,7 +68,7 @@ public class PluginConfiguration : BasePluginConfiguration
     /// Gets or sets the session id kept from the last successful login, so that a
     /// session can be resumed without logging in again.
     /// </summary>
-    public string StoredSid { get; set; }
+    public string? StoredSid { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether additional debug logging is written.

@@ -41,21 +41,28 @@ public class RecordingResponse
     /// <returns>The recordings reported by the backend.</returns>
     public async Task<IReadOnlyList<MyRecordingInfo>> GetRecordings(Stream stream)
     {
-        if (stream == null)
+        if (stream is null)
         {
-            _logger.LogError("GetRecording stream == null");
+            _logger.LogError("GetRecording stream is null");
             throw new ArgumentNullException(nameof(stream));
         }
 
         var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
         UtilsHelper.DebugInformation(_logger, $"GetRecordings Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
 
+        if (root?.Recordings is null)
+        {
+            _logger.LogError("Failed to download the recordings");
+            throw new JsonException("Failed to download the recordings.");
+        }
+
         IEnumerable<MyRecordingInfo> recordings;
         try
         {
             recordings = root.Recordings
                 .Select(i => i)
-                .Where(i => i.Status != "failed" && i.Status != "conflict")
+                .Where(i => !string.Equals(i.Status, "failed", StringComparison.OrdinalIgnoreCase)
+                            && !string.Equals(i.Status, "conflict", StringComparison.OrdinalIgnoreCase))
                 .Select(GetRecordingInfo);
         }
         catch (Exception err)
@@ -74,14 +81,20 @@ public class RecordingResponse
     /// <returns>The timers reported by the backend.</returns>
     public async Task<IEnumerable<TimerInfo>> GetTimers(Stream stream)
     {
-        if (stream == null)
+        if (stream is null)
         {
-            _logger.LogError("GetTimers stream == null");
+            _logger.LogError("GetTimers stream is null");
             throw new ArgumentNullException(nameof(stream));
         }
 
         var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
         UtilsHelper.DebugInformation(_logger, $"GetTimers Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
+        if (root?.Recordings is null)
+        {
+            _logger.LogError("Failed to download the timers");
+            throw new JsonException("Failed to download the timers.");
+        }
+
         IEnumerable<TimerInfo> timers;
         try
         {
@@ -101,15 +114,17 @@ public class RecordingResponse
     private MyRecordingInfo GetRecordingInfo(Recording i)
     {
         var genreMapper = new GenreMapper(Plugin.Instance.Configuration);
-        var info = new MyRecordingInfo();
-        info.Id = i.Id.ToString(CultureInfo.InvariantCulture);
+        var info = new MyRecordingInfo
+        {
+            Id = i.Id.ToString(CultureInfo.InvariantCulture)
+        };
         if (i.Recurring)
         {
             info.SeriesTimerId = i.RecurringParent.ToString(CultureInfo.InvariantCulture);
         }
 
         info.Status = ParseStatus(i.Status);
-        if (i.File != null)
+        if (i.File is not null)
         {
             if (Plugin.Instance.Configuration.RecordingTransport == 2)
             {
@@ -117,10 +132,10 @@ public class RecordingResponse
             }
             else
             {
-                string sidParameter = null;
+                string? sidParameter = null;
                 if (Plugin.Instance.Configuration.RecordingTransport == 1 || Plugin.Instance.Configuration.BackendVersion < 60106)
                 {
-                    sidParameter = $"&sid={LiveTvService.Instance.Sid}";
+                    sidParameter = $"&sid={LiveTvService.Instance?.Sid}";
                 }
 
                 if (info.Status == RecordingStatus.InProgress)
@@ -141,7 +156,6 @@ public class RecordingResponse
         info.EpisodeTitle = i.Subtitle;
         info.Name = i.Name;
         info.Overview = i.Desc;
-        info.Genres = i.Genres;
         info.IsRepeat = !i.Firstrun;
         info.ChannelId = i.ChannelId.ToString(CultureInfo.InvariantCulture);
         info.ChannelType = ChannelType.TV;
@@ -153,13 +167,13 @@ public class RecordingResponse
             info.EpisodeNumber = i.Episode;
             info.IsSeries = true;
             string se = string.Format(CultureInfo.InvariantCulture, "S{0:D2}E{1:D2} - ", i.Season, i.Episode);
-            if (i.Subtitle.StartsWith(se, StringComparison.CurrentCulture))
+            if (i.Subtitle is not null && i.Subtitle.StartsWith(se, StringComparison.CurrentCulture))
             {
                 info.EpisodeTitle = i.Subtitle.Substring(se.Length);
             }
         }
 
-        if (i.Original != null)
+        if (i.Original is not null)
         {
             info.OriginalAirDate = i.Original;
         }
@@ -167,7 +181,7 @@ public class RecordingResponse
         info.ProductionYear = i.Year;
         info.OfficialRating = i.Rating;
 
-        if (info.Genres != null)
+        if (i.Genres is not null)
         {
             info.Genres = i.Genres;
             genreMapper.PopulateRecordingGenres(info);
@@ -207,21 +221,21 @@ public class RecordingResponse
             info.EpisodeNumber = i.Episode;
             info.IsSeries = true;
             string se = string.Format(CultureInfo.InvariantCulture, "S{0:D2}E{1:D2} - ", i.Season, i.Episode);
-            if (i.Subtitle.StartsWith(se, StringComparison.CurrentCulture))
+            if (i.Subtitle is not null && i.Subtitle.StartsWith(se, StringComparison.CurrentCulture))
             {
                 info.EpisodeTitle = i.Subtitle.Substring(se.Length);
             }
         }
 
         info.OfficialRating = i.Rating;
-        if (i.Original != null)
+        if (i.Original is not null)
         {
             info.OriginalAirDate = i.Original;
         }
 
         info.ProductionYear = i.Year;
 
-        if (i.Genres != null)
+        if (i.Genres is not null)
         {
             info.Genres = i.Genres.ToArray();
             genreMapper.PopulateTimerGenres(info);
@@ -265,11 +279,11 @@ public class RecordingResponse
     {
         public int Id { get; set; }
 
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
-        public string Desc { get; set; }
+        public string? Desc { get; set; }
 
-        public string Subtitle { get; set; }
+        public string? Subtitle { get; set; }
 
         public int StartTime { get; set; }
 
@@ -281,15 +295,15 @@ public class RecordingResponse
 
         public int EpgEventId { get; set; }
 
-        public List<string> Genres { get; set; }
+        public List<string>? Genres { get; set; }
 
-        public string Status { get; set; }
+        public string Status { get; set; } = string.Empty;
 
-        public string Rating { get; set; }
+        public string Rating { get; set; } = string.Empty;
 
-        public string Quality { get; set; }
+        public string? Quality { get; set; }
 
-        public string Channel { get; set; }
+        public string? Channel { get; set; }
 
         public int ChannelId { get; set; }
 
@@ -305,7 +319,7 @@ public class RecordingResponse
 
         public int PostPadding { get; set; }
 
-        public string File { get; set; }
+        public string? File { get; set; }
 
         public int PlaybackPosition { get; set; }
 
@@ -317,9 +331,9 @@ public class RecordingResponse
 
         public bool Firstrun { get; set; }
 
-        public string Reason { get; set; }
+        public string? Reason { get; set; }
 
-        public string Significance { get; set; }
+        public string? Significance { get; set; }
 
         public DateTime? Original { get; set; }
 
@@ -328,6 +342,6 @@ public class RecordingResponse
 
     private sealed class RootObject
     {
-        public List<Recording> Recordings { get; set; }
+        public List<Recording>? Recordings { get; set; }
     }
 }

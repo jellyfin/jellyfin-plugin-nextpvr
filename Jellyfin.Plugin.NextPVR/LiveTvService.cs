@@ -33,7 +33,7 @@ public class LiveTvService : ILiveTvService
     private readonly ILogger<LiveTvService> _logger;
     private int _liveStreams;
 
-    private string _baseUrl;
+    private string _baseUrl = string.Empty;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LiveTvService"/> class.
@@ -53,7 +53,7 @@ public class LiveTvService : ILiveTvService
     /// <summary>
     /// Gets or sets the id of the current NextPVR session, or <c>null</c> when there is no session.
     /// </summary>
-    public string Sid { get; set; }
+    public string? Sid { get; set; }
 
     /// <summary>
     /// Gets or sets the recording list change time that the current session was established for.
@@ -61,9 +61,9 @@ public class LiveTvService : ILiveTvService
     public DateTime RecordingModificationTime { get; set; }
 
     /// <summary>
-    /// Gets the most recently constructed instance of the service.
+    /// Gets the most recently constructed instance of the service, or <c>null</c> if it has not been constructed yet.
     /// </summary>
-    public static LiveTvService Instance { get; private set; }
+    public static LiveTvService? Instance { get; private set; }
 
     /// <summary>
     /// Gets a value indicating whether there is an active session with the backend.
@@ -137,7 +137,7 @@ public class LiveTvService : ILiveTvService
     private async Task InitiateSession(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Start InitiateSession");
-        _baseUrl = Plugin.Instance.Configuration.CurrentWebServiceURL;
+        _baseUrl = Plugin.Instance.Configuration.CurrentWebServiceURL ?? string.Empty;
         var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
         httpClient.Timeout = TimeSpan.FromSeconds(5);
         bool updateConfiguration = false;
@@ -190,8 +190,9 @@ public class LiveTvService : ILiveTvService
                 clientKeys = await new InstantiateResponse().GetClientKeys(stream, _logger).ConfigureAwait(false);
             }
 
-            var sid = clientKeys.Sid;
-            var salt = clientKeys.Salt;
+            // GetClientKeys only returns once it has verified that both keys are present.
+            var sid = clientKeys.Sid!;
+            var salt = clientKeys.Salt!;
             validConfiguration = await Login(sid, salt, cancellationToken).ConfigureAwait(false);
             Plugin.Instance.Configuration.StoredSid = sid;
             updateConfiguration = true;
@@ -602,7 +603,7 @@ public class LiveTvService : ILiveTvService
         EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
         _liveStreams++;
 
-        string sidParameter = null;
+        string? sidParameter = null;
         if (Plugin.Instance.Configuration.RecordingTransport != 3)
         {
             sidParameter = $"&sid={Sid}";
@@ -647,7 +648,7 @@ public class LiveTvService : ILiveTvService
     }
 
     /// <inheritdoc />
-    public Task<SeriesTimerInfo> GetNewTimerDefaultsAsync(CancellationToken cancellationToken, ProgramInfo program = null)
+    public Task<SeriesTimerInfo> GetNewTimerDefaultsAsync(CancellationToken cancellationToken, ProgramInfo? program = null)
     {
         SeriesTimerInfo defaultSettings = new SeriesTimerInfo
         {

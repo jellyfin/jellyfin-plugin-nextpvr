@@ -13,9 +13,10 @@ namespace Jellyfin.Plugin.NextPVR.Entities;
 /// <typeparam name="TValue">The type of the values in the dictionary.</typeparam>
 [XmlRoot("dictionary")]
 public class SerializableDictionary<TKey, TValue> : Dictionary<TKey, TValue>, IXmlSerializable
+    where TKey : notnull
 {
     /// <inheritdoc />
-    public XmlSchema GetSchema()
+    public XmlSchema? GetSchema()
     {
         return null;
     }
@@ -39,11 +40,11 @@ public class SerializableDictionary<TKey, TValue> : Dictionary<TKey, TValue>, IX
             reader.ReadStartElement("item");
 
             reader.ReadStartElement("key");
-            var key = (TKey)keySerializer.Deserialize(reader);
+            var key = (TKey)keySerializer.Deserialize(reader)!;
             reader.ReadEndElement();
 
             reader.ReadStartElement("value");
-            var value = (TValue)valueSerializer.Deserialize(reader);
+            var value = (TValue)valueSerializer.Deserialize(reader)!;
             reader.ReadEndElement();
 
             Add(key, value);

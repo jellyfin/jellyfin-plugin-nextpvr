@@ -32,15 +32,15 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
     private readonly ILogger<RecordingsChannel> _logger;
     private readonly CancellationTokenSource _cancellationToken;
     private readonly string _recordingCacheDirectory;
-    private static SemaphoreSlim _semaphore;
+    private static readonly SemaphoreSlim _semaphore = new(1, 1);
 
-    private Timer _updateTimer;
+    private Timer? _updateTimer;
     private DateTimeOffset _lastUpdate = DateTimeOffset.FromUnixTimeSeconds(0);
 
-    private IEnumerable<MyRecordingInfo> _allRecordings;
+    private IEnumerable<MyRecordingInfo> _allRecordings = [];
     private bool _useCachedRecordings = false;
     private DateTime _cachedRecordingModificationTime;
-    private string _cacheKeyBase;
+    private string _cacheKeyBase = string.Empty;
     private int _pollInterval = -1;
 
     /// <summary>
@@ -59,7 +59,6 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
         _recordingCacheDirectory = Path.Join(applicationPaths.CachePath, "channels", channelId, version);
         CleanCache(true);
         _cancellationToken = new CancellationTokenSource();
-        _semaphore = new SemaphoreSlim(1, 1);
     }
 
     /// <inheritdoc />
@@ -105,9 +104,9 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
     }
 
     /// <inheritdoc />
-    public string GetCacheKey(string userId)
+    public string GetCacheKey(string? userId)
     {
-        DateTimeOffset dto = LiveTvService.Instance.RecordingModificationTime;
+        DateTimeOffset dto = LiveTvService.Instance?.RecordingModificationTime ?? DateTime.UnixEpoch;
         return $"{dto.ToUnixTimeSeconds()}-{_cacheKeyBase}";
     }
 
@@ -161,9 +160,9 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
         return true;
     }
 
-    private LiveTvService GetService()
+    private LiveTvService? GetService()
     {
-        LiveTvService service = LiveTvService.Instance;
+        var service = LiveTvService.Instance;
         if (service is not null && (!service.IsActive || _cachedRecordingModificationTime != Plugin.Instance.Configuration.RecordingModificationTime || service.FlagRecordingChange))
         {
             try
@@ -341,7 +340,7 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
             {
                 var interval = TimeSpan.FromSeconds(Plugin.Instance.Configuration.PollInterval);
                 _updateTimer = new Timer(OnUpdateTimerCallbackAsync, null, TimeSpan.FromMinutes(2), interval);
-                if (_updateTimer != null)
+                if (_updateTimer is not null)
                 {
                     _pollInterval = Plugin.Instance.Configuration.PollInterval;
                 }
@@ -400,7 +399,7 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
 
             var kids = _allRecordings.FirstOrDefault(i => i.IsKids);
 
-            if (kids != null)
+            if (kids is not null)
             {
                 pluginItems.Add(new ChannelItemInfo
                 {
@@ -413,7 +412,7 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
             }
 
             var movies = _allRecordings.FirstOrDefault(i => i.IsMovie);
-            if (movies != null)
+            if (movies is not null)
             {
                 pluginItems.Add(new ChannelItemInfo
                 {
@@ -426,7 +425,7 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
             }
 
             var news = _allRecordings.FirstOrDefault(i => i.IsNews);
-            if (news != null)
+            if (news is not null)
             {
                 pluginItems.Add(new ChannelItemInfo
                 {
@@ -439,7 +438,7 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
             }
 
             var sports = _allRecordings.FirstOrDefault(i => i.IsSports);
-            if (sports != null)
+            if (sports is not null)
             {
                 pluginItems.Add(new ChannelItemInfo
                 {
@@ -452,7 +451,7 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
             }
 
             var other = _allRecordings.OrderByDescending(j => j.StartDate).FirstOrDefault(i => !i.IsSports && !i.IsNews && !i.IsMovie && !i.IsKids && !i.IsSeries);
-            if (other != null)
+            if (other is not null)
             {
                 pluginItems.Add(new ChannelItemInfo
                 {
@@ -470,9 +469,9 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
         return result;
     }
 
-    private async void OnUpdateTimerCallbackAsync(object state)
+    private async void OnUpdateTimerCallbackAsync(object? state)
     {
-        LiveTvService service = LiveTvService.Instance;
+        var service = LiveTvService.Instance;
         if (service is not null && service.IsActive)
         {
             var backendUpdate = await service.GetLastUpdate(_cancellationToken.Token).ConfigureAwait(false);
