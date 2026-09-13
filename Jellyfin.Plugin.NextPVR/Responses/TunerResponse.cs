@@ -10,10 +10,18 @@ using MediaBrowser.Model.LiveTv;
 
 namespace Jellyfin.Plugin.NextPVR.Responses;
 
+/// <summary>
+/// Reads the response to a tuner listing request.
+/// </summary>
 public class TunerResponse
 {
     private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.CamelCaseOptions;
 
+    /// <summary>
+    /// Reads the tuners reported by the backend.
+    /// </summary>
+    /// <param name="stream">The response stream to read.</param>
+    /// <returns>The available tuners.</returns>
     public async Task<List<TunerHostInfo>> LiveTvTunerInfo(Stream stream)
     {
         var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);

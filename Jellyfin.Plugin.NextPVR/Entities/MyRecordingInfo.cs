@@ -4,6 +4,9 @@ using MediaBrowser.Model.LiveTv;
 
 namespace Jellyfin.Plugin.NextPVR.Entities;
 
+/// <summary>
+/// The details of a single NextPVR recording.
+/// </summary>
 public class MyRecordingInfo
 {
     /// <summary>
@@ -82,7 +85,10 @@ public class MyRecordingInfo
     /// <summary>
     /// Gets or sets the genres of the program.
     /// </summary>
-    public List<string> Genres { get; set; } = new();
+    // The list is replaced wholesale with the genres parsed from a NextPVR response.
+#pragma warning disable CA1002, CA2227
+    public List<string> Genres { get; set; } = [];
+#pragma warning restore CA1002, CA2227
 
     /// <summary>
     /// Gets or sets a value indicating whether this instance is repeat.

@@ -11,16 +11,29 @@ using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Plugin.NextPVR.Responses;
 
+/// <summary>
+/// Reads the response to a channel listing request.
+/// </summary>
 public class ChannelResponse
 {
     private readonly string _baseUrl;
     private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.CamelCaseOptions;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChannelResponse"/> class.
+    /// </summary>
+    /// <param name="baseUrl">The base URL of the NextPVR web service, used to build channel image URLs.</param>
     public ChannelResponse(string baseUrl)
     {
         _baseUrl = baseUrl;
     }
 
+    /// <summary>
+    /// Reads the available channels.
+    /// </summary>
+    /// <param name="stream">The response stream to read.</param>
+    /// <param name="logger">The logger to write diagnostic output to.</param>
+    /// <returns>The channels reported by the backend.</returns>
     public async Task<IEnumerable<ChannelInfo>> GetChannels(Stream stream, ILogger<LiveTvService> logger)
     {
         var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);

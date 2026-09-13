@@ -33,11 +33,11 @@ public class GenreMapper
     {
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
-        _movieGenres = new List<string>();
-        _sportGenres = new List<string>();
-        _newsGenres = new List<string>();
-        _kidsGenres = new List<string>();
-        _liveGenres = new List<string>();
+        _movieGenres = [];
+        _sportGenres = [];
+        _newsGenres = [];
+        _kidsGenres = [];
+        _liveGenres = [];
         LoadInternalLists(_configuration.GenreMappings);
     }
 

@@ -5,14 +5,22 @@ using System.Xml.Serialization;
 
 namespace Jellyfin.Plugin.NextPVR.Entities;
 
+/// <summary>
+/// A <see cref="Dictionary{TKey, TValue}"/> that can be read from and written to XML,
+/// so that it can be stored in the plugin configuration.
+/// </summary>
+/// <typeparam name="TKey">The type of the keys in the dictionary.</typeparam>
+/// <typeparam name="TValue">The type of the values in the dictionary.</typeparam>
 [XmlRoot("dictionary")]
 public class SerializableDictionary<TKey, TValue> : Dictionary<TKey, TValue>, IXmlSerializable
 {
+    /// <inheritdoc />
     public XmlSchema GetSchema()
     {
         return null;
     }
 
+    /// <inheritdoc />
     public void ReadXml(XmlReader reader)
     {
         var keySerializer = new XmlSerializer(typeof(TKey));
@@ -47,6 +55,7 @@ public class SerializableDictionary<TKey, TValue> : Dictionary<TKey, TValue>, IX
         reader.ReadEndElement();
     }
 
+    /// <inheritdoc />
     public void WriteXml(XmlWriter writer)
     {
         var keySerializer = new XmlSerializer(typeof(TKey));

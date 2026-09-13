@@ -12,17 +12,31 @@ using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Plugin.NextPVR.Responses;
 
+/// <summary>
+/// Reads the response to a guide listing request.
+/// </summary>
 public class ListingsResponse
 {
     private readonly string _baseUrl;
     private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.CamelCaseOptions;
     private string _channelId;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ListingsResponse"/> class.
+    /// </summary>
+    /// <param name="baseUrl">The base URL of the NextPVR web service, used to build artwork URLs.</param>
     public ListingsResponse(string baseUrl)
     {
         _baseUrl = baseUrl;
     }
 
+    /// <summary>
+    /// Reads the programs listed for a channel.
+    /// </summary>
+    /// <param name="stream">The response stream to read.</param>
+    /// <param name="channelId">The id of the channel the programs belong to.</param>
+    /// <param name="logger">The logger to write diagnostic output to.</param>
+    /// <returns>The programs listed for the channel.</returns>
     public async Task<IEnumerable<ProgramInfo>> GetPrograms(Stream stream, string channelId, ILogger<LiveTvService> logger)
     {
         var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
@@ -53,7 +67,7 @@ public class ListingsResponse
             EpisodeNumber = epg.Episode,
             StartDate = DateTimeOffset.FromUnixTimeSeconds(epg.Start).UtcDateTime,
             EndDate = DateTimeOffset.FromUnixTimeSeconds(epg.End).UtcDateTime,
-            Genres = new List<string>(), // epg.genres.Where(g => !string.IsNullOrWhiteSpace(g)).ToList(),
+            Genres = [], // epg.genres.Where(g => !string.IsNullOrWhiteSpace(g)).ToList(),
             OriginalAirDate = epg.Original == null ? epg.Original : DateTime.SpecifyKind((DateTime)epg.Original, DateTimeKind.Local),
             ProductionYear = epg.Year,
             Name = epg.Name,

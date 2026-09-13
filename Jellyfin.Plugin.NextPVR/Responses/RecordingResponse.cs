@@ -14,18 +14,31 @@ using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Plugin.NextPVR.Responses;
 
+/// <summary>
+/// Reads the response to a recording listing request.
+/// </summary>
 public class RecordingResponse
 {
     private readonly string _baseUrl;
     private readonly ILogger<LiveTvService> _logger;
     private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.CamelCaseOptions;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RecordingResponse"/> class.
+    /// </summary>
+    /// <param name="baseUrl">The base URL of the NextPVR web service, used to build playback and artwork URLs.</param>
+    /// <param name="logger">The logger to write diagnostic output to.</param>
     public RecordingResponse(string baseUrl, ILogger<LiveTvService> logger)
     {
         _baseUrl = baseUrl;
         _logger = logger;
     }
 
+    /// <summary>
+    /// Reads the completed and in-progress recordings, skipping any that failed or conflicted.
+    /// </summary>
+    /// <param name="stream">The response stream to read.</param>
+    /// <returns>The recordings reported by the backend.</returns>
     public async Task<IReadOnlyList<MyRecordingInfo>> GetRecordings(Stream stream)
     {
         if (stream == null)
@@ -54,6 +67,11 @@ public class RecordingResponse
         return recordings.ToList();
     }
 
+    /// <summary>
+    /// Reads the pending recordings as timers.
+    /// </summary>
+    /// <param name="stream">The response stream to read.</param>
+    /// <returns>The timers reported by the backend.</returns>
     public async Task<IEnumerable<TimerInfo>> GetTimers(Stream stream)
     {
         if (stream == null)
@@ -156,7 +174,7 @@ public class RecordingResponse
         }
         else
         {
-            info.Genres = new List<string>();
+            info.Genres = [];
         }
 
         return info;

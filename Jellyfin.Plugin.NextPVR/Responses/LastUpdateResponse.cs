@@ -9,10 +9,19 @@ using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Plugin.NextPVR.Responses;
 
+/// <summary>
+/// Reads the response describing when the recordings last changed.
+/// </summary>
 public class LastUpdateResponse
 {
     private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.CamelCaseOptions;
 
+    /// <summary>
+    /// Reads the time at which the backend recordings last changed.
+    /// </summary>
+    /// <param name="stream">The response stream to read.</param>
+    /// <param name="logger">The logger to write diagnostic output to.</param>
+    /// <returns>The time of the last change.</returns>
     public async Task<DateTimeOffset> GetUpdateTime(Stream stream, ILogger<LiveTvService> logger)
     {
         var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);

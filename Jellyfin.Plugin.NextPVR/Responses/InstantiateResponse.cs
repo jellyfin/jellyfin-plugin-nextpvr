@@ -9,10 +9,19 @@ using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Plugin.NextPVR.Responses;
 
+/// <summary>
+/// Reads the response to a session initiation request.
+/// </summary>
 public class InstantiateResponse
 {
     private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.CamelCaseOptions;
 
+    /// <summary>
+    /// Reads the keys of the newly initiated session.
+    /// </summary>
+    /// <param name="stream">The response stream to read.</param>
+    /// <param name="logger">The logger to write diagnostic output to.</param>
+    /// <returns>The <see cref="ClientKeys"/> of the new session.</returns>
     public async Task<ClientKeys> GetClientKeys(Stream stream, ILogger<LiveTvService> logger)
     {
         try

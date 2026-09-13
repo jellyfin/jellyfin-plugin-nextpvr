@@ -35,6 +35,12 @@ public class LiveTvService : ILiveTvService
 
     private string _baseUrl;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="LiveTvService"/> class.
+    /// </summary>
+    /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
+    /// <param name="logger">Instance of the <see cref="ILogger{TCategoryName}"/> interface.</param>
+    /// <param name="configuration">Instance of the <see cref="IConfigurationManager"/> interface.</param>
     public LiveTvService(IHttpClientFactory httpClientFactory, ILogger<LiveTvService> logger, IConfigurationManager configuration)
     {
         _enableIPv6 = configuration.GetNetworkConfiguration().EnableIPv6;
@@ -44,14 +50,30 @@ public class LiveTvService : ILiveTvService
         Instance = this;
     }
 
+    /// <summary>
+    /// Gets or sets the id of the current NextPVR session, or <c>null</c> when there is no session.
+    /// </summary>
     public string Sid { get; set; }
 
+    /// <summary>
+    /// Gets or sets the recording list change time that the current session was established for.
+    /// </summary>
     public DateTime RecordingModificationTime { get; set; }
 
+    /// <summary>
+    /// Gets the most recently constructed instance of the service.
+    /// </summary>
     public static LiveTvService Instance { get; private set; }
 
+    /// <summary>
+    /// Gets a value indicating whether there is an active session with the backend.
+    /// </summary>
     public bool IsActive => Sid is not null;
 
+    /// <summary>
+    /// Gets or sets a value indicating whether this plugin changed the recordings and the
+    /// cached recording list therefore needs to be reloaded.
+    /// </summary>
     public bool FlagRecordingChange { get; set; }
 
     private DateTimeOffset LastUpdatedSidDateTime { get; set; }
@@ -62,6 +84,7 @@ public class LiveTvService : ILiveTvService
     /// <value>The name.</value>
     public string Name => "Next Pvr";
 
+    /// <inheritdoc />
     public string HomePageUrl => "https://www.nextpvr.com/";
 
     /// <summary>
@@ -122,8 +145,11 @@ public class LiveTvService : ILiveTvService
         if (!string.IsNullOrEmpty(Plugin.Instance.Configuration.StoredSid) && !string.IsNullOrEmpty(Plugin.Instance.Configuration.CurrentWebServiceURL) )
         {
             string request = $"{_baseUrl}/service?method=session.valid&device=jellyfin&sid={Plugin.Instance.Configuration.StoredSid}";
-            await using var stream = await httpClient.GetStreamAsync(request, cancellationToken).ConfigureAwait(false);
-            validConfiguration = await new InitializeResponse().LoggedIn(stream, _logger).ConfigureAwait(false);
+            var stream = await httpClient.GetStreamAsync(request, cancellationToken).ConfigureAwait(false);
+            await using (stream.ConfigureAwait(false))
+            {
+                validConfiguration = await new InitializeResponse().LoggedIn(stream, _logger).ConfigureAwait(false);
+            }
         }
 
         if (!validConfiguration)
@@ -139,7 +165,7 @@ public class LiveTvService : ILiveTvService
                 try
                 {
                     Uri uri = new Uri(Plugin.Instance.Configuration.WebServiceUrl);
-                    var hosts = await Dns.GetHostEntryAsync(uri.Host, System.Net.Sockets.AddressFamily.InterNetwork, cancellationToken);
+                    var hosts = await Dns.GetHostEntryAsync(uri.Host, System.Net.Sockets.AddressFamily.InterNetwork, cancellationToken).ConfigureAwait(false);
                     if (hosts is not null)
                     {
                         var host = hosts.AddressList.FirstOrDefault()?.ToString();
@@ -157,8 +183,13 @@ public class LiveTvService : ILiveTvService
             }
 
             _baseUrl = builder.ToString().TrimEnd('/');
-            await using var stream = await httpClient.GetStreamAsync($"{_baseUrl}/service?method=session.initiate&ver=1.0&device=jellyfin", cancellationToken).ConfigureAwait(false);
-            var clientKeys = await new InstantiateResponse().GetClientKeys(stream, _logger).ConfigureAwait(false);
+            var stream = await httpClient.GetStreamAsync($"{_baseUrl}/service?method=session.initiate&ver=1.0&device=jellyfin", cancellationToken).ConfigureAwait(false);
+            ClientKeys clientKeys;
+            await using (stream.ConfigureAwait(false))
+            {
+                clientKeys = await new InstantiateResponse().GetClientKeys(stream, _logger).ConfigureAwait(false);
+            }
+
             var sid = clientKeys.Sid;
             var salt = clientKeys.Salt;
             validConfiguration = await Login(sid, salt, cancellationToken).ConfigureAwait(false);
@@ -202,7 +233,8 @@ public class LiveTvService : ILiveTvService
         var md5Result = GetMd5Hash(strb.Append(':').Append(GetMd5Hash(pin)).Append(':').Append(salt).ToString());
 
         var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
-        await using var stream = await httpClient.GetStreamAsync($"{_baseUrl}/service?method=session.login&md5={md5Result}&sid={sid}", cancellationToken);
+        var stream = await httpClient.GetStreamAsync($"{_baseUrl}/service?method=session.login&md5={md5Result}&sid={sid}", cancellationToken).ConfigureAwait(false);
+        await using (stream.ConfigureAwait(false))
         {
             return await new InitializeResponse().LoggedIn(stream, _logger).ConfigureAwait(false);
         }
@@ -227,10 +259,13 @@ public class LiveTvService : ILiveTvService
         _logger.LogInformation("Start GetChannels Async, retrieve all channels");
         await EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
 
-        await using var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
-            .GetStreamAsync($"{_baseUrl}/service?method=channel.list&sid={Sid}", cancellationToken);
+        var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
+            .GetStreamAsync($"{_baseUrl}/service?method=channel.list&sid={Sid}", cancellationToken).ConfigureAwait(false);
 
-        return await new ChannelResponse(Plugin.Instance.Configuration.WebServiceUrl).GetChannels(stream, _logger).ConfigureAwait(false);
+        await using (stream.ConfigureAwait(false))
+        {
+            return await new ChannelResponse(Plugin.Instance.Configuration.WebServiceUrl).GetChannels(stream, _logger).ConfigureAwait(false);
+        }
     }
 
     /// <summary>
@@ -242,9 +277,12 @@ public class LiveTvService : ILiveTvService
     {
         _logger.LogInformation("Start GetRecordings Async, retrieve all 'Pending', 'Inprogress' and 'Completed' recordings ");
         await EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
-        await using var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
-            .GetStreamAsync($"{_baseUrl}/service?method=recording.list&filter=ready&sid={Sid}", cancellationToken);
-        return await new RecordingResponse(_baseUrl, _logger).GetRecordings(stream).ConfigureAwait(false);
+        var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
+            .GetStreamAsync($"{_baseUrl}/service?method=recording.list&filter=ready&sid={Sid}", cancellationToken).ConfigureAwait(false);
+        await using (stream.ConfigureAwait(false))
+        {
+            return await new RecordingResponse(_baseUrl, _logger).GetRecordings(stream).ConfigureAwait(false);
+        }
     }
 
     /// <summary>
@@ -257,10 +295,14 @@ public class LiveTvService : ILiveTvService
     {
         _logger.LogInformation("Start Delete Recording Async for recordingId: {RecordingId}", recordingId);
         await EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
-        await using var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
-            .GetStreamAsync($"{_baseUrl}/service?method=recording.delete&recording_id={recordingId}&sid={Sid}", cancellationToken);
+        var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
+            .GetStreamAsync($"{_baseUrl}/service?method=recording.delete&recording_id={recordingId}&sid={Sid}", cancellationToken).ConfigureAwait(false);
 
-        bool? error = await new CancelDeleteRecordingResponse().RecordingError(stream, _logger).ConfigureAwait(false);
+        bool? error;
+        await using (stream.ConfigureAwait(false))
+        {
+            error = await new CancelDeleteRecordingResponse().RecordingError(stream, _logger).ConfigureAwait(false);
+        }
 
         if (error is null or true)
         {
@@ -285,10 +327,14 @@ public class LiveTvService : ILiveTvService
     {
         _logger.LogInformation("Start Cancel Recording Async for recordingId: {TimerId}", timerId);
         await EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
-        await using var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
-            .GetStreamAsync($"{_baseUrl}/service?method=recording.delete&recording_id={timerId}&sid={Sid}", cancellationToken);
+        var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
+            .GetStreamAsync($"{_baseUrl}/service?method=recording.delete&recording_id={timerId}&sid={Sid}", cancellationToken).ConfigureAwait(false);
 
-        bool? error = await new CancelDeleteRecordingResponse().RecordingError(stream, _logger).ConfigureAwait(false);
+        bool? error;
+        await using (stream.ConfigureAwait(false))
+        {
+            error = await new CancelDeleteRecordingResponse().RecordingError(stream, _logger).ConfigureAwait(false);
+        }
 
         if (error is null or true)
         {
@@ -314,7 +360,7 @@ public class LiveTvService : ILiveTvService
         _logger.LogInformation("Start CreateTimer Async for ChannelId: {ChannelId} & Name: {Name}", info.ChannelId, info.Name);
         await EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
         UtilsHelper.DebugInformation(_logger, $"TimerSettings CreateTimer: {info.ProgramId} for ChannelId: {info.ChannelId} & Name: {info.Name}");
-        await using var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
+        var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
             .GetStreamAsync(
                 string.Format(
                     CultureInfo.InvariantCulture,
@@ -324,9 +370,14 @@ public class LiveTvService : ILiveTvService
                     int.Parse(info.ProgramId, CultureInfo.InvariantCulture),
                     info.PrePaddingSeconds / 60,
                     info.PostPaddingSeconds / 60),
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
 
-        bool? error = await new CancelDeleteRecordingResponse().RecordingError(stream, _logger).ConfigureAwait(false);
+        bool? error;
+        await using (stream.ConfigureAwait(false))
+        {
+            error = await new CancelDeleteRecordingResponse().RecordingError(stream, _logger).ConfigureAwait(false);
+        }
+
         if (error is null or true)
         {
             _logger.LogError("Failed to create the timer with programId: {ProgramId}", info.ProgramId);
@@ -350,10 +401,13 @@ public class LiveTvService : ILiveTvService
         _logger.LogInformation("Start GetTimer Async, retrieve the 'Pending' recordings");
         if (await EnsureConnectionAsync(cancellationToken).ConfigureAwait(false))
         {
-            await using var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
-                .GetStreamAsync($"{_baseUrl}/service?method=recording.list&filter=pending&sid={Sid}", cancellationToken);
+            var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
+                .GetStreamAsync($"{_baseUrl}/service?method=recording.list&filter=pending&sid={Sid}", cancellationToken).ConfigureAwait(false);
 
-            return await new RecordingResponse(_baseUrl, _logger).GetTimers(stream).ConfigureAwait(false);
+            await using (stream.ConfigureAwait(false))
+            {
+                return await new RecordingResponse(_baseUrl, _logger).GetTimers(stream).ConfigureAwait(false);
+            }
         }
 
         return new List<TimerInfo>();
@@ -368,10 +422,13 @@ public class LiveTvService : ILiveTvService
     {
         _logger.LogInformation("Start GetSeriesTimer Async, retrieve the recurring recordings");
         await EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
-        await using var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
-            .GetStreamAsync($"{_baseUrl}/service?method=recording.recurring.list&sid={Sid}", cancellationToken);
+        var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
+            .GetStreamAsync($"{_baseUrl}/service?method=recording.recurring.list&sid={Sid}", cancellationToken).ConfigureAwait(false);
 
-        return await new RecurringResponse(_logger).GetSeriesTimers(stream).ConfigureAwait(false);
+        await using (stream.ConfigureAwait(false))
+        {
+            return await new RecurringResponse(_logger).GetSeriesTimers(stream).ConfigureAwait(false);
+        }
     }
 
     /// <summary>
@@ -407,16 +464,21 @@ public class LiveTvService : ILiveTvService
             url += "&timeslot=true";
         }
 
-        await CreateUpdateSeriesTimerAsync(info, url, cancellationToken);
+        await CreateUpdateSeriesTimerAsync(info, url, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task CreateUpdateSeriesTimerAsync(SeriesTimerInfo info, string url, CancellationToken cancellationToken)
     {
         UtilsHelper.DebugInformation(_logger, $"TimerSettings CreateSeriesTimerAsync: {info.ProgramId} for ChannelId: {info.ChannelId} & Name: {info.Name}");
-        await using var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
-            .GetStreamAsync(url, cancellationToken);
+        var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
+            .GetStreamAsync(url, cancellationToken).ConfigureAwait(false);
 
-        bool? error = await new CancelDeleteRecordingResponse().RecordingError(stream, _logger).ConfigureAwait(false);
+        bool? error;
+        await using (stream.ConfigureAwait(false))
+        {
+            error = await new CancelDeleteRecordingResponse().RecordingError(stream, _logger).ConfigureAwait(false);
+        }
+
         if (error is null or true)
         {
             _logger.LogError("Failed to create or update the timer with Recurring ID: {TimerInfoId}", info.Id);
@@ -480,10 +542,15 @@ public class LiveTvService : ILiveTvService
     {
         _logger.LogInformation("Start UpdateTimer Async for ChannelId: {ChannelId} & Name: {Name}", updatedTimer.ChannelId, updatedTimer.Name);
         await EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
-        await using var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
-            .GetStreamAsync($"{_baseUrl}/service?method=recording.save&sid={Sid}&pre_padding={updatedTimer.PrePaddingSeconds / 60}&post_padding={updatedTimer.PostPaddingSeconds / 60}&recording_id={updatedTimer.Id}&event_id={updatedTimer.ProgramId}", cancellationToken);
+        var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
+            .GetStreamAsync($"{_baseUrl}/service?method=recording.save&sid={Sid}&pre_padding={updatedTimer.PrePaddingSeconds / 60}&post_padding={updatedTimer.PostPaddingSeconds / 60}&recording_id={updatedTimer.Id}&event_id={updatedTimer.ProgramId}", cancellationToken).ConfigureAwait(false);
 
-        bool? error = await new CancelDeleteRecordingResponse().RecordingError(stream, _logger).ConfigureAwait(false);
+        bool? error;
+        await using (stream.ConfigureAwait(false))
+        {
+            error = await new CancelDeleteRecordingResponse().RecordingError(stream, _logger).ConfigureAwait(false);
+        }
+
         if (error is null or true)
         {
             _logger.LogError("Failed to update the timer with ID: {Id}", updatedTimer.Id);
@@ -503,10 +570,14 @@ public class LiveTvService : ILiveTvService
     {
         _logger.LogInformation("Start Cancel SeriesRecording Async for recordingId: {TimerId}", timerId);
         await EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
-        await using var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
-            .GetStreamAsync($"{_baseUrl}/service?method=recording.recurring.delete&recurring_id={timerId}&sid={Sid}", cancellationToken);
+        var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
+            .GetStreamAsync($"{_baseUrl}/service?method=recording.recurring.delete&recurring_id={timerId}&sid={Sid}", cancellationToken).ConfigureAwait(false);
 
-        bool? error = await new CancelDeleteRecordingResponse().RecordingError(stream, _logger).ConfigureAwait(false);
+        bool? error;
+        await using (stream.ConfigureAwait(false))
+        {
+            error = await new CancelDeleteRecordingResponse().RecordingError(stream, _logger).ConfigureAwait(false);
+        }
 
         if (error is null or true)
         {
@@ -517,12 +588,14 @@ public class LiveTvService : ILiveTvService
         _logger.LogInformation("Cancelled Recording for recordingId: {TimerId}", timerId);
     }
 
+    /// <inheritdoc />
     public async Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(string channelId, CancellationToken cancellationToken)
     {
-        var source = await GetChannelStream(channelId, string.Empty, cancellationToken);
+        var source = await GetChannelStream(channelId, string.Empty, cancellationToken).ConfigureAwait(false);
         return [source];
     }
 
+    /// <inheritdoc />
     public Task<MediaSourceInfo> GetChannelStream(string channelId, string streamId, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Start ChannelStream");
@@ -566,12 +639,14 @@ public class LiveTvService : ILiveTvService
         return Task.FromResult(mediaSourceInfo);
     }
 
+    /// <inheritdoc />
     public Task CloseLiveStream(string id, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Closing {Id}", id);
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public Task<SeriesTimerInfo> GetNewTimerDefaultsAsync(CancellationToken cancellationToken, ProgramInfo program = null)
     {
         SeriesTimerInfo defaultSettings = new SeriesTimerInfo
@@ -586,21 +661,33 @@ public class LiveTvService : ILiveTvService
     {
         _logger.LogInformation("Start GetDefaultSettings Async");
         await EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
-        await using var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
-            .GetStreamAsync($"{_baseUrl}/service?method=setting.list&sid={Sid}", cancellationToken);
-        await new SettingResponse().GetDefaultSettings(stream, _logger).ConfigureAwait(false);
+        var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
+            .GetStreamAsync($"{_baseUrl}/service?method=setting.list&sid={Sid}", cancellationToken).ConfigureAwait(false);
+        await using (stream.ConfigureAwait(false))
+        {
+            await new SettingResponse().GetDefaultSettings(stream, _logger).ConfigureAwait(false);
+        }
     }
 
+    /// <inheritdoc />
     public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Start GetPrograms Async, retrieve all Programs");
         await EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
         string fastArt = Plugin.Instance.Configuration.BackendVersion >= 70003 ? "&fastart" : string.Empty;
-        await using var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
-            .GetStreamAsync($"{_baseUrl}/service?method=channel.listings&sid={Sid}&start={((DateTimeOffset)startDateUtc).ToUnixTimeSeconds()}&end={((DateTimeOffset)endDateUtc).ToUnixTimeSeconds()}&channel_id={channelId}{fastArt}", cancellationToken);
-        return await new ListingsResponse(_baseUrl).GetPrograms(stream, channelId, _logger).ConfigureAwait(false);
+        var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
+            .GetStreamAsync($"{_baseUrl}/service?method=channel.listings&sid={Sid}&start={((DateTimeOffset)startDateUtc).ToUnixTimeSeconds()}&end={((DateTimeOffset)endDateUtc).ToUnixTimeSeconds()}&channel_id={channelId}{fastArt}", cancellationToken).ConfigureAwait(false);
+        await using (stream.ConfigureAwait(false))
+        {
+            return await new ListingsResponse(_baseUrl).GetPrograms(stream, channelId, _logger).ConfigureAwait(false);
+        }
     }
 
+    /// <summary>
+    /// Gets the time at which the backend recordings last changed.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The time of the last change, or the Unix epoch if the backend could not be reached.</returns>
     public async Task<DateTimeOffset> GetLastUpdate(CancellationToken cancellationToken)
     {
         _logger.LogDebug("GetLastUpdateTime");
@@ -610,7 +697,7 @@ public class LiveTvService : ILiveTvService
         {
             var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
             httpClient.Timeout = TimeSpan.FromSeconds(5);
-            var stream = await httpClient.GetStreamAsync($"{_baseUrl}/service?method=recording.lastupdated&ignore_resume=true&sid={Sid}", cancellationToken);
+            var stream = await httpClient.GetStreamAsync($"{_baseUrl}/service?method=recording.lastupdated&ignore_resume=true&sid={Sid}", cancellationToken).ConfigureAwait(false);
             retTime = await new LastUpdateResponse().GetUpdateTime(stream, _logger).ConfigureAwait(false);
             if (retTime == DateTimeOffset.FromUnixTimeSeconds(0))
             {
@@ -637,12 +724,16 @@ public class LiveTvService : ILiveTvService
     {
         _logger.LogInformation("GetBackendSetting");
         await EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
-        await using var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
-            .GetStreamAsync($"{_baseUrl}/service?method=setting.get&key={key}&sid={Sid}", cancellationToken);
+        var stream = await _httpClientFactory.CreateClient(NamedClient.Default)
+            .GetStreamAsync($"{_baseUrl}/service?method=setting.get&key={key}&sid={Sid}", cancellationToken).ConfigureAwait(false);
 
-        return await new SettingResponse().GetSetting(stream, _logger).ConfigureAwait(false);
+        await using (stream.ConfigureAwait(false))
+        {
+            return await new SettingResponse().GetSetting(stream, _logger).ConfigureAwait(false);
+        }
     }
 
+    /// <inheritdoc />
     public Task ResetTuner(string id, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();

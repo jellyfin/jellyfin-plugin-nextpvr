@@ -8,10 +8,19 @@ using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Plugin.NextPVR.Responses;
 
+/// <summary>
+/// Reads the responses to backend setting requests.
+/// </summary>
 public class SettingResponse
 {
     private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.CamelCaseOptions;
 
+    /// <summary>
+    /// Reads the backend scheduling defaults and copies them into the plugin configuration.
+    /// </summary>
+    /// <param name="stream">The response stream to read.</param>
+    /// <param name="logger">The logger to write diagnostic output to.</param>
+    /// <returns>Always <c>true</c>.</returns>
     public async Task<bool> GetDefaultSettings(Stream stream, ILogger<LiveTvService> logger)
     {
         var root = await JsonSerializer.DeserializeAsync<ScheduleSettings>(stream, _jsonOptions).ConfigureAwait(false);
@@ -23,6 +32,12 @@ public class SettingResponse
         return true;
     }
 
+    /// <summary>
+    /// Reads the value of a single backend setting.
+    /// </summary>
+    /// <param name="stream">The response stream to read.</param>
+    /// <param name="logger">The logger to write diagnostic output to.</param>
+    /// <returns>The value of the setting.</returns>
     public async Task<string> GetSetting(Stream stream, ILogger<LiveTvService> logger)
     {
         var root = await JsonSerializer.DeserializeAsync<SettingValue>(stream, _jsonOptions).ConfigureAwait(false);

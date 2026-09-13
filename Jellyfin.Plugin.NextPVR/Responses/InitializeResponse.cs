@@ -7,10 +7,19 @@ using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Plugin.NextPVR.Responses;
 
+/// <summary>
+/// Reads the response to a session validation or login request.
+/// </summary>
 public class InitializeResponse
 {
     private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.CamelCaseOptions;
 
+    /// <summary>
+    /// Determines whether the session is logged in.
+    /// </summary>
+    /// <param name="stream">The response stream to read.</param>
+    /// <param name="logger">The logger to write diagnostic output to.</param>
+    /// <returns><c>true</c> if the session is logged in; otherwise, <c>false</c>.</returns>
     public async Task<bool> LoggedIn(Stream stream, ILogger<LiveTvService> logger)
     {
         var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
