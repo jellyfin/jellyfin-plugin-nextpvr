@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Plugin.NextPVR.Entities;
 using Jellyfin.Plugin.NextPVR.Helpers;
+using Jellyfin.Plugin.NextPVR.Responses.Dto;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Plugin.NextPVR.Responses;

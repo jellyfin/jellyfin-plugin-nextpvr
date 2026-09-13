@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Plugin.NextPVR.Helpers;
+using Jellyfin.Plugin.NextPVR.Responses.Dto;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Plugin.NextPVR.Responses;
@@ -24,7 +25,7 @@ public class LastUpdateResponse
     /// <returns>The time of the last change.</returns>
     public async Task<DateTimeOffset> GetUpdateTime(Stream stream, ILogger<LiveTvService> logger)
     {
-        var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
+        var root = await JsonSerializer.DeserializeAsync<LastUpdateRoot>(stream, _jsonOptions).ConfigureAwait(false);
         UtilsHelper.DebugInformation(logger, $"LastUpdate Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
 
         if (root is null)
@@ -34,17 +35,5 @@ public class LastUpdateResponse
         }
 
         return DateTimeOffset.FromUnixTimeSeconds(root.LastUpdate);
-    }
-
-    private sealed class RootObject
-    {
-        [JsonPropertyName("last_update")]
-        public int LastUpdate { get; set; }
-
-        public string? Stat { get; set; }
-
-        public int Code { get; set; }
-
-        public string? Msg { get; set; }
     }
 }

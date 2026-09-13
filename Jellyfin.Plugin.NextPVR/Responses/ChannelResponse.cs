@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Plugin.NextPVR.Helpers;
+using Jellyfin.Plugin.NextPVR.Responses.Dto;
 using MediaBrowser.Controller.LiveTv;
 using Microsoft.Extensions.Logging;
 
@@ -36,7 +37,7 @@ public class ChannelResponse
     /// <returns>The channels reported by the backend.</returns>
     public async Task<IEnumerable<ChannelInfo>> GetChannels(Stream stream, ILogger<LiveTvService> logger)
     {
-        var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
+        var root = await JsonSerializer.DeserializeAsync<ChannelRoot>(stream, _jsonOptions).ConfigureAwait(false);
 
         if (root is null)
         {
@@ -62,27 +63,4 @@ public class ChannelResponse
     }
 
     // Classes created with http://json2csharp.com/
-    private sealed class Channel
-    {
-        public int ChannelId { get; set; }
-
-        public int ChannelNumber { get; set; }
-
-        public int ChannelMinor { get; set; }
-
-        public string ChannelNumberFormated { get; set; } = string.Empty;
-
-        public int ChannelType { get; set; }
-
-        public string ChannelName { get; set; } = string.Empty;
-
-        public string? ChannelDetails { get; set; }
-
-        public bool ChannelIcon { get; set; }
-    }
-
-    private sealed class RootObject
-    {
-        public List<Channel>? Channels { get; set; }
-    }
 }

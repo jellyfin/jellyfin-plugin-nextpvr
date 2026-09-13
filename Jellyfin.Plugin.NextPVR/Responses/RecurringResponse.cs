@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Plugin.NextPVR.Helpers;
+using Jellyfin.Plugin.NextPVR.Responses.Dto;
 using MediaBrowser.Controller.LiveTv;
 using Microsoft.Extensions.Logging;
 
@@ -41,7 +42,7 @@ internal sealed class RecurringResponse
             throw new ArgumentNullException(nameof(stream));
         }
 
-        var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
+        var root = await JsonSerializer.DeserializeAsync<RecurringRoot>(stream, _jsonOptions).ConfigureAwait(false);
         UtilsHelper.DebugInformation(_logger, $"GetSeriesTimers Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
 
         if (root?.Recurrings is null)
@@ -125,47 +126,5 @@ internal sealed class RecurringResponse
         }
 
         return parsed;
-    }
-
-    private sealed class Recurring
-    {
-        public int Id { get; set; }
-
-        public int Type { get; set; }
-
-        public string? Name { get; set; }
-
-        public int ChannelId { get; set; }
-
-        public string? Channel { get; set; }
-
-        public string? Period { get; set; }
-
-        public int Keep { get; set; }
-
-        public int PrePadding { get; set; }
-
-        public int PostPadding { get; set; }
-
-        public string EpgTitle { get; set; } = string.Empty;
-
-        public string? DirectoryId { get; set; }
-
-        public string? Days { get; set; }
-
-        public bool Enabled { get; set; }
-
-        public bool OnlyNewEpisodes { get; set; }
-
-        public int StartTimeTicks { get; set; }
-
-        public int EndTimeTicks { get; set; }
-
-        public string? AdvancedRules { get; set; }
-    }
-
-    private sealed class RootObject
-    {
-        public List<Recurring>? Recurrings { get; set; }
     }
 }

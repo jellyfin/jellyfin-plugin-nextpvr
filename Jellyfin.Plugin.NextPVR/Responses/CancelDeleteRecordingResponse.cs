@@ -1,8 +1,9 @@
-﻿using System.IO;
+using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Plugin.NextPVR.Helpers;
+using Jellyfin.Plugin.NextPVR.Responses.Dto;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Plugin.NextPVR.Responses;
@@ -22,7 +23,7 @@ public class CancelDeleteRecordingResponse
     /// <returns><c>true</c> if the request failed, <c>false</c> if it succeeded, or <c>null</c> if the response was empty.</returns>
     public async Task<bool?> RecordingError(Stream stream, ILogger<LiveTvService> logger)
     {
-        var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
+        var root = await JsonSerializer.DeserializeAsync<RecordingErrorRoot>(stream, _jsonOptions).ConfigureAwait(false);
 
         if (root is null)
         {
@@ -37,10 +38,5 @@ public class CancelDeleteRecordingResponse
         }
 
         return false;
-    }
-
-    private sealed class RootObject
-    {
-        public string? Stat { get; set; }
     }
 }

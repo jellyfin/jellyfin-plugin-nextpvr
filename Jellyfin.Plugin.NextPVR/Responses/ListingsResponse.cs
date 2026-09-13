@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Plugin.NextPVR.Helpers;
+using Jellyfin.Plugin.NextPVR.Responses.Dto;
 using MediaBrowser.Controller.LiveTv;
 using Microsoft.Extensions.Logging;
 
@@ -39,7 +40,7 @@ public class ListingsResponse
     /// <returns>The programs listed for the channel.</returns>
     public async Task<IEnumerable<ProgramInfo>> GetPrograms(Stream stream, string channelId, ILogger<LiveTvService> logger)
     {
-        var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
+        var root = await JsonSerializer.DeserializeAsync<ListingRoot>(stream, _jsonOptions).ConfigureAwait(false);
         UtilsHelper.DebugInformation(logger, $"GetPrograms Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
 
         if (root?.Listings is null)
@@ -115,46 +116,4 @@ public class ListingsResponse
     }
 
     // Classes created with http://json2csharp.com/
-
-    private sealed class Listing
-    {
-        public int Id { get; set; }
-
-        public string Name { get; set; } = string.Empty;
-
-        public string Description { get; set; } = string.Empty;
-
-        public string? Subtitle { get; set; }
-
-        public List<string>? Genres { get; set; }
-
-        public bool Firstrun { get; set; }
-
-        public string? Deferredartwork { get; set; }
-
-        public int Start { get; set; }
-
-        public int End { get; set; }
-
-        public string Rating { get; set; } = string.Empty;
-
-        public DateTime? Original { get; set; }
-
-        public int? Season { get; set; }
-
-        public int? Episode { get; set; }
-
-        public int? Year { get; set; }
-
-        public string? Significance { get; set; }
-
-        public string? RecordingStatus { get; set; }
-
-        public int RecordingId { get; set; }
-    }
-
-    private sealed class RootObject
-    {
-        public List<Listing>? Listings { get; set; }
-    }
 }

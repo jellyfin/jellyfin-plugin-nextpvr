@@ -1,8 +1,9 @@
-﻿using System.IO;
+using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Plugin.NextPVR.Helpers;
+using Jellyfin.Plugin.NextPVR.Responses.Dto;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Plugin.NextPVR.Responses;
@@ -22,7 +23,7 @@ public class InitializeResponse
     /// <returns><c>true</c> if the session is logged in; otherwise, <c>false</c>.</returns>
     public async Task<bool> LoggedIn(Stream stream, ILogger<LiveTvService> logger)
     {
-        var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
+        var root = await JsonSerializer.DeserializeAsync<SessionRoot>(stream, _jsonOptions).ConfigureAwait(false);
 
         if (root is not null && !string.IsNullOrEmpty(root.Stat))
         {
@@ -32,12 +33,5 @@ public class InitializeResponse
 
         logger.LogError("Failed to validate your connection with NextPVR");
         throw new JsonException("Failed to validate your connection with NextPVR.");
-    }
-
-    private sealed class RootObject
-    {
-        public string? Stat { get; set; }
-
-        public string? Sid { get; set; }
     }
 }

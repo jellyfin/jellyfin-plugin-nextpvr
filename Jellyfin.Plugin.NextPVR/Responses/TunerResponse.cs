@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Extensions.Json;
+using Jellyfin.Plugin.NextPVR.Responses.Dto;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.LiveTv;
 
@@ -24,7 +25,7 @@ public class TunerResponse
     /// <returns>The available tuners.</returns>
     public async Task<List<TunerHostInfo>> LiveTvTunerInfo(Stream stream)
     {
-        var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
+        var root = await JsonSerializer.DeserializeAsync<TunerRoot>(stream, _jsonOptions).ConfigureAwait(false);
 
         if (root?.Tuners is null)
         {
@@ -68,36 +69,4 @@ public class TunerResponse
         return LiveTvTunerStatus.Available;
     }
     */
-
-    private sealed class Recording
-    {
-        public int TunerOid { get; set; }
-
-        public string? RecName { get; set; }
-
-        public int ChannelOid { get; set; }
-
-        public int RecordingOid { get; set; }
-    }
-
-    private sealed class Recordings
-    {
-        public Recording? Recording { get; set; }
-    }
-
-    private sealed class Tuner
-    {
-        public string TunerName { get; set; } = string.Empty;
-
-        public string? TunerStatus { get; set; }
-
-        public List<Recordings>? Recordings { get; set; }
-
-        public List<object>? LiveTv { get; set; }
-    }
-
-    private sealed class RootObject
-    {
-        public List<Tuner>? Tuners { get; set; }
-    }
 }
