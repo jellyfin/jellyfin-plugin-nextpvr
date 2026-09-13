@@ -14,6 +14,17 @@ namespace Jellyfin.Plugin.NextPVR.Responses;
 
 internal sealed class RecurringResponse
 {
+    private static readonly (string Code, DayOfWeek Day)[] DayCodes =
+    [
+        ("SUN", DayOfWeek.Sunday),
+        ("MON", DayOfWeek.Monday),
+        ("TUE", DayOfWeek.Tuesday),
+        ("WED", DayOfWeek.Wednesday),
+        ("THU", DayOfWeek.Thursday),
+        ("FRI", DayOfWeek.Friday),
+        ("SAT", DayOfWeek.Saturday)
+    ];
+
     private readonly ILogger<LiveTvService> _logger;
     private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.CamelCaseOptions;
 
@@ -69,12 +80,51 @@ internal sealed class RecurringResponse
         }
         else
         {
-            info.Days = (i.Days ?? string.Empty).Split(':')
-                .Select(d => Enum.Parse<DayOfWeek>(d.Trim(), true))
-                .ToList();
+            var days = ParseDays(i.Days);
+            if (days.Count == 0)
+            {
+                _logger.LogWarning("Unrecognized day mask {Days} on recurring recording {RecurringId}", i.Days, i.Id);
+                info.RecordAnyTime = true;
+            }
+            else
+            {
+                info.Days = days;
+            }
         }
 
         return info;
+    }
+
+    /// <summary>
+    /// Parses the day mask of a recurring recording.
+    /// </summary>
+    /// <param name="days">
+    /// The day mask, either the alias "WEEKENDS" or "WEEKDAYS", or the three letter codes of the
+    /// individual days separated by colons, such as "SAT:SUN:".
+    /// </param>
+    /// <returns>The days the recurring recording runs on, empty if the mask was not recognized.</returns>
+    private static List<DayOfWeek> ParseDays(string days)
+    {
+        if (days.Contains("WEEKENDS", StringComparison.OrdinalIgnoreCase))
+        {
+            return [DayOfWeek.Saturday, DayOfWeek.Sunday];
+        }
+
+        if (days.Contains("WEEKDAYS", StringComparison.OrdinalIgnoreCase))
+        {
+            return [DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday];
+        }
+
+        List<DayOfWeek> parsed = [];
+        foreach ((string code, DayOfWeek day) in DayCodes)
+        {
+            if (days.Contains(code, StringComparison.OrdinalIgnoreCase))
+            {
+                parsed.Add(day);
+            }
+        }
+
+        return parsed;
     }
 
     private sealed class Recurring

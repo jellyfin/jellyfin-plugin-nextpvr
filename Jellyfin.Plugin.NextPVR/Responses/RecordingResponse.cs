@@ -163,14 +163,15 @@ public class RecordingResponse
         info.HasImage = true;
         if (i.Season.HasValue)
         {
-            info.SeasonNumber = i.Season;
+            // NextPVR cannot express specials as season 0, so a zero means there is no season.
+            if (i.Season > 0)
+            {
+                info.SeasonNumber = i.Season;
+            }
+
             info.EpisodeNumber = i.Episode;
             info.IsSeries = true;
-            string se = string.Format(CultureInfo.InvariantCulture, "S{0:D2}E{1:D2} - ", i.Season, i.Episode);
-            if (i.Subtitle is not null && i.Subtitle.StartsWith(se, StringComparison.CurrentCulture))
-            {
-                info.EpisodeTitle = i.Subtitle.Substring(se.Length);
-            }
+            info.EpisodeTitle = GetEpisodeTitle(i);
         }
 
         if (i.Original is not null)
@@ -217,14 +218,15 @@ public class RecordingResponse
         info.EpisodeTitle = i.Subtitle;
         if (i.Season.HasValue)
         {
-            info.SeasonNumber = i.Season;
+            // NextPVR cannot express specials as season 0, so a zero means there is no season.
+            if (i.Season > 0)
+            {
+                info.SeasonNumber = i.Season;
+            }
+
             info.EpisodeNumber = i.Episode;
             info.IsSeries = true;
-            string se = string.Format(CultureInfo.InvariantCulture, "S{0:D2}E{1:D2} - ", i.Season, i.Episode);
-            if (i.Subtitle is not null && i.Subtitle.StartsWith(se, StringComparison.CurrentCulture))
-            {
-                info.EpisodeTitle = i.Subtitle.Substring(se.Length);
-            }
+            info.EpisodeTitle = GetEpisodeTitle(i);
         }
 
         info.OfficialRating = i.Rating;
@@ -243,6 +245,31 @@ public class RecordingResponse
 
         info.IsRepeat = !i.Firstrun;
         return info;
+    }
+
+    /// <summary>
+    /// Gets the title of an episode, with the season and episode prefix that NextPVR puts in
+    /// front of the subtitle removed.
+    /// </summary>
+    /// <param name="recording">The recording to read the title from.</param>
+    /// <returns>The episode title, or <c>null</c> when the episode has no title of its own.</returns>
+    private static string? GetEpisodeTitle(Recording recording)
+    {
+        if (recording.Subtitle is null || recording.Season is null || recording.Episode is null)
+        {
+            return recording.Subtitle;
+        }
+
+        string prefix = string.Format(CultureInfo.InvariantCulture, "S{0:D2}E{1:D2}", recording.Season, recording.Episode);
+        if (!recording.Subtitle.StartsWith(prefix, StringComparison.Ordinal))
+        {
+            return recording.Subtitle;
+        }
+
+        // NextPVR sends the bare prefix when the episode has no title, and otherwise
+        // separates the title from it with " - ".
+        string title = recording.Subtitle[prefix.Length..].TrimStart(' ', '-');
+        return title.Length == 0 ? null : title;
     }
 
     private RecordingStatus ParseStatus(string value)

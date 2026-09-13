@@ -394,7 +394,7 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
                 Id = "series_" + i.Key.GetMD5().ToString("N"),
                 Type = ChannelItemType.Folder,
                 DateCreated = i.Last().StartDate,
-                ImageUrl = i.Last().ImageUrl.Replace("=poster", "=landscape", StringComparison.OrdinalIgnoreCase)
+                ImageUrl = i.Last().ImageUrl
             }));
 
             var kids = _allRecordings.FirstOrDefault(i => i.IsKids);

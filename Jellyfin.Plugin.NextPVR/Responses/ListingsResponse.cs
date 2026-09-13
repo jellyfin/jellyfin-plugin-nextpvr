@@ -64,13 +64,22 @@ public class ListingsResponse
             backgroundUrl = epg.Deferredartwork;
         }
 
+        // NextPVR repeats the season and episode as the subtitle when an episode has no title
+        // of its own, and cannot express specials as season 0, so a zero means there is no season.
+        string? episodeTitle = epg.Subtitle;
+        if (epg.Season.HasValue && epg.Episode.HasValue
+            && string.Equals(episodeTitle, string.Format(CultureInfo.InvariantCulture, "S{0:D2}E{1:D2}", epg.Season, epg.Episode), StringComparison.Ordinal))
+        {
+            episodeTitle = null;
+        }
+
         var info = new ProgramInfo
         {
             ChannelId = _channelId,
             Id = epg.Id.ToString(CultureInfo.InvariantCulture),
             Overview = epg.Description,
-            EpisodeTitle = epg.Subtitle,
-            SeasonNumber = epg.Season,
+            EpisodeTitle = episodeTitle,
+            SeasonNumber = epg.Season > 0 ? epg.Season : null,
             EpisodeNumber = epg.Episode,
             StartDate = DateTimeOffset.FromUnixTimeSeconds(epg.Start).UtcDateTime,
             EndDate = DateTimeOffset.FromUnixTimeSeconds(epg.End).UtcDateTime,
