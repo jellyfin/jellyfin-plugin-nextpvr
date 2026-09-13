@@ -106,7 +106,15 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
     /// <inheritdoc />
     public string GetCacheKey(string? userId)
     {
-        DateTimeOffset dto = LiveTvService.Instance?.RecordingModificationTime ?? DateTime.UnixEpoch;
+        DateTime modified = LiveTvService.Instance?.RecordingModificationTime ?? default;
+
+        // The recording modification time is UTC, but stays unset until a session has been
+        // established. Converting an unspecified DateTime.MinValue to a DateTimeOffset assumes
+        // local time and throws in every time zone ahead of UTC, so fall back to the epoch.
+        DateTimeOffset dto = modified > DateTime.UnixEpoch
+            ? new DateTimeOffset(DateTime.SpecifyKind(modified, DateTimeKind.Utc))
+            : DateTimeOffset.UnixEpoch;
+
         return $"{dto.ToUnixTimeSeconds()}-{_cacheKeyBase}";
     }
 
@@ -471,16 +479,31 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
 
     private async void OnUpdateTimerCallbackAsync(object? state)
     {
-        var service = LiveTvService.Instance;
-        if (service is not null && service.IsActive)
+        try
         {
-            var backendUpdate = await service.GetLastUpdate(_cancellationToken.Token).ConfigureAwait(false);
-            if (backendUpdate > _lastUpdate)
+            var service = LiveTvService.Instance;
+            if (service is not null && service.IsActive)
             {
-                _logger.LogDebug("Recordings reset {0}", backendUpdate);
-                _useCachedRecordings = false;
-                await GetRecordingsAsync("OnUpdateTimerCallbackAsync", _cancellationToken.Token).ConfigureAwait(false);
+                var backendUpdate = await service.GetLastUpdate(_cancellationToken.Token).ConfigureAwait(false);
+                if (backendUpdate > _lastUpdate)
+                {
+                    _logger.LogDebug("Recordings reset {BackendUpdate}", backendUpdate);
+                    _useCachedRecordings = false;
+                    await GetRecordingsAsync("OnUpdateTimerCallbackAsync", _cancellationToken.Token).ConfigureAwait(false);
+                }
             }
+        }
+        catch (OperationCanceledException)
+        {
+            // The channel is shutting down.
+        }
+        catch (ObjectDisposedException)
+        {
+            // The channel was disposed while this poll was running.
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error polling NextPVR for recording changes");
         }
     }
 
