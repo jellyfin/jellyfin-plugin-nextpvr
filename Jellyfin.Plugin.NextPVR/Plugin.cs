@@ -15,6 +15,11 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
 {
     private readonly Guid _id = new Guid("9574ac10-bf23-49bc-949f-924f23cfa48f");
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Plugin"/> class.
+    /// </summary>
+    /// <param name="applicationPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
+    /// <param name="xmlSerializer">Instance of the <see cref="IXmlSerializer"/> interface.</param>
     public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
         : base(applicationPaths, xmlSerializer)
     {
@@ -34,7 +39,7 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     /// Gets the instance.
     /// </summary>
     /// <value>The instance.</value>
-    public static Plugin Instance { get; private set; }
+    public static Plugin Instance { get; private set; } = null!;
 
     /// <inheritdoc />
     public IEnumerable<PluginPageInfo> GetPages()

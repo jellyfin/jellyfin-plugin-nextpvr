@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -6,32 +6,46 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Plugin.NextPVR.Helpers;
+using Jellyfin.Plugin.NextPVR.Responses.Dto;
 using MediaBrowser.Controller.LiveTv;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Plugin.NextPVR.Responses;
 
+/// <summary>
+/// Reads the response to a channel listing request.
+/// </summary>
 public class ChannelResponse
 {
     private readonly string _baseUrl;
     private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.CamelCaseOptions;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChannelResponse"/> class.
+    /// </summary>
+    /// <param name="baseUrl">The base URL of the NextPVR web service, used to build channel image URLs.</param>
     public ChannelResponse(string baseUrl)
     {
         _baseUrl = baseUrl;
     }
 
+    /// <summary>
+    /// Reads the available channels.
+    /// </summary>
+    /// <param name="stream">The response stream to read.</param>
+    /// <param name="logger">The logger to write diagnostic output to.</param>
+    /// <returns>The channels reported by the backend.</returns>
     public async Task<IEnumerable<ChannelInfo>> GetChannels(Stream stream, ILogger<LiveTvService> logger)
     {
-        var root = await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions).ConfigureAwait(false);
+        var root = await JsonSerializer.DeserializeAsync<ChannelRoot>(stream, _jsonOptions).ConfigureAwait(false);
 
-        if (root == null)
+        if (root is null)
         {
             logger.LogError("Failed to download channel information");
             throw new JsonException("Failed to download channel information.");
         }
 
-        if (root.Channels != null)
+        if (root.Channels is not null)
         {
             UtilsHelper.DebugInformation(logger, $"ChannelResponse: {JsonSerializer.Serialize(root, _jsonOptions)}");
             return root.Channels.Select(i => new ChannelInfo
@@ -49,27 +63,4 @@ public class ChannelResponse
     }
 
     // Classes created with http://json2csharp.com/
-    private sealed class Channel
-    {
-        public int ChannelId { get; set; }
-
-        public int ChannelNumber { get; set; }
-
-        public int ChannelMinor { get; set; }
-
-        public string ChannelNumberFormated { get; set; }
-
-        public int ChannelType { get; set; }
-
-        public string ChannelName { get; set; }
-
-        public string ChannelDetails { get; set; }
-
-        public bool ChannelIcon { get; set; }
-    }
-
-    private sealed class RootObject
-    {
-        public List<Channel> Channels { get; set; }
-    }
 }

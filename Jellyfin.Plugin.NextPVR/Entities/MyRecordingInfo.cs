@@ -4,29 +4,32 @@ using MediaBrowser.Model.LiveTv;
 
 namespace Jellyfin.Plugin.NextPVR.Entities;
 
+/// <summary>
+/// The details of a single NextPVR recording.
+/// </summary>
 public class MyRecordingInfo
 {
     /// <summary>
     /// Gets or sets the id of the recording.
     /// </summary>
-    public string Id { get; set; }
+    public string Id { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the series timer identifier.
     /// </summary>
     /// <value>The series timer identifier.</value>
-    public string SeriesTimerId { get; set; }
+    public string? SeriesTimerId { get; set; }
 
     /// <summary>
     /// Gets or sets the timer identifier.
     /// </summary>
     /// <value>The timer identifier.</value>
-    public string TimerId { get; set; }
+    public string? TimerId { get; set; }
 
     /// <summary>
     /// Gets or sets the channelId of the recording.
     /// </summary>
-    public string ChannelId { get; set; }
+    public string ChannelId { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the type of the channel.
@@ -37,25 +40,25 @@ public class MyRecordingInfo
     /// <summary>
     /// Gets or sets the name of the recording.
     /// </summary>
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the path.
     /// </summary>
     /// <value>The path.</value>
-    public string Path { get; set; }
+    public string Path { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the URL.
     /// </summary>
     /// <value>The URL.</value>
-    public string Url { get; set; }
+    public string Url { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the overview.
     /// </summary>
     /// <value>The overview.</value>
-    public string Overview { get; set; }
+    public string? Overview { get; set; }
 
     /// <summary>
     /// Gets or sets the start date of the recording, in UTC.
@@ -71,7 +74,7 @@ public class MyRecordingInfo
     /// Gets or sets the program identifier.
     /// </summary>
     /// <value>The program identifier.</value>
-    public string ProgramId { get; set; }
+    public string ProgramId { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the status.
@@ -82,7 +85,10 @@ public class MyRecordingInfo
     /// <summary>
     /// Gets or sets the genres of the program.
     /// </summary>
-    public List<string> Genres { get; set; } = new();
+    // The list is replaced wholesale with the genres parsed from a NextPVR response.
+#pragma warning disable CA1002, CA2227
+    public List<string> Genres { get; set; } = [];
+#pragma warning restore CA1002, CA2227
 
     /// <summary>
     /// Gets or sets a value indicating whether this instance is repeat.
@@ -94,7 +100,7 @@ public class MyRecordingInfo
     /// Gets or sets the episode title.
     /// </summary>
     /// <value>The episode title.</value>
-    public string EpisodeTitle { get; set; }
+    public string? EpisodeTitle { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether this instance is hd.
@@ -160,7 +166,7 @@ public class MyRecordingInfo
     /// Gets or sets the official rating.
     /// </summary>
     /// <value>The official rating.</value>
-    public string OfficialRating { get; set; }
+    public string? OfficialRating { get; set; }
 
     /// <summary>
     /// Gets or sets the community rating.
@@ -172,13 +178,13 @@ public class MyRecordingInfo
     /// Gets or sets the image path if it can be accessed directly from the file system.
     /// </summary>
     /// <value>The image path.</value>
-    public string ImagePath { get; set; }
+    public string? ImagePath { get; set; }
 
     /// <summary>
     /// Gets or sets the the image url if it can be downloaded.
     /// </summary>
     /// <value>The image URL.</value>
-    public string ImageUrl { get; set; }
+    public string ImageUrl { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets a value indicating whether this instance has image.
@@ -190,7 +196,7 @@ public class MyRecordingInfo
     /// Gets or sets the show identifier.
     /// </summary>
     /// <value>The show identifier.</value>
-    public string ShowId { get; set; }
+    public string? ShowId { get; set; }
 
     /// <summary>
     /// Gets or sets the date last updated.

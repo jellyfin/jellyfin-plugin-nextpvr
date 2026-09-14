@@ -1,21 +1,38 @@
-﻿using System.IO;
+using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Plugin.NextPVR.Helpers;
+using Jellyfin.Plugin.NextPVR.Responses.Dto;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Plugin.NextPVR.Responses;
 
+/// <summary>
+/// Reads the responses to backend setting requests.
+/// </summary>
 public class SettingResponse
 {
     private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.CamelCaseOptions;
 
+    /// <summary>
+    /// Reads the backend scheduling defaults and copies them into the plugin configuration.
+    /// </summary>
+    /// <param name="stream">The response stream to read.</param>
+    /// <param name="logger">The logger to write diagnostic output to.</param>
+    /// <returns>Always <c>true</c>.</returns>
     public async Task<bool> GetDefaultSettings(Stream stream, ILogger<LiveTvService> logger)
     {
         var root = await JsonSerializer.DeserializeAsync<ScheduleSettings>(stream, _jsonOptions).ConfigureAwait(false);
         UtilsHelper.DebugInformation(logger, $"GetDefaultTimerInfo Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
+
+        if (root is null)
+        {
+            logger.LogError("Failed to download the backend settings");
+            throw new JsonException("Failed to download the backend settings.");
+        }
+
         Plugin.Instance.Configuration.PostPaddingSeconds = root.PostPadding;
         Plugin.Instance.Configuration.PrePaddingSeconds = root.PrePadding;
         Plugin.Instance.Configuration.ShowRepeat = root.ShowNewInGuide;
@@ -23,65 +40,25 @@ public class SettingResponse
         return true;
     }
 
+    /// <summary>
+    /// Reads the value of a single backend setting.
+    /// </summary>
+    /// <param name="stream">The response stream to read.</param>
+    /// <param name="logger">The logger to write diagnostic output to.</param>
+    /// <returns>The value of the setting.</returns>
     public async Task<string> GetSetting(Stream stream, ILogger<LiveTvService> logger)
     {
         var root = await JsonSerializer.DeserializeAsync<SettingValue>(stream, _jsonOptions).ConfigureAwait(false);
         UtilsHelper.DebugInformation(logger, $"GetSetting Response: {JsonSerializer.Serialize(root, _jsonOptions)}");
-        return root.Value;
+
+        if (root is null)
+        {
+            logger.LogError("Failed to download the backend setting");
+            throw new JsonException("Failed to download the backend setting.");
+        }
+
+        return root.Value ?? string.Empty;
     }
 
     // Classes created with http://json2csharp.com/
-
-    private sealed class ScheduleSettings
-    {
-        public string Version { get; set; }
-
-        [JsonPropertyName("nextPVRVersion")]
-        public int NextPvrVersion { get; set; }
-
-        public string ReadableVersion { get; set; }
-
-        public bool LiveTimeshift { get; set; }
-
-        public bool LiveTimeshiftBufferInfo { get; set; }
-
-        public bool ChannelsUseSegmenter { get; set; }
-
-        public bool RecordingsUseSegmenter { get; set; }
-
-        public int WhatsNewDays { get; set; }
-
-        public int SkipForwardSeconds { get; set; }
-
-        public int SkipBackSeconds { get; set; }
-
-        public int SkipFfSeconds { get; set; }
-
-        public int SkipRwSeconds { get; set; }
-
-        public string RecordingView { get; set; }
-
-        public int PrePadding { get; set; }
-
-        public int PostPadding { get; set; }
-
-        public bool ConfirmOnDelete { get; set; }
-
-        public bool ShowNewInGuide { get; set; }
-
-        public int SlipSeconds { get; set; }
-
-        public string RecordingDirectories { get; set; }
-
-        public bool ChannelDetailsLevel { get; set; }
-
-        public string Time { get; set; }
-
-        public int TimeEpoch { get; set; }
-    }
-
-    private sealed class SettingValue
-    {
-        public string Value { get; set; }
-    }
 }

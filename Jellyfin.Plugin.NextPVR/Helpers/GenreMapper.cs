@@ -33,39 +33,39 @@ public class GenreMapper
     {
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
-        _movieGenres = new List<string>();
-        _sportGenres = new List<string>();
-        _newsGenres = new List<string>();
-        _kidsGenres = new List<string>();
-        _liveGenres = new List<string>();
+        _movieGenres = [];
+        _sportGenres = [];
+        _newsGenres = [];
+        _kidsGenres = [];
+        _liveGenres = [];
         LoadInternalLists(_configuration.GenreMappings);
     }
 
     private void LoadInternalLists(Dictionary<string, List<string>> genreMappings)
     {
-        if (genreMappings != null)
+        if (genreMappings is not null)
         {
-            if (_configuration.GenreMappings.TryGetValue(GenreMovie, out var value) && value != null)
+            if (_configuration.GenreMappings.TryGetValue(GenreMovie, out var value) && value is not null)
             {
                 _movieGenres.AddRange(value);
             }
 
-            if (_configuration.GenreMappings.TryGetValue(GenreSport, out value) && value != null)
+            if (_configuration.GenreMappings.TryGetValue(GenreSport, out value) && value is not null)
             {
                 _sportGenres.AddRange(value);
             }
 
-            if (_configuration.GenreMappings.TryGetValue(GenreNews, out value) && value != null)
+            if (_configuration.GenreMappings.TryGetValue(GenreNews, out value) && value is not null)
             {
                 _newsGenres.AddRange(value);
             }
 
-            if (_configuration.GenreMappings.TryGetValue(GenreKids, out value) && value != null)
+            if (_configuration.GenreMappings.TryGetValue(GenreKids, out value) && value is not null)
             {
                 _kidsGenres.AddRange(value);
             }
 
-            if (_configuration.GenreMappings.TryGetValue(GenreLive, out value) && value != null)
+            if (_configuration.GenreMappings.TryGetValue(GenreLive, out value) && value is not null)
             {
                 _liveGenres.AddRange(value);
             }
@@ -79,7 +79,7 @@ public class GenreMapper
     public void PopulateProgramGenres(ProgramInfo program)
     {
         // Check there is a program and genres to map
-        if (program?.Genres != null && program.Genres.Count > 0)
+        if (program?.Genres is not null && program.Genres.Count > 0)
         {
             program.IsMovie = _movieGenres.Any(g => program.Genres.Contains(g, StringComparer.InvariantCultureIgnoreCase));
             program.IsSports = _sportGenres.Any(g => program.Genres.Contains(g, StringComparer.InvariantCultureIgnoreCase));
@@ -99,7 +99,7 @@ public class GenreMapper
     public void PopulateRecordingGenres(MyRecordingInfo recording)
     {
         // Check there is a recording and genres to map
-        if (recording?.Genres != null && recording.Genres.Count > 0)
+        if (recording?.Genres is not null && recording.Genres.Count > 0)
         {
             recording.IsMovie = _movieGenres.Any(g => recording.Genres.Contains(g, StringComparer.InvariantCultureIgnoreCase));
             recording.IsSports = _sportGenres.Any(g => recording.Genres.Contains(g, StringComparer.InvariantCultureIgnoreCase));
@@ -116,7 +116,7 @@ public class GenreMapper
     public void PopulateTimerGenres(TimerInfo timer)
     {
         // Check there is a timer and genres to map
-        if (timer?.Genres != null && timer.Genres.Length > 0)
+        if (timer?.Genres is not null && timer.Genres.Length > 0)
         {
             timer.IsMovie = _movieGenres.Any(g => timer.Genres.Contains(g, StringComparer.InvariantCultureIgnoreCase));
             // timer.IsSports = _sportGenres.Any(g => timer.Genres.Contains(g, StringComparer.InvariantCultureIgnoreCase));

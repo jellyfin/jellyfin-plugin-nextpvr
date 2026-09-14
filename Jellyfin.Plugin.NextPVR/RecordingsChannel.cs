@@ -23,23 +23,33 @@ using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Plugin.NextPVR;
 
+/// <summary>
+/// Exposes the NextPVR recordings as a Jellyfin channel.
+/// </summary>
 public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISupportsLatestMedia, ISupportsMediaProbe, IHasFolderAttributes, IDisposable, IHasItemChangeMonitor
 {
     private readonly IFileSystem _fileSystem;
     private readonly ILogger<RecordingsChannel> _logger;
     private readonly CancellationTokenSource _cancellationToken;
     private readonly string _recordingCacheDirectory;
-    private static SemaphoreSlim _semaphore;
+    private static readonly SemaphoreSlim _semaphore = new(1, 1);
 
-    private Timer _updateTimer;
+    private Timer? _updateTimer;
     private DateTimeOffset _lastUpdate = DateTimeOffset.FromUnixTimeSeconds(0);
 
-    private IEnumerable<MyRecordingInfo> _allRecordings;
+    private IEnumerable<MyRecordingInfo> _allRecordings = [];
     private bool _useCachedRecordings = false;
     private DateTime _cachedRecordingModificationTime;
-    private string _cacheKeyBase;
+    private string _cacheKeyBase = string.Empty;
     private int _pollInterval = -1;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RecordingsChannel"/> class.
+    /// </summary>
+    /// <param name="applicationPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
+    /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+    /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
+    /// <param name="logger">Instance of the <see cref="ILogger{TCategoryName}"/> interface.</param>
     public RecordingsChannel(IApplicationPaths applicationPaths, ILibraryManager libraryManager, IFileSystem fileSystem, ILogger<RecordingsChannel> logger)
     {
         _fileSystem = fileSystem;
@@ -49,29 +59,39 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
         _recordingCacheDirectory = Path.Join(applicationPaths.CachePath, "channels", channelId, version);
         CleanCache(true);
         _cancellationToken = new CancellationTokenSource();
-        _semaphore = new SemaphoreSlim(1, 1);
     }
 
+    /// <inheritdoc />
     public string Name => "NextPVR Recordings";
 
+    /// <inheritdoc />
     public string Description => "NextPVR Recordings";
 
+    /// <inheritdoc />
 #pragma warning disable CA1819
     public string[] Attributes => ["Recordings"];
 #pragma warning restore CA1819
 
+    /// <inheritdoc />
     public string DataVersion => "1";
 
+    /// <inheritdoc />
     public string HomePageUrl => "https://www.nextpvr.com";
 
+    /// <inheritdoc />
     public ChannelParentalRating ParentalRating => ChannelParentalRating.GeneralAudience;
 
+    /// <inheritdoc />
     public void Dispose()
     {
         Dispose(true);
         GC.SuppressFinalize(this);
     }
 
+    /// <summary>
+    /// Releases the unmanaged resources used by the channel and optionally releases the managed resources.
+    /// </summary>
+    /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
     protected virtual void Dispose(bool disposing)
     {
         if (disposing)
@@ -83,9 +103,18 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
         }
     }
 
-    public string GetCacheKey(string userId)
+    /// <inheritdoc />
+    public string GetCacheKey(string? userId)
     {
-        DateTimeOffset dto = LiveTvService.Instance.RecordingModificationTime;
+        DateTime modified = LiveTvService.Instance?.RecordingModificationTime ?? default;
+
+        // The recording modification time is UTC, but stays unset until a session has been
+        // established. Converting an unspecified DateTime.MinValue to a DateTimeOffset assumes
+        // local time and throws in every time zone ahead of UTC, so fall back to the epoch.
+        DateTimeOffset dto = modified > DateTime.UnixEpoch
+            ? new DateTimeOffset(DateTime.SpecifyKind(modified, DateTimeKind.Utc))
+            : DateTimeOffset.UnixEpoch;
+
         return $"{dto.ToUnixTimeSeconds()}-{_cacheKeyBase}";
     }
 
@@ -105,6 +134,7 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
         }
     }
 
+    /// <inheritdoc />
     public InternalChannelFeatures GetChannelFeatures()
     {
         return new InternalChannelFeatures
@@ -115,6 +145,7 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
         };
     }
 
+    /// <inheritdoc />
     public Task<DynamicImageResponse> GetChannelImage(ImageType type, CancellationToken cancellationToken)
     {
         if (type == ImageType.Primary)
@@ -125,19 +156,21 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
         return Task.FromResult(new DynamicImageResponse { HasImage = false });
     }
 
+    /// <inheritdoc />
     public IEnumerable<ImageType> GetSupportedChannelImages()
     {
         return new List<ImageType> { ImageType.Primary };
     }
 
+    /// <inheritdoc />
     public bool IsEnabledFor(string userId)
     {
         return true;
     }
 
-    private LiveTvService GetService()
+    private LiveTvService? GetService()
     {
-        LiveTvService service = LiveTvService.Instance;
+        var service = LiveTvService.Instance;
         if (service is not null && (!service.IsActive || _cachedRecordingModificationTime != Plugin.Instance.Configuration.RecordingModificationTime || service.FlagRecordingChange))
         {
             try
@@ -161,6 +194,7 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
         return service;
     }
 
+    /// <inheritdoc />
     public bool CanDelete(BaseItem item)
     {
         if (_cachedRecordingModificationTime != Plugin.Instance.Configuration.RecordingModificationTime)
@@ -171,6 +205,7 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
         return !item.IsFolder;
     }
 
+    /// <inheritdoc />
     public Task DeleteItem(string id, CancellationToken cancellationToken)
     {
         if (_cachedRecordingModificationTime != Plugin.Instance.Configuration.RecordingModificationTime)
@@ -184,6 +219,7 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
             : service.DeleteRecordingAsync(id, cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task<IEnumerable<ChannelItemInfo>> GetLatestMedia(ChannelLatestMediaSearch request, CancellationToken cancellationToken)
     {
         var result = await GetChannelItems(new InternalChannelItemQuery(), _ => true, cancellationToken).ConfigureAwait(false);
@@ -191,44 +227,45 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
         return result.Items.OrderByDescending(i => i.DateCreated ?? DateTime.MinValue);
     }
 
+    /// <inheritdoc />
     public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)
     {
-        await GetRecordingsAsync("GetChannelItems", cancellationToken);
+        await GetRecordingsAsync("GetChannelItems", cancellationToken).ConfigureAwait(false);
 
         if (string.IsNullOrWhiteSpace(query.FolderId))
         {
-            return await GetRecordingGroups(query, cancellationToken);
+            return await GetRecordingGroups(query, cancellationToken).ConfigureAwait(false);
         }
 
         if (query.FolderId.StartsWith("series_", StringComparison.OrdinalIgnoreCase))
         {
             var hash = query.FolderId.Split('_')[1];
-            return await GetChannelItems(query, i => i.IsSeries && string.Equals(i.Name.GetMD5().ToString("N"), hash, StringComparison.Ordinal), cancellationToken);
+            return await GetChannelItems(query, i => i.IsSeries && string.Equals(i.Name.GetMD5().ToString("N"), hash, StringComparison.Ordinal), cancellationToken).ConfigureAwait(false);
         }
 
         if (string.Equals(query.FolderId, "kids", StringComparison.OrdinalIgnoreCase))
         {
-            return await GetChannelItems(query, i => i.IsKids, cancellationToken);
+            return await GetChannelItems(query, i => i.IsKids, cancellationToken).ConfigureAwait(false);
         }
 
         if (string.Equals(query.FolderId, "movies", StringComparison.OrdinalIgnoreCase))
         {
-            return await GetChannelItems(query, i => i.IsMovie, cancellationToken);
+            return await GetChannelItems(query, i => i.IsMovie, cancellationToken).ConfigureAwait(false);
         }
 
         if (string.Equals(query.FolderId, "news", StringComparison.OrdinalIgnoreCase))
         {
-            return await GetChannelItems(query, i => i.IsNews, cancellationToken);
+            return await GetChannelItems(query, i => i.IsNews, cancellationToken).ConfigureAwait(false);
         }
 
         if (string.Equals(query.FolderId, "sports", StringComparison.OrdinalIgnoreCase))
         {
-            return await GetChannelItems(query, i => i.IsSports, cancellationToken);
+            return await GetChannelItems(query, i => i.IsSports, cancellationToken).ConfigureAwait(false);
         }
 
         if (string.Equals(query.FolderId, "others", StringComparison.OrdinalIgnoreCase))
         {
-            return await GetChannelItems(query, i => !i.IsSports && !i.IsNews && !i.IsMovie && !i.IsKids && !i.IsSeries, cancellationToken);
+            return await GetChannelItems(query, i => !i.IsSports && !i.IsNews && !i.IsMovie && !i.IsKids && !i.IsSeries, cancellationToken).ConfigureAwait(false);
         }
 
         var result = new ChannelItemResult() { Items = new List<ChannelItemInfo>() };
@@ -236,11 +273,17 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
         return result;
     }
 
+    /// <summary>
+    /// Gets the recordings matching a filter, as channel items.
+    /// </summary>
+    /// <param name="query">The query the items are requested for.</param>
+    /// <param name="filter">The predicate a recording has to match to be included.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The matching recordings.</returns>
     public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, Func<MyRecordingInfo, bool> filter, CancellationToken cancellationToken)
     {
-        await GetRecordingsAsync("GetChannelItems", cancellationToken);
-        List<ChannelItemInfo> pluginItems = new List<ChannelItemInfo>();
-        pluginItems.AddRange(_allRecordings.Where(filter).Select(ConvertToChannelItem));
+        await GetRecordingsAsync("GetChannelItems", cancellationToken).ConfigureAwait(false);
+        List<ChannelItemInfo> pluginItems = [.. _allRecordings.Where(filter).Select(ConvertToChannelItem)];
         var result = new ChannelItemResult() { Items = pluginItems };
 
         return result;
@@ -265,8 +308,8 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
             ParentIndexNumber = item.SeasonNumber,
             IndexNumber = item.EpisodeNumber,
             MediaType = item.ChannelType == ChannelType.TV ? ChannelMediaType.Video : ChannelMediaType.Audio,
-            MediaSources = new List<MediaSourceInfo>
-            {
+            MediaSources =
+            [
                 new MediaSourceInfo
                 {
                     Path = path,
@@ -278,7 +321,7 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
                     TranscodingContainer = "ts",
                     RunTimeTicks = item.Status == RecordingStatus.InProgress ? null : (item.EndDate - item.StartDate).Ticks,
                 }
-            },
+            ],
             PremiereDate = item.OriginalAirDate,
             ProductionYear = item.ProductionYear,
             Type = ChannelItemType.Media,
@@ -305,13 +348,13 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
             {
                 var interval = TimeSpan.FromSeconds(Plugin.Instance.Configuration.PollInterval);
                 _updateTimer = new Timer(OnUpdateTimerCallbackAsync, null, TimeSpan.FromMinutes(2), interval);
-                if (_updateTimer != null)
+                if (_updateTimer is not null)
                 {
                     _pollInterval = Plugin.Instance.Configuration.PollInterval;
                 }
             }
 
-            if (await _semaphore.WaitAsync(30000, cancellationToken))
+            if (await _semaphore.WaitAsync(30000, cancellationToken).ConfigureAwait(false))
             {
                 try
                 {
@@ -344,9 +387,9 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
 
     private async Task<ChannelItemResult> GetRecordingGroups(InternalChannelItemQuery query, CancellationToken cancellationToken)
     {
-        List<ChannelItemInfo> pluginItems = new List<ChannelItemInfo>();
+        List<ChannelItemInfo> pluginItems = [];
 
-        if (await GetRecordingsAsync("GetRecordingGroups", cancellationToken))
+        if (await GetRecordingsAsync("GetRecordingGroups", cancellationToken).ConfigureAwait(false))
         {
             var series = _allRecordings
                 .Where(i => i.IsSeries)
@@ -359,12 +402,12 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
                 Id = "series_" + i.Key.GetMD5().ToString("N"),
                 Type = ChannelItemType.Folder,
                 DateCreated = i.Last().StartDate,
-                ImageUrl = i.Last().ImageUrl.Replace("=poster", "=landscape", StringComparison.OrdinalIgnoreCase)
+                ImageUrl = i.Last().ImageUrl
             }));
 
             var kids = _allRecordings.FirstOrDefault(i => i.IsKids);
 
-            if (kids != null)
+            if (kids is not null)
             {
                 pluginItems.Add(new ChannelItemInfo
                 {
@@ -377,7 +420,7 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
             }
 
             var movies = _allRecordings.FirstOrDefault(i => i.IsMovie);
-            if (movies != null)
+            if (movies is not null)
             {
                 pluginItems.Add(new ChannelItemInfo
                 {
@@ -390,7 +433,7 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
             }
 
             var news = _allRecordings.FirstOrDefault(i => i.IsNews);
-            if (news != null)
+            if (news is not null)
             {
                 pluginItems.Add(new ChannelItemInfo
                 {
@@ -403,7 +446,7 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
             }
 
             var sports = _allRecordings.FirstOrDefault(i => i.IsSports);
-            if (sports != null)
+            if (sports is not null)
             {
                 pluginItems.Add(new ChannelItemInfo
                 {
@@ -416,7 +459,7 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
             }
 
             var other = _allRecordings.OrderByDescending(j => j.StartDate).FirstOrDefault(i => !i.IsSports && !i.IsNews && !i.IsMovie && !i.IsKids && !i.IsSeries);
-            if (other != null)
+            if (other is not null)
             {
                 pluginItems.Add(new ChannelItemInfo
                 {
@@ -434,21 +477,37 @@ public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISuppo
         return result;
     }
 
-    private async void OnUpdateTimerCallbackAsync(object state)
+    private async void OnUpdateTimerCallbackAsync(object? state)
     {
-        LiveTvService service = LiveTvService.Instance;
-        if (service is not null && service.IsActive)
+        try
         {
-            var backendUpdate = await service.GetLastUpdate(_cancellationToken.Token).ConfigureAwait(false);
-            if (backendUpdate > _lastUpdate)
+            var service = LiveTvService.Instance;
+            if (service is not null && service.IsActive)
             {
-                _logger.LogDebug("Recordings reset {0}", backendUpdate);
-                _useCachedRecordings = false;
-                await GetRecordingsAsync("OnUpdateTimerCallbackAsync", _cancellationToken.Token);
+                var backendUpdate = await service.GetLastUpdate(_cancellationToken.Token).ConfigureAwait(false);
+                if (backendUpdate > _lastUpdate)
+                {
+                    _logger.LogDebug("Recordings reset {BackendUpdate}", backendUpdate);
+                    _useCachedRecordings = false;
+                    await GetRecordingsAsync("OnUpdateTimerCallbackAsync", _cancellationToken.Token).ConfigureAwait(false);
+                }
             }
+        }
+        catch (OperationCanceledException)
+        {
+            // The channel is shutting down.
+        }
+        catch (ObjectDisposedException)
+        {
+            // The channel was disposed while this poll was running.
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error polling NextPVR for recording changes");
         }
     }
 
+    /// <inheritdoc />
     public bool HasChanged(BaseItem item, IDirectoryService directoryService)
     {
         throw new NotImplementedException();
